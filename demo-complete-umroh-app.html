@@ -1,0 +1,2409 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo - Aplikasi Manajemen Umroh</title>
+    
+    <!-- Material UI Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- SheetJS for Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #475569 75%, #64748b 100%);
+            min-height: 100vh;
+            color: #f8fafc;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.12) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.9));
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(71, 85, 105, 0.3);
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 
+                inset 0 1px 0 rgba(71, 85, 105, 0.4),
+                0 20px 40px rgba(0, 0, 0, 0.3),
+                0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo {
+            text-align: center;
+            background: linear-gradient(135deg, #3b82f6, #10b981, #8b5cf6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            padding: 20px 0;
+            text-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            margin: 5px 0;
+            border-radius: 12px;
+            color: #e2e8f0;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            background: linear-gradient(135deg, rgba(71, 85, 105, 0.4), rgba(30, 41, 59, 0.3));
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .nav-item:hover::before {
+            left: 100%;
+        }
+
+        .nav-item:hover {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(16, 185, 129, 0.1));
+            transform: translateX(8px) scale(1.02);
+            color: #60a5fa;
+            border-color: rgba(59, 130, 246, 0.4);
+            box-shadow: 
+                0 10px 30px rgba(59, 130, 246, 0.2),
+                inset 0 1px 0 rgba(59, 130, 246, 0.3);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(16, 185, 129, 0.2));
+            color: #3b82f6;
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 
+                0 10px 30px rgba(59, 130, 246, 0.3),
+                inset 0 1px 0 rgba(59, 130, 246, 0.4),
+                inset 0 -1px 0 rgba(16, 185, 129, 0.2);
+        }
+
+        .nav-item .material-icons {
+            margin-right: 15px;
+            font-size: 24px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Glass Card */
+        .glass-card {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.7));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(71, 85, 105, 0.4),
+                0 1px 3px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.6), rgba(16, 185, 129, 0.8), rgba(139, 92, 246, 0.6), transparent);
+        }
+
+        .glass-card h2 {
+            background: linear-gradient(135deg, #60a5fa, #34d399, #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            font-size: 28px;
+            font-weight: 600;
+            text-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(145deg, rgba(51, 65, 85, 0.8), rgba(30, 41, 59, 0.7));
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(71, 85, 105, 0.4);
+            border-radius: 16px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #10b981, #8b5cf6, #f59e0b);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            background: linear-gradient(145deg, rgba(59, 130, 246, 0.15), rgba(16, 185, 129, 0.1));
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 
+                0 20px 40px rgba(59, 130, 246, 0.3),
+                inset 0 1px 0 rgba(59, 130, 246, 0.4);
+        }
+
+        .stat-card .stat-icon {
+            font-size: 48px;
+            background: linear-gradient(135deg, #60a5fa, #34d399, #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover .stat-icon {
+            transform: scale(1.1) rotate(3deg);
+        }
+
+        .stat-card .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #f8fafc;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .stat-label {
+            color: #cbd5e1;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Forms */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #e2e8f0;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid rgba(71, 85, 105, 0.4);
+            border-radius: 8px;
+            background: rgba(30, 41, 59, 0.6);
+            color: #f8fafc;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: rgba(203, 213, 225, 0.6);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: rgba(30, 41, 59, 0.8);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 50%, #1e40af 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(59, 130, 246, 0.5);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(245, 158, 11, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(239, 68, 68, 0.4);
+        }
+
+        /* Table */
+        .table-container {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.7));
+            backdrop-filter: blur(15px);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 20px;
+            border: 1px solid rgba(71, 85, 105, 0.4);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+            color: #e2e8f0;
+        }
+
+        th {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(16, 185, 129, 0.1));
+            font-weight: 600;
+            background: linear-gradient(135deg, #60a5fa, #34d399, #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+        }
+
+        th::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #3b82f6, #10b981, #8b5cf6, #f59e0b);
+        }
+
+        tr:hover {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.05));
+            transform: scale(1.01);
+            transition: all 0.3s ease;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+            backdrop-filter: blur(25px);
+            border: 2px solid;
+            border-image: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1)) 1;
+            border-radius: 24px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 
+                0 25px 80px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            position: relative;
+        }
+
+        .modal-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #10b981, #8b5cf6, #f59e0b);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            background: linear-gradient(135deg, #60a5fa, #34d399, #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            margin-left: auto;
+        }
+
+        /* Charts */
+        .chart-container {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            position: relative;
+        }
+
+        .chart-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+        }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            color: white;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            padding: 8px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 12px;
+        }
+
+        /* File upload */
+        .file-upload {
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .file-upload:hover {
+            border-color: #4facfe;
+            background: rgba(79, 172, 254, 0.1);
+        }
+
+        .file-upload.dragover {
+            border-color: #4facfe;
+            background: rgba(79, 172, 254, 0.2);
+        }
+
+        /* Status badges */
+        .status-badge {
+            padding: 6px 14px;
+            border-radius: 25px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-verified { 
+            background: linear-gradient(135deg, #10b981, #059669); 
+            color: white; 
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        .status-pending { 
+            background: linear-gradient(135deg, #f59e0b, #d97706); 
+            color: white; 
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+        .status-rejected { 
+            background: linear-gradient(135deg, #ef4444, #dc2626); 
+            color: white; 
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+        .status-active { 
+            background: linear-gradient(135deg, #f97316, #ea580c); 
+            color: white; 
+            box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
+        }
+
+        /* Loading spinner */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.95), rgba(5, 150, 105, 0.95));
+            backdrop-filter: blur(15px);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 
+                0 8px 25px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            z-index: 1001;
+            animation: slideIn 0.3s ease;
+            font-weight: 500;
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.95), rgba(220, 38, 38, 0.95));
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <span class="material-icons" style="font-size: 32px; vertical-align: middle; margin-right: 10px;">flight_takeoff</span>
+                Umroh Manager
+            </div>
+            
+            <div class="nav-item active" onclick="showPage('dashboard')">
+                <span class="material-icons">dashboard</span>
+                Dashboard
+            </div>
+            
+            <div class="nav-item" onclick="showPage('jamaah')">
+                <span class="material-icons">people</span>
+                Manajemen Jamaah
+            </div>
+            
+            <div class="nav-item" onclick="showPage('packages')">
+                <span class="material-icons">card_travel</span>
+                Paket Umroh
+            </div>
+            
+            <div class="nav-item" onclick="showPage('payments')">
+                <span class="material-icons">payment</span>
+                Pembayaran
+            </div>
+            
+            <div class="nav-item" onclick="showPage('documents')">
+                <span class="material-icons">description</span>
+                Dokumen
+            </div>
+            
+            <div class="nav-item" onclick="showPage('groups')">
+                <span class="material-icons">group</span>
+                Grup Keberangkatan
+            </div>
+            
+            <div class="nav-item" onclick="showPage('reports')">
+                <span class="material-icons">assessment</span>
+                Laporan
+            </div>
+            
+            <div class="nav-item" onclick="showPage('excel')">
+                <span class="material-icons">table_chart</span>
+                Excel Import/Export
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Dashboard Page -->
+            <div id="dashboard" class="page active">
+                <div class="glass-card">
+                    <h2><span class="material-icons" style="vertical-align: middle; margin-right: 10px;">dashboard</span>Dashboard Umroh</h2>
+                    <p style="color: rgba(255, 255, 255, 0.8); margin-bottom: 30px;">Ringkasan data dan statistik sistem manajemen umroh</p>
+                    
+                    <!-- Stats Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon material-icons">people</div>
+                            <div class="stat-number" id="totalJamaah">1,247</div>
+                            <div class="stat-label">Total Jamaah</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon material-icons">verified</div>
+                            <div class="stat-number" id="verifiedJamaah">1,089</div>
+                            <div class="stat-label">Jamaah Terverifikasi</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon material-icons">card_travel</div>
+                            <div class="stat-number" id="activePackages">15</div>
+                            <div class="stat-label">Paket Aktif</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon material-icons">attach_money</div>
+                            <div class="stat-number" id="totalRevenue">24.8B</div>
+                            <div class="stat-label">Total Revenue (IDR)</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon material-icons">flight_takeoff</div>
+                            <div class="stat-number" id="totalDepartures">42</div>
+                            <div class="stat-label">Total Keberangkatan</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon material-icons">pending</div>
+                            <div class="stat-number" id="pendingPayments">23</div>
+                            <div class="stat-label">Pembayaran Pending</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Charts -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div class="chart-container">
+                            <h3 style="color: white; margin-bottom: 15px;">Registrasi Jamaah Bulanan</h3>
+                            <canvas id="jamaahChart" width="400" height="200"></canvas>
+                        </div>
+                        
+                        <div class="chart-container">
+                            <h3 style="color: white; margin-bottom: 15px;">Revenue per Paket</h3>
+                            <canvas id="revenueChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Jamaah Management Page -->
+            <div id="jamaah" class="page">
+                <div class="glass-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2><span class="material-icons" style="vertical-align: middle; margin-right: 10px;">people</span>Manajemen Jamaah</h2>
+                        <button class="btn btn-primary" onclick="openModal('jamaahModal')">
+                            <span class="material-icons">add</span>
+                            Tambah Jamaah
+                        </button>
+                    </div>
+                    
+                    <!-- Filters -->
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label>Cari Jamaah</label>
+                            <input type="text" id="searchJamaah" placeholder="Nama, NIK, atau No. Telepon">
+                        </div>
+                        <div class="filter-group">
+                            <label>Paket</label>
+                            <select id="filterPackage">
+                                <option value="">Semua Paket</option>
+                                <option value="1">Umroh Ramadhan 2024</option>
+                                <option value="2">Umroh Plus Turki</option>
+                                <option value="3">Umroh Keluarga</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Status</label>
+                            <select id="filterStatus">
+                                <option value="">Semua Status</option>
+                                <option value="verified">Terverifikasi</option>
+                                <option value="pending">Pending</option>
+                                <option value="rejected">Ditolak</option>
+                            </select>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <button class="btn btn-primary" onclick="filterJamaah()">
+                                <span class="material-icons">search</span>
+                                Filter
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Jamaah Table -->
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Nama Lengkap</th>
+                                    <th>NIK</th>
+                                    <th>No. Telepon</th>
+                                    <th>Paket</th>
+                                    <th>Status</th>
+                                    <th>Total Bayar</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="jamaahTableBody">
+                                <!-- Data will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Packages Page -->
+            <div id="packages" class="page">
+                <div class="glass-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2><span class="material-icons" style="vertical-align: middle; margin-right: 10px;">card_travel</span>Paket Umroh</h2>
+                        <button class="btn btn-primary" onclick="openModal('packageModal')">
+                            <span class="material-icons">add</span>
+                            Tambah Paket
+                        </button>
+                    </div>
+                    
+                    <!-- Package Cards -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px;" id="packageGrid">
+                        <!-- Package cards will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payments Page -->
+            <div id="payments" class="page">
+                <div class="glass-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2><span class="material-icons" style="vertical-align: middle; margin-right: 10px;">payment</span>Manajemen Pembayaran</h2>
+                        <button class="btn btn-primary" onclick="openModal('paymentModal')">
+                            <span class="material-icons">add</span>
+                            Catat Pembayaran
+                        </button>
+                    </div>
+                    
+                    <!-- Payment Stats -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                        <div class="stat-card">
+                            <div class="stat-number">Rp 24.8B</div>
+                            <div class="stat-label">Total Pembayaran</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">Rp 22.1B</div>
+                            <div class="stat-label">Terverifikasi</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">Rp 2.7B</div>
+                            <div class="stat-label">Pending</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">23</div>
+                            <div class="stat-label">Transaksi Pending</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Payment Table -->
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>Jamaah</th>
+                                    <th>Paket</th>
+                                    <th>Jumlah</th>
+                                    <th>Metode</th>
+                                    <th>Status</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paymentTableBody">
+                                <!-- Data will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documents Page -->
+            <div id="documents" class="page">
+                <div class="glass-card">
+                    <h2><span class="material-icons" style="vertical-align: middle; margin-right: 10px;">description</span>Manajemen Dokumen</h2>
+                    
+                    <!-- Document Stats -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 20px 0;">
+                        <div class="stat-card">
+                            <div class="stat-number">1,247</div>
+                            <div class="stat-label">Total Dokumen</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">1,089</div>
+                            <div class="stat-label">Terverifikasi</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">158</div>
+                            <div class="stat-label">Pending</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">23</div>
+                            <div class="stat-label">Ditolak</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Document Upload -->
+                    <div class="file-upload" onclick="document.getElementById('docUpload').click()" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                        <span class="material-icons" style="font-size: 48px; color: rgba(255, 255, 255, 0.6); margin-bottom: 10px;">cloud_upload</span>
+                        <p style="color: white; margin-bottom: 10px;">Klik atau drag & drop untuk upload dokumen</p>
+                        <p style="color: rgba(255, 255, 255, 0.6); font-size: 12px;">Mendukung: PDF, JPG, PNG, DOC, DOCX (Max: 10MB)</p>
+                        <input type="file" id="docUpload" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="display: none;" onchange="handleFileUpload(event)">
+                    </div>
+                    
+                    <!-- Document Table -->
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Jamaah</th>
+                                    <th>Jenis Dokumen</th>
+                                    <th>File</th>
+                                    <th>Upload Date</th>
+                                    <th>Status</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="documentTableBody">
+                                <!-- Data will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Groups Page -->
+            <div id="groups" class="page">
+                <div class="glass-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2><span class="material-icons" style="vertical-align: middle; margin-right: 10px;">group</span>Grup Keberangkatan</h2>
+                        <button class="btn btn-primary" onclick="openModal('groupModal')">
+                            <span class="material-icons">add</span>
+                            Buat Grup Baru
+                        </button>
+                    </div>
+                    
+                    <!-- Group Cards -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px;" id="groupGrid">
+                        <!-- Group cards will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Page -->
+            <div id="reports" class="page">
+                <div class="glass-card">
+                    <h2><span class="material-icons" style="vertical-align: middle; margin-right: 10px;">assessment</span>Laporan & Analytics</h2>
+                    
+                    <!-- Report Buttons -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin: 20px 0;">
+                        <button class="btn btn-primary" onclick="generateReport('jamaah')">
+                            <span class="material-icons">people</span>
+                            Laporan Jamaah
+                        </button>
+                        <button class="btn btn-success" onclick="generateReport('payment')">
+                            <span class="material-icons">payment</span>
+                            Laporan Keuangan
+                        </button>
+                        <button class="btn btn-warning" onclick="generateReport('package')">
+                            <span class="material-icons">card_travel</span>
+                            Laporan Paket
+                        </button>
+                        <button class="btn btn-primary" onclick="generateReport('departure')">
+                            <span class="material-icons">flight_takeoff</span>
+                            Laporan Keberangkatan
+                        </button>
+                    </div>
+                    
+                    <!-- Analytics Charts -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px;">
+                        <div class="chart-container">
+                            <h3 style="color: white; margin-bottom: 15px;">Trend Registrasi 6 Bulan</h3>
+                            <canvas id="trendChart" width="400" height="200"></canvas>
+                        </div>
+                        
+                        <div class="chart-container">
+                            <h3 style="color: white; margin-bottom: 15px;">Distribusi Status Jamaah</h3>
+                            <canvas id="statusChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Excel Page -->
+            <div id="excel" class="page">
+                <div class="glass-card">
+                    <h2><span class="material-icons" style="vertical-align: middle; margin-right: 10px;">table_chart</span>Excel Import & Export</h2>
+                    
+                    <!-- Import Section -->
+                    <div style="margin-bottom: 40px;">
+                        <h3 style="color: white; margin-bottom: 15px;">Import Data</h3>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                            <button class="btn btn-primary" onclick="downloadTemplate('jamaah')">
+                                <span class="material-icons">download</span>
+                                Template Jamaah
+                            </button>
+                            <button class="btn btn-primary" onclick="downloadTemplate('package')">
+                                <span class="material-icons">download</span>
+                                Template Paket
+                            </button>
+                            <button class="btn btn-primary" onclick="downloadTemplate('payment')">
+                                <span class="material-icons">download</span>
+                                Template Pembayaran
+                            </button>
+                        </div>
+                        
+                        <div class="file-upload" onclick="document.getElementById('excelUpload').click()">
+                            <span class="material-icons" style="font-size: 48px; color: rgba(255, 255, 255, 0.6); margin-bottom: 10px;">upload_file</span>
+                            <p style="color: white; margin-bottom: 10px;">Upload file Excel untuk import data</p>
+                            <p style="color: rgba(255, 255, 255, 0.6); font-size: 12px;">Format: .xlsx, .xls</p>
+                            <input type="file" id="excelUpload" accept=".xlsx,.xls" style="display: none;" onchange="handleExcelImport(event)">
+                        </div>
+                    </div>
+                    
+                    <!-- Export Section -->
+                    <div>
+                        <h3 style="color: white; margin-bottom: 15px;">Export Data</h3>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                            <button class="btn btn-success" onclick="exportToExcel('jamaah')">
+                                <span class="material-icons">file_download</span>
+                                Export Jamaah
+                            </button>
+                            <button class="btn btn-success" onclick="exportToExcel('package')">
+                                <span class="material-icons">file_download</span>
+                                Export Paket
+                            </button>
+                            <button class="btn btn-success" onclick="exportToExcel('payment')">
+                                <span class="material-icons">file_download</span>
+                                Export Pembayaran
+                            </button>
+                            <button class="btn btn-success" onclick="exportToExcel('all')">
+                                <span class="material-icons">file_download</span>
+                                Export Semua Data
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Import Results -->
+                    <div id="importResults" style="margin-top: 30px; display: none;">
+                        <h3 style="color: white; margin-bottom: 15px;">Hasil Import</h3>
+                        <div id="importResultsContent"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Jamaah Modal -->
+    <div id="jamaahModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Tambah/Edit Jamaah</h3>
+                <button class="close-btn" onclick="closeModal('jamaahModal')">&times;</button>
+            </div>
+            
+            <form onsubmit="saveJamaah(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Nama Lengkap</label>
+                        <input type="text" id="jamaahName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>NIK</label>
+                        <input type="text" id="jamaahNik" maxlength="16" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tanggal Lahir</label>
+                        <input type="date" id="jamaahBirthDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tempat Lahir</label>
+                        <input type="text" id="jamaahBirthPlace" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Jenis Kelamin</label>
+                        <select id="jamaahGender" required>
+                            <option value="">Pilih</option>
+                            <option value="L">Laki-laki</option>
+                            <option value="P">Perempuan</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>No. Telepon</label>
+                        <input type="tel" id="jamaahPhone" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="jamaahEmail">
+                    </div>
+                    <div class="form-group">
+                        <label>Paket Umroh</label>
+                        <select id="jamaahPackage" required>
+                            <option value="">Pilih Paket</option>
+                            <option value="1">Umroh Ramadhan 2024 - Rp 25.000.000</option>
+                            <option value="2">Umroh Plus Turki - Rp 35.000.000</option>
+                            <option value="3">Umroh Keluarga - Rp 22.000.000</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Alamat Lengkap</label>
+                    <textarea id="jamaahAddress" rows="3" required></textarea>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary">
+                        <span class="material-icons">save</span>
+                        Simpan
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="closeModal('jamaahModal')">
+                        <span class="material-icons">cancel</span>
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Package Modal -->
+    <div id="packageModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Tambah/Edit Paket Umroh</h3>
+                <button class="close-btn" onclick="closeModal('packageModal')">&times;</button>
+            </div>
+            
+            <form onsubmit="savePackage(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Nama Paket</label>
+                        <input type="text" id="packageName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Harga (IDR)</label>
+                        <input type="number" id="packagePrice" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tanggal Keberangkatan</label>
+                        <input type="date" id="packageDeparture" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Durasi (Hari)</label>
+                        <input type="number" id="packageDuration" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Kuota</label>
+                        <input type="number" id="packageQuota" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Hotel Makkah</label>
+                        <input type="text" id="packageMakkahHotel" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Hotel Madinah</label>
+                        <input type="text" id="packageMadinahHotel" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Malam di Makkah</label>
+                        <input type="number" id="packageMakkahNights" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Malam di Madinah</label>
+                        <input type="number" id="packageMadinahNights" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Maskapai</label>
+                        <input type="text" id="packageAirline" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Deskripsi</label>
+                    <textarea id="packageDescription" rows="3"></textarea>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary">
+                        <span class="material-icons">save</span>
+                        Simpan
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="closeModal('packageModal')">
+                        <span class="material-icons">cancel</span>
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Catat Pembayaran</h3>
+                <button class="close-btn" onclick="closeModal('paymentModal')">&times;</button>
+            </div>
+            
+            <form onsubmit="savePayment(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Jamaah</label>
+                        <select id="paymentJamaah" required>
+                            <option value="">Pilih Jamaah</option>
+                            <option value="1">Ahmad Fauzi - 1234567890123456</option>
+                            <option value="2">Siti Aisyah - 1234567890123457</option>
+                            <option value="3">Muhammad Rizki - 1234567890123458</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Jumlah Pembayaran</label>
+                        <input type="number" id="paymentAmount" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tanggal Pembayaran</label>
+                        <input type="date" id="paymentDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Metode Pembayaran</label>
+                        <select id="paymentMethod" required>
+                            <option value="">Pilih Metode</option>
+                            <option value="transfer_bank">Transfer Bank</option>
+                            <option value="cash">Cash</option>
+                            <option value="credit_card">Kartu Kredit</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Bank</label>
+                        <input type="text" id="paymentBank">
+                    </div>
+                    <div class="form-group">
+                        <label>No. Referensi</label>
+                        <input type="text" id="paymentReference">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Catatan</label>
+                    <textarea id="paymentNotes" rows="2"></textarea>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary">
+                        <span class="material-icons">save</span>
+                        Simpan
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="closeModal('paymentModal')">
+                        <span class="material-icons">cancel</span>
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Group Modal -->
+    <div id="groupModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Buat Grup Keberangkatan</h3>
+                <button class="close-btn" onclick="closeModal('groupModal')">&times;</button>
+            </div>
+            
+            <form onsubmit="saveGroup(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Nama Grup</label>
+                        <input type="text" id="groupName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Paket</label>
+                        <select id="groupPackage" required>
+                            <option value="">Pilih Paket</option>
+                            <option value="1">Umroh Ramadhan 2024</option>
+                            <option value="2">Umroh Plus Turki</option>
+                            <option value="3">Umroh Keluarga</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Tanggal Keberangkatan</label>
+                        <input type="date" id="groupDeparture" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Maksimal Anggota</label>
+                        <input type="number" id="groupMaxMembers" value="45" required>
+                    </div>
+                    <div class="form-group">
+                        <label>No. Bus</label>
+                        <input type="text" id="groupBusNumber">
+                    </div>
+                    <div class="form-group">
+                        <label>Waktu Kumpul</label>
+                        <input type="time" id="groupMeetingTime">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Tempat Kumpul</label>
+                    <textarea id="groupMeetingPoint" rows="2"></textarea>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary">
+                        <span class="material-icons">save</span>
+                        Buat Grup
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="closeModal('groupModal')">
+                        <span class="material-icons">cancel</span>
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Sample Data
+        let jamaahData = [
+            {
+                id: 1,
+                name: "Ahmad Fauzi",
+                nik: "1234567890123456",
+                phone: "081234567890",
+                email: "ahmad@email.com",
+                package: "Umroh Ramadhan 2024",
+                package_id: 1,
+                status: "verified",
+                total_paid: 15000000,
+                birth_date: "1985-05-15",
+                birth_place: "Jakarta",
+                gender: "L",
+                address: "Jl. Merdeka No. 123, Jakarta"
+            },
+            {
+                id: 2,
+                name: "Siti Aisyah",
+                nik: "1234567890123457",
+                phone: "081234567891",
+                email: "siti@email.com",
+                package: "Umroh Plus Turki",
+                package_id: 2,
+                status: "pending",
+                total_paid: 20000000,
+                birth_date: "1990-08-20",
+                birth_place: "Bandung",
+                gender: "P",
+                address: "Jl. Sudirman No. 456, Bandung"
+            },
+            {
+                id: 3,
+                name: "Muhammad Rizki",
+                nik: "1234567890123458",
+                phone: "081234567892",
+                email: "rizki@email.com",
+                package: "Umroh Keluarga",
+                package_id: 3,
+                status: "verified",
+                total_paid: 22000000,
+                birth_date: "1988-12-10",
+                birth_place: "Surabaya",
+                gender: "L",
+                address: "Jl. Pahlawan No. 789, Surabaya"
+            }
+        ];
+
+        let packageData = [
+            {
+                id: 1,
+                name: "Umroh Ramadhan 2024",
+                price: 25000000,
+                departure_date: "2024-03-15",
+                duration: 14,
+                quota: 45,
+                booked: 32,
+                makkah_hotel: "Hilton Makkah Convention",
+                madinah_hotel: "Pullman Zamzam Madinah",
+                makkah_nights: 7,
+                madinah_nights: 7,
+                airline: "Emirates",
+                description: "Paket umroh spesial bulan Ramadhan dengan fasilitas premium"
+            },
+            {
+                id: 2,
+                name: "Umroh Plus Turki",
+                price: 35000000,
+                departure_date: "2024-04-20",
+                duration: 21,
+                quota: 30,
+                booked: 18,
+                makkah_hotel: "Swissotel Makkah",
+                madinah_hotel: "Anwar Al Madinah Movenpick",
+                makkah_nights: 10,
+                madinah_nights: 8,
+                airline: "Turkish Airlines",
+                description: "Paket umroh dengan ekstensi wisata Istanbul, Turki"
+            },
+            {
+                id: 3,
+                name: "Umroh Keluarga",
+                price: 22000000,
+                departure_date: "2024-05-10",
+                duration: 12,
+                quota: 50,
+                booked: 25,
+                makkah_hotel: "Fairmont Makkah",
+                madinah_hotel: "Dar Al Iman InterContinental",
+                makkah_nights: 6,
+                madinah_nights: 6,
+                airline: "Saudi Airlines",
+                description: "Paket umroh khusus keluarga dengan fasilitas ramah anak"
+            }
+        ];
+
+        let paymentData = [
+            {
+                id: 1,
+                jamaah_id: 1,
+                jamaah_name: "Ahmad Fauzi",
+                package: "Umroh Ramadhan 2024",
+                amount: 15000000,
+                date: "2024-01-15",
+                method: "Transfer Bank",
+                bank: "BCA",
+                reference: "TRF20240115001",
+                status: "verified"
+            },
+            {
+                id: 2,
+                jamaah_id: 2,
+                jamaah_name: "Siti Aisyah",
+                package: "Umroh Plus Turki",
+                amount: 20000000,
+                date: "2024-01-20",
+                method: "Transfer Bank",
+                bank: "Mandiri",
+                reference: "TRF20240120001",
+                status: "pending"
+            }
+        ];
+
+        let documentData = [
+            {
+                id: 1,
+                jamaah_name: "Ahmad Fauzi",
+                type: "Paspor",
+                filename: "paspor_ahmad.pdf",
+                upload_date: "2024-01-10",
+                status: "verified"
+            },
+            {
+                id: 2,
+                jamaah_name: "Siti Aisyah",
+                type: "KTP",
+                filename: "ktp_siti.jpg",
+                upload_date: "2024-01-12",
+                status: "pending"
+            }
+        ];
+
+        let groupData = [
+            {
+                id: 1,
+                name: "Grup Ramadhan A",
+                package: "Umroh Ramadhan 2024",
+                departure_date: "2024-03-15",
+                max_members: 45,
+                current_members: 32,
+                bus_number: "BUS001",
+                meeting_time: "04:00",
+                meeting_point: "Masjid Al-Ikhlas, Jakarta Pusat",
+                status: "active"
+            },
+            {
+                id: 2,
+                name: "Grup Turki B",
+                package: "Umroh Plus Turki",
+                departure_date: "2024-04-20",
+                max_members: 30,
+                current_members: 18,
+                bus_number: "BUS002",
+                meeting_time: "03:30",
+                meeting_point: "Terminal 3 Bandara Soekarno-Hatta",
+                status: "planning"
+            }
+        ];
+
+        // Navigation
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Remove active class from all nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+            
+            // Add active class to clicked nav item
+            event.target.closest('.nav-item').classList.add('active');
+            
+            // Load page specific data
+            loadPageData(pageId);
+        }
+
+        function loadPageData(pageId) {
+            switch(pageId) {
+                case 'dashboard':
+                    loadDashboard();
+                    break;
+                case 'jamaah':
+                    loadJamaahTable();
+                    break;
+                case 'packages':
+                    loadPackageCards();
+                    break;
+                case 'payments':
+                    loadPaymentTable();
+                    break;
+                case 'documents':
+                    loadDocumentTable();
+                    break;
+                case 'groups':
+                    loadGroupCards();
+                    break;
+                case 'reports':
+                    loadReportCharts();
+                    break;
+            }
+        }
+
+        // Dashboard
+        function loadDashboard() {
+            // Update stats
+            document.getElementById('totalJamaah').textContent = jamaahData.length.toLocaleString();
+            document.getElementById('verifiedJamaah').textContent = jamaahData.filter(j => j.status === 'verified').length.toLocaleString();
+            document.getElementById('activePackages').textContent = packageData.length;
+            
+            const totalRevenue = paymentData.reduce((sum, payment) => sum + payment.amount, 0);
+            document.getElementById('totalRevenue').textContent = (totalRevenue / 1000000000).toFixed(1) + 'B';
+            
+            document.getElementById('totalDepartures').textContent = groupData.filter(g => g.status === 'departed').length;
+            document.getElementById('pendingPayments').textContent = paymentData.filter(p => p.status === 'pending').length;
+
+            // Load charts
+            loadDashboardCharts();
+        }
+
+        function loadDashboardCharts() {
+            // Jamaah registration chart
+            const jamaahCtx = document.getElementById('jamaahChart').getContext('2d');
+            new Chart(jamaahCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Registrasi Jamaah',
+                        data: [120, 190, 300, 250, 180, 220],
+                        borderColor: '#4facfe',
+                        backgroundColor: 'rgba(79, 172, 254, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            labels: { color: 'white' }
+                        }
+                    },
+                    scales: {
+                        x: { ticks: { color: 'white' } },
+                        y: { ticks: { color: 'white' } }
+                    }
+                }
+            });
+
+            // Revenue chart
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(revenueCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Umroh Ramadhan', 'Umroh Plus Turki', 'Umroh Keluarga'],
+                    datasets: [{
+                        data: [800, 540, 350],
+                        backgroundColor: ['#4facfe', '#00f2fe', '#a8edea']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            labels: { color: 'white' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Jamaah Management
+        function loadJamaahTable() {
+            const tbody = document.getElementById('jamaahTableBody');
+            tbody.innerHTML = '';
+            
+            jamaahData.forEach((jamaah, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${jamaah.name}</td>
+                    <td>${jamaah.nik}</td>
+                    <td>${jamaah.phone}</td>
+                    <td>${jamaah.package}</td>
+                    <td><span class="status-badge status-${jamaah.status}">${getStatusText(jamaah.status)}</span></td>
+                    <td>Rp ${jamaah.total_paid.toLocaleString()}</td>
+                    <td>
+                        <button class="btn btn-primary" onclick="editJamaah(${jamaah.id})" style="padding: 5px 10px; margin-right: 5px;">
+                            <span class="material-icons" style="font-size: 16px;">edit</span>
+                        </button>
+                        <button class="btn btn-danger" onclick="deleteJamaah(${jamaah.id})" style="padding: 5px 10px;">
+                            <span class="material-icons" style="font-size: 16px;">delete</span>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'verified': 'Terverifikasi',
+                'pending': 'Pending',
+                'rejected': 'Ditolak'
+            };
+            return statusMap[status] || status;
+        }
+
+        function filterJamaah() {
+            const search = document.getElementById('searchJamaah').value.toLowerCase();
+            const packageFilter = document.getElementById('filterPackage').value;
+            const statusFilter = document.getElementById('filterStatus').value;
+            
+            // In a real app, this would filter the data
+            showNotification('Filter diterapkan!');
+            loadJamaahTable();
+        }
+
+        function editJamaah(id) {
+            const jamaah = jamaahData.find(j => j.id === id);
+            if (jamaah) {
+                // Populate form with jamaah data
+                document.getElementById('jamaahName').value = jamaah.name;
+                document.getElementById('jamaahNik').value = jamaah.nik;
+                document.getElementById('jamaahBirthDate').value = jamaah.birth_date;
+                document.getElementById('jamaahBirthPlace').value = jamaah.birth_place;
+                document.getElementById('jamaahGender').value = jamaah.gender;
+                document.getElementById('jamaahPhone').value = jamaah.phone;
+                document.getElementById('jamaahEmail').value = jamaah.email;
+                document.getElementById('jamaahPackage').value = jamaah.package_id;
+                document.getElementById('jamaahAddress').value = jamaah.address;
+                
+                openModal('jamaahModal');
+            }
+        }
+
+        function deleteJamaah(id) {
+            if (confirm('Yakin ingin menghapus data jamaah ini?')) {
+                jamaahData = jamaahData.filter(j => j.id !== id);
+                loadJamaahTable();
+                showNotification('Data jamaah berhasil dihapus!');
+            }
+        }
+
+        function saveJamaah(event) {
+            event.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('jamaahName').value,
+                nik: document.getElementById('jamaahNik').value,
+                birth_date: document.getElementById('jamaahBirthDate').value,
+                birth_place: document.getElementById('jamaahBirthPlace').value,
+                gender: document.getElementById('jamaahGender').value,
+                phone: document.getElementById('jamaahPhone').value,
+                email: document.getElementById('jamaahEmail').value,
+                package_id: parseInt(document.getElementById('jamaahPackage').value),
+                address: document.getElementById('jamaahAddress').value
+            };
+
+            // Get package name
+            const packageSelect = document.getElementById('jamaahPackage');
+            const packageName = packageSelect.options[packageSelect.selectedIndex].text.split(' - ')[0];
+            
+            // Add to jamaahData (in real app, this would be an API call)
+            const newId = Math.max(...jamaahData.map(j => j.id)) + 1;
+            jamaahData.push({
+                id: newId,
+                ...formData,
+                package: packageName,
+                status: 'pending',
+                total_paid: 0
+            });
+            
+            closeModal('jamaahModal');
+            loadJamaahTable();
+            showNotification('Data jamaah berhasil disimpan!');
+            
+            // Reset form
+            event.target.reset();
+        }
+
+        // Package Management
+        function loadPackageCards() {
+            const container = document.getElementById('packageGrid');
+            container.innerHTML = '';
+            
+            packageData.forEach(package => {
+                const remainingSeats = package.quota - package.booked;
+                const card = document.createElement('div');
+                card.className = 'glass-card';
+                card.innerHTML = `
+                    <h3 style="color: white; margin-bottom: 15px;">${package.name}</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                        <div>
+                            <p style="color: rgba(255, 255, 255, 0.7); font-size: 12px;">Harga</p>
+                            <p style="color: #4facfe; font-weight: 600;">Rp ${package.price.toLocaleString()}</p>
+                        </div>
+                        <div>
+                            <p style="color: rgba(255, 255, 255, 0.7); font-size: 12px;">Keberangkatan</p>
+                            <p style="color: white;">${formatDate(package.departure_date)}</p>
+                        </div>
+                        <div>
+                            <p style="color: rgba(255, 255, 255, 0.7); font-size: 12px;">Durasi</p>
+                            <p style="color: white;">${package.duration} hari</p>
+                        </div>
+                        <div>
+                            <p style="color: rgba(255, 255, 255, 0.7); font-size: 12px;">Sisa Seat</p>
+                            <p style="color: ${remainingSeats > 10 ? '#22c55e' : remainingSeats > 0 ? '#f59e0b' : '#ef4444'}; font-weight: 600;">${remainingSeats}/${package.quota}</p>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <h4 style="color: white; font-size: 14px; margin-bottom: 8px;">Detail Hotel & Penerbangan</h4>
+                        <div style="font-size: 12px; color: rgba(255, 255, 255, 0.8);">
+                            <p>🏨 Makkah: ${package.makkah_hotel} (${package.makkah_nights} malam)</p>
+                            <p>🏨 Madinah: ${package.madinah_hotel} (${package.madinah_nights} malam)</p>
+                            <p>✈️ Maskapai: ${package.airline}</p>
+                        </div>
+                    </div>
+                    
+                    <p style="color: rgba(255, 255, 255, 0.8); font-size: 12px; margin-bottom: 15px;">${package.description}</p>
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" onclick="editPackage(${package.id})" style="flex: 1; padding: 8px;">
+                            <span class="material-icons" style="font-size: 16px;">edit</span>
+                            Edit
+                        </button>
+                        <button class="btn btn-danger" onclick="deletePackage(${package.id})" style="flex: 1; padding: 8px;">
+                            <span class="material-icons" style="font-size: 16px;">delete</span>
+                            Hapus
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function editPackage(id) {
+            const package = packageData.find(p => p.id === id);
+            if (package) {
+                document.getElementById('packageName').value = package.name;
+                document.getElementById('packagePrice').value = package.price;
+                document.getElementById('packageDeparture').value = package.departure_date;
+                document.getElementById('packageDuration').value = package.duration;
+                document.getElementById('packageQuota').value = package.quota;
+                document.getElementById('packageMakkahHotel').value = package.makkah_hotel;
+                document.getElementById('packageMadinahHotel').value = package.madinah_hotel;
+                document.getElementById('packageMakkahNights').value = package.makkah_nights;
+                document.getElementById('packageMadinahNights').value = package.madinah_nights;
+                document.getElementById('packageAirline').value = package.airline;
+                document.getElementById('packageDescription').value = package.description;
+                
+                openModal('packageModal');
+            }
+        }
+
+        function deletePackage(id) {
+            if (confirm('Yakin ingin menghapus paket ini?')) {
+                packageData = packageData.filter(p => p.id !== id);
+                loadPackageCards();
+                showNotification('Paket berhasil dihapus!');
+            }
+        }
+
+        function savePackage(event) {
+            event.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('packageName').value,
+                price: parseInt(document.getElementById('packagePrice').value),
+                departure_date: document.getElementById('packageDeparture').value,
+                duration: parseInt(document.getElementById('packageDuration').value),
+                quota: parseInt(document.getElementById('packageQuota').value),
+                makkah_hotel: document.getElementById('packageMakkahHotel').value,
+                madinah_hotel: document.getElementById('packageMadinahHotel').value,
+                makkah_nights: parseInt(document.getElementById('packageMakkahNights').value),
+                madinah_nights: parseInt(document.getElementById('packageMadinahNights').value),
+                airline: document.getElementById('packageAirline').value,
+                description: document.getElementById('packageDescription').value
+            };
+            
+            const newId = Math.max(...packageData.map(p => p.id)) + 1;
+            packageData.push({
+                id: newId,
+                ...formData,
+                booked: 0
+            });
+            
+            closeModal('packageModal');
+            loadPackageCards();
+            showNotification('Paket berhasil disimpan!');
+            event.target.reset();
+        }
+
+        // Payment Management
+        function loadPaymentTable() {
+            const tbody = document.getElementById('paymentTableBody');
+            tbody.innerHTML = '';
+            
+            paymentData.forEach(payment => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${formatDate(payment.date)}</td>
+                    <td>${payment.jamaah_name}</td>
+                    <td>${payment.package}</td>
+                    <td>Rp ${payment.amount.toLocaleString()}</td>
+                    <td>${payment.method}</td>
+                    <td><span class="status-badge status-${payment.status}">${getStatusText(payment.status)}</span></td>
+                    <td>
+                        ${payment.status === 'pending' ? 
+                            `<button class="btn btn-success" onclick="verifyPayment(${payment.id})" style="padding: 5px 10px; margin-right: 5px;">
+                                <span class="material-icons" style="font-size: 16px;">check</span>
+                            </button>
+                            <button class="btn btn-danger" onclick="rejectPayment(${payment.id})" style="padding: 5px 10px;">
+                                <span class="material-icons" style="font-size: 16px;">close</span>
+                            </button>` :
+                            `<button class="btn btn-primary" onclick="viewPayment(${payment.id})" style="padding: 5px 10px;">
+                                <span class="material-icons" style="font-size: 16px;">visibility</span>
+                            </button>`
+                        }
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function verifyPayment(id) {
+            const payment = paymentData.find(p => p.id === id);
+            if (payment && confirm('Verifikasi pembayaran ini?')) {
+                payment.status = 'verified';
+                loadPaymentTable();
+                showNotification('Pembayaran berhasil diverifikasi!');
+            }
+        }
+
+        function rejectPayment(id) {
+            const payment = paymentData.find(p => p.id === id);
+            if (payment && confirm('Tolak pembayaran ini?')) {
+                payment.status = 'rejected';
+                loadPaymentTable();
+                showNotification('Pembayaran ditolak!', 'error');
+            }
+        }
+
+        function savePayment(event) {
+            event.preventDefault();
+            
+            const jamaahSelect = document.getElementById('paymentJamaah');
+            const jamaahName = jamaahSelect.options[jamaahSelect.selectedIndex].text.split(' - ')[0];
+            
+            const newPayment = {
+                id: Math.max(...paymentData.map(p => p.id)) + 1,
+                jamaah_id: parseInt(document.getElementById('paymentJamaah').value),
+                jamaah_name: jamaahName,
+                package: "Umroh Ramadhan 2024", // Would be dynamically determined
+                amount: parseInt(document.getElementById('paymentAmount').value),
+                date: document.getElementById('paymentDate').value,
+                method: document.getElementById('paymentMethod').value,
+                bank: document.getElementById('paymentBank').value,
+                reference: document.getElementById('paymentReference').value,
+                status: 'pending'
+            };
+            
+            paymentData.push(newPayment);
+            closeModal('paymentModal');
+            loadPaymentTable();
+            showNotification('Pembayaran berhasil dicatat!');
+            event.target.reset();
+        }
+
+        // Document Management
+        function loadDocumentTable() {
+            const tbody = document.getElementById('documentTableBody');
+            tbody.innerHTML = '';
+            
+            documentData.forEach(doc => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${doc.jamaah_name}</td>
+                    <td>${doc.type}</td>
+                    <td><a href="#" style="color: #4facfe;">${doc.filename}</a></td>
+                    <td>${formatDate(doc.upload_date)}</td>
+                    <td><span class="status-badge status-${doc.status}">${getStatusText(doc.status)}</span></td>
+                    <td>
+                        ${doc.status === 'pending' ? 
+                            `<button class="btn btn-success" onclick="verifyDocument(${doc.id})" style="padding: 5px 10px; margin-right: 5px;">
+                                <span class="material-icons" style="font-size: 16px;">check</span>
+                            </button>
+                            <button class="btn btn-danger" onclick="rejectDocument(${doc.id})" style="padding: 5px 10px;">
+                                <span class="material-icons" style="font-size: 16px;">close</span>
+                            </button>` :
+                            `<button class="btn btn-primary" onclick="viewDocument(${doc.id})" style="padding: 5px 10px;">
+                                <span class="material-icons" style="font-size: 16px;">visibility</span>
+                            </button>`
+                        }
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function handleFileUpload(event) {
+            const files = event.target.files;
+            if (files.length > 0) {
+                showNotification(`${files.length} file berhasil diupload!`);
+                // In real app, files would be uploaded to server
+                for (let file of files) {
+                    documentData.push({
+                        id: Math.max(...documentData.map(d => d.id)) + 1,
+                        jamaah_name: "Jamaah Baru",
+                        type: "Dokumen",
+                        filename: file.name,
+                        upload_date: new Date().toISOString().split('T')[0],
+                        status: 'pending'
+                    });
+                }
+                loadDocumentTable();
+            }
+        }
+
+        function handleDrop(event) {
+            event.preventDefault();
+            event.target.classList.remove('dragover');
+            handleFileUpload(event);
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.target.classList.add('dragover');
+        }
+
+        function handleDragLeave(event) {
+            event.target.classList.remove('dragover');
+        }
+
+        function verifyDocument(id) {
+            const doc = documentData.find(d => d.id === id);
+            if (doc && confirm('Verifikasi dokumen ini?')) {
+                doc.status = 'verified';
+                loadDocumentTable();
+                showNotification('Dokumen berhasil diverifikasi!');
+            }
+        }
+
+        function rejectDocument(id) {
+            const doc = documentData.find(d => d.id === id);
+            if (doc && confirm('Tolak dokumen ini?')) {
+                doc.status = 'rejected';
+                loadDocumentTable();
+                showNotification('Dokumen ditolak!', 'error');
+            }
+        }
+
+        // Group Management
+        function loadGroupCards() {
+            const container = document.getElementById('groupGrid');
+            container.innerHTML = '';
+            
+            groupData.forEach(group => {
+                const card = document.createElement('div');
+                card.className = 'glass-card';
+                card.innerHTML = `
+                    <h3 style="color: white; margin-bottom: 15px;">${group.name}</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                        <div>
+                            <p style="color: rgba(255, 255, 255, 0.7); font-size: 12px;">Paket</p>
+                            <p style="color: white;">${group.package}</p>
+                        </div>
+                        <div>
+                            <p style="color: rgba(255, 255, 255, 0.7); font-size: 12px;">Keberangkatan</p>
+                            <p style="color: white;">${formatDate(group.departure_date)}</p>
+                        </div>
+                        <div>
+                            <p style="color: rgba(255, 255, 255, 0.7); font-size: 12px;">Anggota</p>
+                            <p style="color: #4facfe; font-weight: 600;">${group.current_members}/${group.max_members}</p>
+                        </div>
+                        <div>
+                            <p style="color: rgba(255, 255, 255, 0.7); font-size: 12px;">Status</p>
+                            <p><span class="status-badge status-${group.status}">${getGroupStatusText(group.status)}</span></p>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px; font-size: 12px; color: rgba(255, 255, 255, 0.8);">
+                        <p>🚌 Bus: ${group.bus_number}</p>
+                        <p>⏰ Waktu Kumpul: ${group.meeting_time}</p>
+                        <p>📍 ${group.meeting_point}</p>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" onclick="manageGroupMembers(${group.id})" style="flex: 1; padding: 8px;">
+                            <span class="material-icons" style="font-size: 16px;">people</span>
+                            Kelola Anggota
+                        </button>
+                        <button class="btn btn-warning" onclick="editGroup(${group.id})" style="flex: 1; padding: 8px;">
+                            <span class="material-icons" style="font-size: 16px;">edit</span>
+                            Edit
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function getGroupStatusText(status) {
+            const statusMap = {
+                'planning': 'Perencanaan',
+                'active': 'Aktif',
+                'departed': 'Berangkat',
+                'completed': 'Selesai'
+            };
+            return statusMap[status] || status;
+        }
+
+        function saveGroup(event) {
+            event.preventDefault();
+            
+            const packageSelect = document.getElementById('groupPackage');
+            const packageName = packageSelect.options[packageSelect.selectedIndex].text;
+            
+            const newGroup = {
+                id: Math.max(...groupData.map(g => g.id)) + 1,
+                name: document.getElementById('groupName').value,
+                package: packageName,
+                departure_date: document.getElementById('groupDeparture').value,
+                max_members: parseInt(document.getElementById('groupMaxMembers').value),
+                current_members: 0,
+                bus_number: document.getElementById('groupBusNumber').value,
+                meeting_time: document.getElementById('groupMeetingTime').value,
+                meeting_point: document.getElementById('groupMeetingPoint').value,
+                status: 'planning'
+            };
+            
+            groupData.push(newGroup);
+            closeModal('groupModal');
+            loadGroupCards();
+            showNotification('Grup berhasil dibuat!');
+            event.target.reset();
+        }
+
+        function manageGroupMembers(id) {
+            showNotification('Fitur kelola anggota grup akan segera tersedia!');
+        }
+
+        function editGroup(id) {
+            showNotification('Fitur edit grup akan segera tersedia!');
+        }
+
+        // Reports
+        function loadReportCharts() {
+            // Trend chart
+            const trendCtx = document.getElementById('trendChart').getContext('2d');
+            new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Registrasi',
+                        data: [120, 190, 300, 250, 180, 220],
+                        borderColor: '#4facfe',
+                        backgroundColor: 'rgba(79, 172, 254, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { labels: { color: 'white' } }
+                    },
+                    scales: {
+                        x: { ticks: { color: 'white' } },
+                        y: { ticks: { color: 'white' } }
+                    }
+                }
+            });
+
+            // Status chart
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            new Chart(statusCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Terverifikasi', 'Pending', 'Ditolak'],
+                    datasets: [{
+                        data: [1089, 158, 23],
+                        backgroundColor: ['#22c55e', '#f59e0b', '#ef4444']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { labels: { color: 'white' } }
+                    }
+                }
+            });
+        }
+
+        function generateReport(type) {
+            showNotification(`Generating laporan ${type}...`);
+            
+            // Simulate report generation
+            setTimeout(() => {
+                showNotification(`Laporan ${type} berhasil dibuat!`);
+            }, 2000);
+        }
+
+        // Excel Functions
+        function downloadTemplate(type) {
+            let templateData = [];
+            let filename = '';
+
+            switch(type) {
+                case 'jamaah':
+                    templateData = [
+                        ['Nama Lengkap', 'NIK', 'Tanggal Lahir', 'Tempat Lahir', 'Jenis Kelamin', 'No. Telepon', 'Email', 'Alamat', 'Paket ID'],
+                        ['Ahmad Fauzi', '1234567890123456', '1985-05-15', 'Jakarta', 'L', '081234567890', 'ahmad@email.com', 'Jl. Merdeka No. 123', '1']
+                    ];
+                    filename = 'template_jamaah.xlsx';
+                    break;
+                case 'package':
+                    templateData = [
+                        ['Nama Paket', 'Harga', 'Tanggal Keberangkatan', 'Durasi', 'Kuota', 'Hotel Makkah', 'Hotel Madinah', 'Malam Makkah', 'Malam Madinah', 'Maskapai'],
+                        ['Umroh Ramadhan 2024', '25000000', '2024-03-15', '14', '45', 'Hilton Makkah', 'Pullman Madinah', '7', '7', 'Emirates']
+                    ];
+                    filename = 'template_paket.xlsx';
+                    break;
+                case 'payment':
+                    templateData = [
+                        ['Jamaah ID', 'Jumlah', 'Tanggal', 'Metode', 'Bank', 'No. Referensi'],
+                        ['1', '15000000', '2024-01-15', 'Transfer Bank', 'BCA', 'TRF20240115001']
+                    ];
+                    filename = 'template_pembayaran.xlsx';
+                    break;
+            }
+
+            const ws = XLSX.utils.aoa_to_sheet(templateData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Template');
+            XLSX.writeFile(wb, filename);
+            
+            showNotification(`Template ${type} berhasil didownload!`);
+        }
+
+        function handleExcelImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = e.target.result;
+                    const workbook = XLSX.read(data, {type: 'binary'});
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+                    
+                    // Process imported data
+                    const headers = jsonData[0];
+                    const rows = jsonData.slice(1);
+                    
+                    let successCount = 0;
+                    let errorCount = 0;
+                    let errors = [];
+
+                    rows.forEach((row, index) => {
+                        try {
+                            // Validate and process each row
+                            if (row.length >= headers.length - 1) {
+                                successCount++;
+                            } else {
+                                errorCount++;
+                                errors.push(`Baris ${index + 2}: Data tidak lengkap`);
+                            }
+                        } catch (error) {
+                            errorCount++;
+                            errors.push(`Baris ${index + 2}: ${error.message}`);
+                        }
+                    });
+
+                    // Show import results
+                    const resultsDiv = document.getElementById('importResults');
+                    const contentDiv = document.getElementById('importResultsContent');
+                    
+                    contentDiv.innerHTML = `
+                        <div class="glass-card">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                                <div class="stat-card">
+                                    <div class="stat-number" style="color: #22c55e;">${successCount}</div>
+                                    <div class="stat-label">Berhasil</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number" style="color: #ef4444;">${errorCount}</div>
+                                    <div class="stat-label">Error</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number">${rows.length}</div>
+                                    <div class="stat-label">Total</div>
+                                </div>
+                            </div>
+                            ${errors.length > 0 ? `
+                                <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 15px;">
+                                    <h4 style="color: #ef4444; margin-bottom: 10px;">Error Details:</h4>
+                                    <ul style="color: rgba(255, 255, 255, 0.8); margin-left: 20px;">
+                                        ${errors.map(error => `<li>${error}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                    
+                    resultsDiv.style.display = 'block';
+                    showNotification('Import Excel selesai!');
+                    
+                } catch (error) {
+                    showNotification('Error membaca file Excel!', 'error');
+                }
+            };
+            reader.readAsBinaryString(file);
+        }
+
+        function exportToExcel(type) {
+            let data = [];
+            let filename = '';
+
+            switch(type) {
+                case 'jamaah':
+                    data = jamaahData.map(j => [
+                        j.name, j.nik, j.phone, j.email, j.package, 
+                        getStatusText(j.status), j.total_paid
+                    ]);
+                    data.unshift(['Nama', 'NIK', 'Telepon', 'Email', 'Paket', 'Status', 'Total Bayar']);
+                    filename = 'data_jamaah.xlsx';
+                    break;
+                case 'package':
+                    data = packageData.map(p => [
+                        p.name, p.price, p.departure_date, p.duration, p.quota, p.booked,
+                        p.makkah_hotel, p.madinah_hotel, p.airline
+                    ]);
+                    data.unshift(['Nama', 'Harga', 'Keberangkatan', 'Durasi', 'Kuota', 'Terdaftar', 'Hotel Makkah', 'Hotel Madinah', 'Maskapai']);
+                    filename = 'data_paket.xlsx';
+                    break;
+                case 'payment':
+                    data = paymentData.map(p => [
+                        p.jamaah_name, p.package, p.amount, p.date, p.method, p.bank, getStatusText(p.status)
+                    ]);
+                    data.unshift(['Jamaah', 'Paket', 'Jumlah', 'Tanggal', 'Metode', 'Bank', 'Status']);
+                    filename = 'data_pembayaran.xlsx';
+                    break;
+                case 'all':
+                    // Create workbook with multiple sheets
+                    const wb = XLSX.utils.book_new();
+                    
+                    // Jamaah sheet
+                    const jamaahData2D = jamaahData.map(j => [j.name, j.nik, j.phone, j.email, j.package, getStatusText(j.status), j.total_paid]);
+                    jamaahData2D.unshift(['Nama', 'NIK', 'Telepon', 'Email', 'Paket', 'Status', 'Total Bayar']);
+                    const wsJamaah = XLSX.utils.aoa_to_sheet(jamaahData2D);
+                    XLSX.utils.book_append_sheet(wb, wsJamaah, 'Jamaah');
+                    
+                    // Package sheet
+                    const packageData2D = packageData.map(p => [p.name, p.price, p.departure_date, p.duration, p.quota, p.booked]);
+                    packageData2D.unshift(['Nama', 'Harga', 'Keberangkatan', 'Durasi', 'Kuota', 'Terdaftar']);
+                    const wsPackage = XLSX.utils.aoa_to_sheet(packageData2D);
+                    XLSX.utils.book_append_sheet(wb, wsPackage, 'Paket');
+                    
+                    // Payment sheet
+                    const paymentData2D = paymentData.map(p => [p.jamaah_name, p.package, p.amount, p.date, p.method, getStatusText(p.status)]);
+                    paymentData2D.unshift(['Jamaah', 'Paket', 'Jumlah', 'Tanggal', 'Metode', 'Status']);
+                    const wsPayment = XLSX.utils.aoa_to_sheet(paymentData2D);
+                    XLSX.utils.book_append_sheet(wb, wsPayment, 'Pembayaran');
+                    
+                    XLSX.writeFile(wb, 'data_umroh_lengkap.xlsx');
+                    showNotification('Semua data berhasil diekspor!');
+                    return;
+            }
+
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Data');
+            XLSX.writeFile(wb, filename);
+            
+            showNotification(`Data ${type} berhasil diekspor!`);
+        }
+
+        // Modal Functions
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Utility Functions
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('id-ID', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboard();
+            loadJamaahTable();
+        });
+    </script>
+</body>
+</html>
