@@ -1,0 +1,78 @@
+🕌 APLIKASI MANAJEMEN UMROH - DEMO
+=======================================
+
+📋 CARA MENJALANKAN:
+
+1. PASTIKAN NODE.JS SUDAH TERINSTALL
+   Download dari: https://nodejs.org/
+
+2. JALANKAN APLIKASI
+   Klik dua kali: JALANKAN-APLIKASI.bat
+   
+   ATAU manual:
+   - Buka Command Prompt
+   - Ketik: JALANKAN-APLIKASI.bat
+
+3. TUNGGU SAMPAI KEDUA SERVER BERJALAN
+   - Backend: http://localhost:5000
+   - Frontend: http://localhost:3000
+
+4. LOGIN KE APLIKASI
+   - Username: admin
+   - Password: admin123
+
+=======================================
+
+🎯 FITUR YANG BISA DICOBA:
+
+✅ Manajemen Jamaah
+   - Tambah/edit data jamaah
+   - Upload dokumen (KTP, Paspor)
+   - Tracking status
+
+✅ Real-time Notifications
+   - Buka 2 tab browser
+   - Login di kedua tab  
+   - Tambah jamaah di tab 1
+   - Lihat notifikasi real-time di tab 2
+
+✅ Sistem Pembayaran
+   - Input pembayaran DP/Lunas
+   - Upload bukti transfer
+   - Verifikasi admin
+
+✅ Import/Export Excel
+   - Download template Excel
+   - Import data jamaah massal
+   - Export laporan
+
+✅ Dashboard Analytics
+   - Grafik interaktif
+   - Activity feed real-time
+   - Statistik lengkap
+
+=======================================
+
+⚠️ TROUBLESHOOTING:
+
+❌ "Node.js tidak ditemukan"
+   → Install Node.js dari nodejs.org
+
+❌ "Port sudah digunakan"
+   → Tutup aplikasi lain yang menggunakan port 3000/5000
+   → Restart komputer jika perlu
+
+❌ "Gagal install dependencies"
+   → Pastikan internet tersambung
+   → Coba jalankan sebagai Administrator
+
+❌ Database error
+   → Hapus file backend/database.db
+   → Jalankan ulang JALANKAN-APLIKASI.bat
+
+=======================================
+
+📞 SUPPORT:
+Jika ada masalah, screenshot error message dan konsultasikan dengan tim development.
+
+Happy Testing! 🚀
