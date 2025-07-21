@@ -1373,42 +1373,42 @@
                 Umroh Manager
             </div>
             
-            <div class="nav-item active" onclick="showPage('dashboard')">
+            <div class="nav-item active" data-page="dashboard">
                 <span class="material-icons">dashboard</span>
                 Dashboard
             </div>
             
-            <div class="nav-item" onclick="showPage('jamaah')">
+            <div class="nav-item" data-page="jamaah">
                 <span class="material-icons">people</span>
                 Manajemen Jamaah
             </div>
             
-            <div class="nav-item" onclick="showPage('packages')">
+            <div class="nav-item" data-page="packages">
                 <span class="material-icons">card_travel</span>
                 Paket Umroh
             </div>
             
-            <div class="nav-item" onclick="showPage('payments')">
+            <div class="nav-item" data-page="payments">
                 <span class="material-icons">payment</span>
                 Pembayaran
             </div>
             
-            <div class="nav-item" onclick="showPage('documents')">
+            <div class="nav-item" data-page="documents">
                 <span class="material-icons">description</span>
                 Dokumen
             </div>
             
-            <div class="nav-item" onclick="showPage('groups')">
+            <div class="nav-item" data-page="groups">
                 <span class="material-icons">group</span>
                 Grup Keberangkatan
             </div>
             
-            <div class="nav-item" onclick="showPage('reports')">
+            <div class="nav-item" data-page="reports">
                 <span class="material-icons">assessment</span>
                 Laporan
             </div>
             
-            <div class="nav-item" onclick="showPage('excel')">
+            <div class="nav-item" data-page="excel">
                 <span class="material-icons">table_chart</span>
                 Excel Import/Export
             </div>
@@ -3031,7 +3031,7 @@
             }
             
             // Add active class to corresponding nav item
-            const navItem = document.querySelector(`.nav-item[onclick*="${pageId}"]`);
+            const navItem = document.querySelector(`.nav-item[data-page="${pageId}"]`);
             if (navItem) {
                 navItem.classList.add('active');
             }
@@ -5886,6 +5886,19 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadDashboard();
             loadJamaahTable();
+            
+            // Setup navigation click handlers
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const pageId = this.getAttribute('data-page');
+                    if (pageId) {
+                        console.log('Navigating to:', pageId); // Debug log
+                        showPage(pageId);
+                    }
+                });
+            });
             
             // Add input formatting for birth date
             const birthDateInput = document.getElementById('jamaahBirthDate');
