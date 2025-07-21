@@ -1974,13 +1974,44 @@
                             <label>Provinsi</label>
                             <select id="jamaahProvinsi">
                                 <option value="">Pilih Provinsi</option>
+                                <option value="Nanggroe Aceh Darussalam">Nanggroe Aceh Darussalam</option>
+                                <option value="Sumatera Utara">Sumatera Utara</option>
+                                <option value="Sumatera Selatan">Sumatera Selatan</option>
+                                <option value="Sumatera Barat">Sumatera Barat</option>
+                                <option value="Bengkulu">Bengkulu</option>
+                                <option value="Riau">Riau</option>
+                                <option value="Kepulauan Riau">Kepulauan Riau</option>
+                                <option value="Jambi">Jambi</option>
+                                <option value="Lampung">Lampung</option>
+                                <option value="Bangka Belitung">Bangka Belitung</option>
+                                <option value="Kalimantan Barat">Kalimantan Barat</option>
+                                <option value="Kalimantan Timur">Kalimantan Timur</option>
+                                <option value="Kalimantan Selatan">Kalimantan Selatan</option>
+                                <option value="Kalimantan Tengah">Kalimantan Tengah</option>
+                                <option value="Kalimantan Utara">Kalimantan Utara</option>
+                                <option value="Banten">Banten</option>
                                 <option value="DKI Jakarta">DKI Jakarta</option>
                                 <option value="Jawa Barat">Jawa Barat</option>
                                 <option value="Jawa Tengah">Jawa Tengah</option>
+                                <option value="Daerah Istimewa Yogyakarta">Daerah Istimewa Yogyakarta</option>
                                 <option value="Jawa Timur">Jawa Timur</option>
-                                <option value="Banten">Banten</option>
-                                <option value="Sumatera Utara">Sumatera Utara</option>
-                                <option value="Sumatera Selatan">Sumatera Selatan</option>
+                                <option value="Bali">Bali</option>
+                                <option value="Nusa Tenggara Timur">Nusa Tenggara Timur</option>
+                                <option value="Nusa Tenggara Barat">Nusa Tenggara Barat</option>
+                                <option value="Gorontalo">Gorontalo</option>
+                                <option value="Sulawesi Barat">Sulawesi Barat</option>
+                                <option value="Sulawesi Tengah">Sulawesi Tengah</option>
+                                <option value="Sulawesi Utara">Sulawesi Utara</option>
+                                <option value="Sulawesi Tenggara">Sulawesi Tenggara</option>
+                                <option value="Sulawesi Selatan">Sulawesi Selatan</option>
+                                <option value="Maluku Utara">Maluku Utara</option>
+                                <option value="Maluku">Maluku</option>
+                                <option value="Papua Barat">Papua Barat</option>
+                                <option value="Papua">Papua</option>
+                                <option value="Papua Tengah">Papua Tengah</option>
+                                <option value="Papua Pegunungan">Papua Pegunungan</option>
+                                <option value="Papua Selatan">Papua Selatan</option>
+                                <option value="Papua Barat Daya">Papua Barat Daya</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -2062,7 +2093,7 @@
                             <label>Preferensi Kamar</label>
                             <select id="jamaahRoomPreference" required>
                                 <option value="">Pilih Tipe Kamar</option>
-                                <option value="quad">Quad (4 orang)</option>
+                                <option value="quad" selected>Quad (4 orang) - Default</option>
                                 <option value="triple">Triple (3 orang)</option>
                                 <option value="double">Double (2 orang)</option>
                             </select>
@@ -2149,6 +2180,10 @@
                     <div class="form-group">
                         <label>Nama Paket</label>
                         <input type="text" id="packageName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Kode Paket</label>
+                        <input type="text" id="packageCode" placeholder="Contoh: PKG001" required>
                     </div>
                     <div class="form-group">
                         <label>Harga (IDR)</label>
@@ -3430,7 +3465,7 @@
                 
                 // Family data
                 family_role: document.getElementById('jamaahFamilyRole').value,
-                room_preference: document.getElementById('jamaahRoomPreference').value,
+                room_preference: document.getElementById('jamaahRoomPreference').value || 'quad', // Default to quad
                 family_room_request: document.getElementById('jamaahFamilyRoomRequest').checked
             };
 
@@ -3489,7 +3524,10 @@
                 const card = document.createElement('div');
                 card.className = 'glass-card';
                 card.innerHTML = `
-                    <h3 style="color: white; margin-bottom: 15px;">${package.name}</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                        <h3 style="color: white; margin: 0;">${package.name}</h3>
+                        <span style="background: rgba(59, 130, 246, 0.2); color: #3b82f6; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500;">${package.code}</span>
+                    </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
                         <div>
                             <p style="color: rgba(255, 255, 255, 0.7); font-size: 12px;">Harga</p>
@@ -3539,6 +3577,7 @@
             const package = packageData.find(p => p.id === id);
             if (package) {
                 document.getElementById('packageName').value = package.name;
+                document.getElementById('packageCode').value = package.code || '';
                 document.getElementById('packagePrice').value = package.price;
                 document.getElementById('packageDeparture').value = package.departure_date;
                 document.getElementById('packageDuration').value = package.duration;
@@ -3567,6 +3606,7 @@
             
             const formData = {
                 name: document.getElementById('packageName').value,
+                code: document.getElementById('packageCode').value,
                 price: parseInt(document.getElementById('packagePrice').value),
                 departure_date: document.getElementById('packageDeparture').value,
                 duration: parseInt(document.getElementById('packageDuration').value),
@@ -4005,6 +4045,14 @@
             `;
             document.body.appendChild(modal);
             
+            // Add event listeners for close buttons
+            const closeButtons = modal.querySelectorAll('.close-btn');
+            closeButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    modal.remove();
+                });
+            });
+            
             // Close on click outside
             modal.addEventListener('click', function(e) {
                 if (e.target === modal) {
@@ -4058,6 +4106,14 @@
                 </div>
             `;
             document.body.appendChild(modal);
+            
+            // Add event listeners for close buttons
+            const closeButtons = modal.querySelectorAll('.close-btn');
+            closeButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    modal.remove();
+                });
+            });
             
             // Close on click outside
             modal.addEventListener('click', function(e) {
@@ -4160,6 +4216,14 @@
             `;
             document.body.appendChild(modal);
             
+            // Add event listeners for close buttons
+            const closeButtons = modal.querySelectorAll('.close-btn');
+            closeButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    modal.remove();
+                });
+            });
+            
             // Close on click outside
             modal.addEventListener('click', function(e) {
                 if (e.target === modal) {
@@ -4218,6 +4282,14 @@
                 </div>
             `;
             document.body.appendChild(modal);
+            
+            // Add event listeners for close buttons
+            const closeButtons = modal.querySelectorAll('.close-btn');
+            closeButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    modal.remove();
+                });
+            });
             
             // Close on click outside
             modal.addEventListener('click', function(e) {
@@ -4500,6 +4572,14 @@
             `;
             document.body.appendChild(modal);
             
+            // Add event listeners for close buttons
+            const closeButtons = modal.querySelectorAll('.close-btn');
+            closeButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    modal.remove();
+                });
+            });
+            
             // Close on click outside
             modal.addEventListener('click', function(e) {
                 if (e.target === modal) {
@@ -4583,8 +4663,14 @@
                                 <div style="background: rgba(71, 85, 105, 0.3); padding: 8px; border-radius: 6px;">
                                     <div style="color: #f8fafc; font-weight: 500; font-size: 13px;">${occupant.name}</div>
                                     <div style="color: rgba(255, 255, 255, 0.7); font-size: 11px;">
-                                        ${occupant.gender === 'L' ? '👨' : '👩'} ${occupant.family_role} | 
-                                        Born: ${formatBirthDate(occupant.birth_date)}
+                                        ${occupant.gender === 'male' ? '👨' : '👩'} 
+                                        <strong>${occupant.gender === 'male' ? 'L' : 'P'}</strong> | 
+                                        <span style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; padding: 1px 4px; border-radius: 3px; font-size: 9px; font-weight: 600;">
+                                            ${(occupant.room_preference || 'quad').toUpperCase()}
+                                        </span>
+                                    </div>
+                                    <div style="color: rgba(255, 255, 255, 0.5); font-size: 10px; margin-top: 2px;">
+                                        ${occupant.family_role || 'Individual'} | Born: ${formatBirthDate(occupant.birth_date)}
                                     </div>
                                 </div>
                             `).join('')}
@@ -4755,12 +4841,13 @@
                     <div>
                         <div style="font-weight: 500; color: #f8fafc; font-size: 13px;">${jamaah.name}</div>
                         <div style="font-size: 11px; color: rgba(255, 255, 255, 0.6);">
-                            ${jamaah.gender === 'male' ? '👨' : '👩'} ${jamaah.gender} • 
-                            Prefer: ${jamaah.room_preference}
-                            ${jamaah.family_group ? ` • Family: ${jamaah.family_group}` : ''}
+                            ${jamaah.gender === 'male' ? '👨' : '👩'} 
+                            <strong>${jamaah.gender === 'male' ? 'L' : 'P'}</strong> | 
+                            Beli: <span style="color: #60a5fa; font-weight: 600;">${(jamaah.room_preference || 'quad').toUpperCase()}</span>
+                            ${jamaah.family_group ? ` | Family: ${jamaah.family_group}` : ''}
                         </div>
                     </div>
-                    <div class="room-type ${jamaah.room_preference}">${jamaah.room_preference}</div>
+                    <div class="room-type ${jamaah.room_preference || 'quad'}">${(jamaah.room_preference || 'quad').toUpperCase()}</div>
                 `;
                 
                 item.addEventListener('click', () => {
@@ -4813,7 +4900,14 @@
                 <div class="occupant-item">
                     <div class="occupant-info">
                         <div class="occupant-name">${occupant.name}</div>
-                        <div class="occupant-details">${occupant.gender === 'male' ? '👨' : '👩'} ${occupant.phone}</div>
+                        <div class="occupant-details">
+                            ${occupant.gender === 'male' ? '👨' : '👩'} 
+                            <strong>${occupant.gender === 'male' ? 'L' : 'P'}</strong> | 
+                            <span style="background: rgba(59, 130, 246, 0.2); color: #3b82f6; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 500;">
+                                ${(occupant.room_preference || 'quad').toUpperCase()}
+                            </span> | 
+                            ${occupant.phone}
+                        </div>
                     </div>
                     <div class="bed-assignment">Bed ${index + 1}</div>
                 </div>
@@ -4869,19 +4963,40 @@
         }
 
         function allocateSmartly(jamaahList) {
-            // Separate by gender
-            const males = jamaahList.filter(j => j.gender === 'male');
-            const females = jamaahList.filter(j => j.gender === 'female');
+            // First try to allocate by preference, then fallback to simple allocation
+            allocateByPreference(jamaahList);
             
-            // Allocate males
-            allocateGenderGroup(males, 'male');
-            
-            // Allocate females
-            allocateGenderGroup(females, 'female');
+            // Check for any unassigned jamaah and allocate them to available rooms
+            const unassigned = jamaahList.filter(j => !j.room_number);
+            if (unassigned.length > 0) {
+                console.log(`Found ${unassigned.length} unassigned jamaah, allocating to available rooms`);
+                
+                // Separate by gender
+                const males = unassigned.filter(j => j.gender === 'male');
+                const females = unassigned.filter(j => j.gender === 'female');
+                
+                // Allocate males
+                allocateGenderGroupFallback(males, 'male');
+                
+                // Allocate females
+                allocateGenderGroupFallback(females, 'female');
+            }
         }
 
-        function allocateGenderGroup(jamaahList, gender) {
-            const availableRooms = currentGroupRooms.filter(r => r.gender === gender);
+        function allocateGenderGroupFallback(jamaahList, gender) {
+            // Find rooms with available capacity for this gender
+            const availableRooms = currentGroupRooms.filter(r => 
+                r.gender === gender && r.occupants.length < r.capacity
+            ).sort((a, b) => {
+                // Prioritize rooms that match jamaah preferences
+                const aHasMatchingPreference = jamaahList.some(j => j.room_preference === a.type);
+                const bHasMatchingPreference = jamaahList.some(j => j.room_preference === b.type);
+                if (aHasMatchingPreference && !bHasMatchingPreference) return -1;
+                if (!aHasMatchingPreference && bHasMatchingPreference) return 1;
+                // Then by available space (fill partially occupied rooms first)
+                return b.occupants.length - a.occupants.length;
+            });
+            
             let jamaahIndex = 0;
             
             // Fill rooms based on capacity
@@ -4930,8 +5045,10 @@
             };
             
             jamaahList.forEach(jamaah => {
-                if (groups[jamaah.gender] && groups[jamaah.gender][jamaah.room_preference]) {
-                    groups[jamaah.gender][jamaah.room_preference].push(jamaah);
+                // Default to quad if no preference is set
+                const preference = jamaah.room_preference || 'quad';
+                if (groups[jamaah.gender] && groups[jamaah.gender][preference]) {
+                    groups[jamaah.gender][preference].push(jamaah);
                 }
             });
             
@@ -5287,8 +5404,8 @@
                     XLSX.utils.book_append_sheet(wb, wsJamaah, 'Jamaah');
                     
                     // Package sheet
-                    const packageData2D = packageData.map(p => [p.name, p.price, p.departure_date, p.duration, p.quota, p.booked]);
-                    packageData2D.unshift(['Nama', 'Harga', 'Keberangkatan', 'Durasi', 'Kuota', 'Terdaftar']);
+                    const packageData2D = packageData.map(p => [p.code, p.name, p.price, p.departure_date, p.duration, p.quota, p.booked]);
+                    packageData2D.unshift(['Kode', 'Nama', 'Harga', 'Keberangkatan', 'Durasi', 'Kuota', 'Terdaftar']);
                     const wsPackage = XLSX.utils.aoa_to_sheet(packageData2D);
                     XLSX.utils.book_append_sheet(wb, wsPackage, 'Paket');
                     
@@ -5616,7 +5733,22 @@
         }
 
         function validatePassportDate(ddmmyyyy) {
-            return validateBirthDate(ddmmyyyy); // Use same validation as birth date
+            if (!ddmmyyyy || ddmmyyyy.length !== 8) return false;
+            
+            const day = parseInt(ddmmyyyy.substring(0, 2));
+            const month = parseInt(ddmmyyyy.substring(2, 4));
+            const year = parseInt(ddmmyyyy.substring(4, 8));
+            
+            // Basic validation
+            if (day < 1 || day > 31) return false;
+            if (month < 1 || month > 12) return false;
+            if (year < 1900 || year > 2100) return false; // Allow future dates for passport expiry
+            
+            // Check if date is valid
+            const testDate = new Date(year, month - 1, day);
+            return testDate.getFullYear() === year && 
+                   testDate.getMonth() === month - 1 && 
+                   testDate.getDate() === day;
         }
 
         function formatDateInput(inputElement) {
@@ -5746,6 +5878,14 @@
                 </div>
             `;
             document.body.appendChild(modal);
+            
+            // Add event listeners for close buttons
+            const closeButtons = modal.querySelectorAll('.close-btn');
+            closeButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    modal.remove();
+                });
+            });
             
             // Close on click outside
             modal.addEventListener('click', function(e) {
