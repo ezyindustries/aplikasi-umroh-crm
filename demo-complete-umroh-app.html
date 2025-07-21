@@ -1683,6 +1683,33 @@
             color: white; 
             box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
         }
+        
+        /* New Group Status Styles */
+        .status-open { 
+            background: linear-gradient(135deg, #10b981, #059669); 
+            color: white; 
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        .status-full { 
+            background: linear-gradient(135deg, #f59e0b, #d97706); 
+            color: white; 
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+        .status-canceled { 
+            background: linear-gradient(135deg, #ef4444, #dc2626); 
+            color: white; 
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+        .status-depart { 
+            background: linear-gradient(135deg, #3b82f6, #2563eb); 
+            color: white; 
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+        .status-arrival { 
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed); 
+            color: white; 
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        }
 
         /* Loading spinner */
         .loading {
@@ -1753,8 +1780,7 @@
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="logo">
-                <span class="material-icons" style="font-size: 32px; vertical-align: middle; margin-right: 10px;">flight_takeoff</span>
-                Umroh Manager
+                Vauza Tamma Management System
             </div>
             
             <div class="nav-item active" onclick="showPage('dashboard')">
@@ -1981,11 +2007,23 @@
             <div id="payments" class="page">
                 <div class="glass-card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h2><span class="material-icons" style="vertical-align: middle; margin-right: 10px;">payment</span>Manajemen Pembayaran</h2>
+                        <h2><span class="material-icons" style="vertical-align: middle; margin-right: 10px;">payment</span>Manajemen Pembayaran Jamaah</h2>
                         <button class="btn btn-primary" onclick="openModal('paymentModal')">
                             <span class="material-icons">add</span>
                             Catat Pembayaran
                         </button>
+                    </div>
+                    
+                    <!-- Search Section -->
+                    <div style="margin-bottom: 20px;">
+                        <div style="position: relative; max-width: 400px;">
+                            <input type="text" 
+                                   id="searchPayment" 
+                                   placeholder="Cari berdasarkan nama jamaah atau nomor HP..." 
+                                   style="width: 100%; padding: 12px 15px 12px 45px; background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(71, 85, 105, 0.4); border-radius: 8px; color: #f1f5f9; font-size: 14px;"
+                                   onkeyup="searchPayments()">
+                            <span class="material-icons" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: rgba(255, 255, 255, 0.5); font-size: 20px;">search</span>
+                        </div>
                     </div>
                     
                     <!-- Payment Stats -->
@@ -2016,7 +2054,9 @@
                                     <th>Tanggal</th>
                                     <th>Jamaah</th>
                                     <th>Paket</th>
-                                    <th>Jumlah</th>
+                                    <th>Jumlah Bayar</th>
+                                    <th>Status Pembayaran</th>
+                                    <th>H-Minus</th>
                                     <th>Metode</th>
                                     <th>Status</th>
                                     <th>Aksi</th>
@@ -2881,11 +2921,114 @@
                         <label>Waktu Kumpul</label>
                         <input type="time" id="groupMeetingTime">
                     </div>
+                    <div class="form-group">
+                        <label>Status Grup</label>
+                        <select id="groupStatus" required>
+                            <option value="open">Open</option>
+                            <option value="full">Full</option>
+                            <option value="canceled">Canceled</option>
+                            <option value="depart">Depart</option>
+                            <option value="arrival">Arrival</option>
+                        </select>
+                    </div>
                 </div>
                 
                 <div class="form-group">
                     <label>Tempat Kumpul</label>
                     <textarea id="groupMeetingPoint" rows="2"></textarea>
+                </div>
+
+                <!-- Flight Details Section -->
+                <div class="section">
+                    <h3 style="color: #4facfe; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                        <span class="material-icons">flight</span>
+                        Detail Penerbangan
+                    </h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Flight Berangkat</label>
+                            <input type="text" id="groupDepartureFlight" placeholder="Contoh: EK 357">
+                        </div>
+                        <div class="form-group">
+                            <label>Waktu Berangkat</label>
+                            <input type="time" id="groupDepartureTime">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Flight Pulang</label>
+                            <input type="text" id="groupReturnFlight" placeholder="Contoh: EK 362">
+                        </div>
+                        <div class="form-group">
+                            <label>Waktu Pulang</label>
+                            <input type="time" id="groupReturnTime">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Info Transit</label>
+                            <input type="text" id="groupTransitInfo" placeholder="Contoh: Dubai (DXB) - 2 jam">
+                        </div>
+                        <div class="form-group">
+                            <label>Rute Penerbangan</label>
+                            <input type="text" id="groupFlightRoute" placeholder="Contoh: CGK - DXB - JED">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Staff Information Section -->
+                <div class="section">
+                    <h3 style="color: #4facfe; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                        <span class="material-icons">person</span>
+                        Tim Pembimbing
+                    </h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Nama Tour Leader</label>
+                            <input type="text" id="groupTourLeaderName" placeholder="Contoh: Ustadz Ahmad Rahman">
+                        </div>
+                        <div class="form-group">
+                            <label>No. HP Tour Leader</label>
+                            <input type="tel" id="groupTourLeaderPhone" placeholder="081234567890">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Pengalaman Tour Leader</label>
+                            <input type="text" id="groupTourLeaderExperience" placeholder="Contoh: 15 tahun">
+                        </div>
+                        <div class="form-group">
+                            <label>Bahasa Tour Leader</label>
+                            <input type="text" id="groupTourLeaderLanguages" placeholder="Indonesia, Arab, English">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Nama Muthawif</label>
+                            <input type="text" id="groupMuthawifName" placeholder="Contoh: Sheikh Abdullah Al-Harami">
+                        </div>
+                        <div class="form-group">
+                            <label>No. HP Muthawif</label>
+                            <input type="tel" id="groupMuthawifPhone" placeholder="+966501234567">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Pengalaman Muthawif</label>
+                            <input type="text" id="groupMuthawifExperience" placeholder="Contoh: 20 tahun">
+                        </div>
+                        <div class="form-group">
+                            <label>Spesialisasi Muthawif</label>
+                            <input type="text" id="groupMuthawifSpecialization" placeholder="Sejarah Islam & Manasik Haji/Umroh">
+                        </div>
+                    </div>
                 </div>
                 
                 <div style="display: flex; gap: 10px; margin-top: 20px;">
@@ -3501,6 +3644,7 @@
                 id: 1,
                 jamaah_id: 1,
                 jamaah_name: "Ahmad Fauzi",
+                jamaah_phone: "081234567890",
                 package: "Umroh Ramadhan 2024",
                 amount: 15000000,
                 date: "2024-01-15",
@@ -3511,14 +3655,41 @@
             },
             {
                 id: 2,
+                jamaah_id: 1,
+                jamaah_name: "Ahmad Fauzi",
+                jamaah_phone: "081234567890",
+                package: "Umroh Ramadhan 2024",
+                amount: 10000000,
+                date: "2024-02-01",
+                method: "Transfer Bank",
+                bank: "BCA",
+                reference: "TRF20240201001",
+                status: "verified"
+            },
+            {
+                id: 3,
                 jamaah_id: 2,
                 jamaah_name: "Siti Aisyah",
+                jamaah_phone: "081234567891",
                 package: "Umroh Plus Turki",
                 amount: 20000000,
                 date: "2024-01-20",
                 method: "Transfer Bank",
                 bank: "Mandiri",
                 reference: "TRF20240120001",
+                status: "verified"
+            },
+            {
+                id: 4,
+                jamaah_id: 2,
+                jamaah_name: "Siti Aisyah",
+                jamaah_phone: "081234567891",
+                package: "Umroh Plus Turki",
+                amount: 5000000,
+                date: "2024-02-10",
+                method: "Cash",
+                bank: "-",
+                reference: "CASH20240210001",
                 status: "pending"
             }
         ];
@@ -3553,7 +3724,29 @@
                 bus_number: "BUS001",
                 meeting_time: "04:00",
                 meeting_point: "Masjid Al-Ikhlas, Jakarta Pusat",
-                status: "active",
+                status: "open",
+                flight_details: {
+                    departure_flight: "EK 357",
+                    departure_date: "2024-03-15",
+                    departure_time: "08:30",
+                    return_flight: "EK 362",
+                    return_date: "2024-03-28",
+                    return_time: "14:20",
+                    transit_info: "Dubai (DXB) - 2 jam",
+                    route: "CGK - DXB - JED"
+                },
+                tour_leader: {
+                    name: "Ustadz Ahmad Rahman",
+                    phone: "081234567890",
+                    experience: "15 tahun",
+                    languages: ["Indonesia", "Arab", "English"]
+                },
+                muthawif: {
+                    name: "Sheikh Abdullah Al-Harami",
+                    phone: "+966501234567",
+                    experience: "20 tahun",
+                    specialization: "Sejarah Islam & Manasik Haji/Umroh"
+                },
                 sub_groups: [
                     {
                         id: 1,
@@ -3583,7 +3776,29 @@
                 bus_number: "BUS002",
                 meeting_time: "03:30",
                 meeting_point: "Masjid Istiqlal, Jakarta",
-                status: "planning",
+                status: "full",
+                flight_details: {
+                    departure_flight: "TK 57",
+                    departure_date: "2024-04-20",
+                    departure_time: "10:15",
+                    return_flight: "TK 141",
+                    return_date: "2024-05-10",
+                    return_time: "16:45",
+                    transit_info: "Istanbul (IST) - 4 jam",
+                    route: "CGK - IST - JED"
+                },
+                tour_leader: {
+                    name: "Ustadz Muhammad Yusuf",
+                    phone: "081234567891",
+                    experience: "12 tahun",
+                    languages: ["Indonesia", "Arab", "Turkish"]
+                },
+                muthawif: {
+                    name: "Sheikh Omar Al-Madani",
+                    phone: "+966501234568",
+                    experience: "18 tahun",
+                    specialization: "Fiqih Manasik & Sejarah Masjid Nabawi"
+                },
                 sub_groups: [
                     {
                         id: 3,
@@ -3779,10 +3994,10 @@
         }
 
         function updateGroupDepartureStats() {
-            // Calculate group statistics based on status
-            const pendingGroups = groupData.filter(g => g.status === 'active' || g.status === 'pending').length;
-            const departedGroups = groupData.filter(g => g.status === 'departed' || g.status === 'traveling').length;
-            const returnedGroups = groupData.filter(g => g.status === 'completed' || g.status === 'returned').length;
+            // Calculate group statistics based on new status
+            const pendingGroups = groupData.filter(g => g.status === 'open' || g.status === 'full').length;
+            const departedGroups = groupData.filter(g => g.status === 'depart').length;
+            const returnedGroups = groupData.filter(g => g.status === 'arrival').length;
             const totalGroups = groupData.length;
             
             // Update the numbers
@@ -4346,17 +4561,63 @@
         }
 
         // Payment Management
-        function loadPaymentTable() {
+        function loadPaymentTable(searchTerm = '') {
             const tbody = document.getElementById('paymentTableBody');
             tbody.innerHTML = '';
             
-            paymentData.forEach(payment => {
+            // Filter payments based on search term
+            let filteredPayments = paymentData;
+            if (searchTerm) {
+                const search = searchTerm.toLowerCase();
+                filteredPayments = paymentData.filter(payment => 
+                    payment.jamaah_name.toLowerCase().includes(search) ||
+                    payment.jamaah_phone.includes(search)
+                );
+            }
+            
+            filteredPayments.forEach(payment => {
+                // Get jamaah data for package price
+                const jamaah = jamaahData.find(j => j.id === payment.jamaah_id);
+                const packageInfo = packageData.find(p => p.name === payment.package);
+                const packagePrice = packageInfo ? packageInfo.price : 25000000; // Default price
+                
+                // Calculate total paid for this jamaah
+                const totalPaidByJamaah = paymentData
+                    .filter(p => p.jamaah_id === payment.jamaah_id && p.status === 'verified')
+                    .reduce((sum, p) => sum + p.amount, 0);
+                
+                // Calculate remaining amount
+                const remainingAmount = packagePrice - totalPaidByJamaah;
+                const paymentStatusText = remainingAmount <= 0 ? 
+                    '<span style="color: #10b981; font-weight: 600;">LUNAS</span>' : 
+                    `<span style="color: #f59e0b;">Kurang: Rp ${remainingAmount.toLocaleString()}</span>`;
+                
+                // Calculate H-minus (days until departure)
+                const departureDate = packageInfo ? new Date(packageInfo.departure_date) : null;
+                const today = new Date();
+                const daysUntilDeparture = departureDate ? 
+                    Math.ceil((departureDate - today) / (1000 * 60 * 60 * 24)) : null;
+                
+                const hMinusText = daysUntilDeparture !== null ? 
+                    (daysUntilDeparture > 0 ? 
+                        `<span style="color: ${daysUntilDeparture <= 7 ? '#ef4444' : daysUntilDeparture <= 30 ? '#f59e0b' : '#10b981'};">H-${daysUntilDeparture}</span>` : 
+                        '<span style="color: #8b5cf6;">Sudah Berangkat</span>') : 
+                    '-';
+                
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${formatDate(payment.date)}</td>
-                    <td>${payment.jamaah_name}</td>
+                    <td>
+                        <div>${payment.jamaah_name}</div>
+                        <div style="font-size: 11px; color: rgba(255, 255, 255, 0.6);">${payment.jamaah_phone}</div>
+                    </td>
                     <td>${payment.package}</td>
                     <td>Rp ${(payment.amount || 0).toLocaleString()}</td>
+                    <td>
+                        <div>${paymentStatusText}</div>
+                        <div style="font-size: 11px; color: rgba(255, 255, 255, 0.6);">Total: Rp ${totalPaidByJamaah.toLocaleString()} / Rp ${packagePrice.toLocaleString()}</div>
+                    </td>
+                    <td>${hMinusText}</td>
                     <td>${payment.method}</td>
                     <td><span class="status-badge status-${payment.status}">${getStatusText(payment.status)}</span></td>
                     <td>
@@ -4377,6 +4638,23 @@
                 `;
                 tbody.appendChild(row);
             });
+            
+            // Show message if no results
+            if (filteredPayments.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" style="text-align: center; padding: 40px; color: rgba(255, 255, 255, 0.6);">
+                            <span class="material-icons" style="font-size: 48px; margin-bottom: 10px; display: block;">search_off</span>
+                            Tidak ada pembayaran yang ditemukan
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function searchPayments() {
+            const searchTerm = document.getElementById('searchPayment').value;
+            loadPaymentTable(searchTerm);
         }
 
         function verifyPayment(id) {
@@ -4401,13 +4679,19 @@
             event.preventDefault();
             
             const jamaahSelect = document.getElementById('paymentJamaah');
+            const jamaahId = parseInt(jamaahSelect.value);
             const jamaahName = jamaahSelect.options[jamaahSelect.selectedIndex].text.split(' - ')[0];
+            
+            // Get jamaah phone from jamaahData
+            const jamaah = jamaahData.find(j => j.id === jamaahId);
+            const jamaahPhone = jamaah ? jamaah.phone : '';
             
             const newPayment = {
                 id: Math.max(...paymentData.map(p => p.id)) + 1,
-                jamaah_id: parseInt(document.getElementById('paymentJamaah').value),
+                jamaah_id: jamaahId,
                 jamaah_name: jamaahName,
-                package: "Umroh Ramadhan 2024", // Would be dynamically determined
+                jamaah_phone: jamaahPhone,
+                package: jamaah ? jamaah.package : "Umroh Ramadhan 2024",
                 amount: parseInt(document.getElementById('paymentAmount').value),
                 date: document.getElementById('paymentDate').value,
                 method: document.getElementById('paymentMethod').value,
@@ -4562,6 +4846,60 @@
                         </div>
                     </div>
 
+                    <!-- Flight Details Section -->
+                    ${group.flight_details ? `
+                    <div class="group-logistics">
+                        <div class="group-logistics-title">
+                            <span class="material-icons" style="font-size: 16px;">flight</span>
+                            Detail Penerbangan
+                        </div>
+                        <div class="group-logistics-item">
+                            <div class="group-logistics-icon">✈️</div>
+                            <div>Berangkat: ${group.flight_details.departure_flight} - ${group.flight_details.departure_time}</div>
+                        </div>
+                        <div class="group-logistics-item">
+                            <div class="group-logistics-icon">🛬</div>
+                            <div>Pulang: ${group.flight_details.return_flight} - ${group.flight_details.return_time}</div>
+                        </div>
+                        <div class="group-logistics-item">
+                            <div class="group-logistics-icon">🔄</div>
+                            <div>Transit: ${group.flight_details.transit_info}</div>
+                        </div>
+                        <div class="group-logistics-item">
+                            <div class="group-logistics-icon">🗺️</div>
+                            <div>Rute: ${group.flight_details.route}</div>
+                        </div>
+                    </div>` : ''}
+
+                    <!-- Staff Information Section -->
+                    <div class="group-logistics">
+                        <div class="group-logistics-title">
+                            <span class="material-icons" style="font-size: 16px;">person</span>
+                            Tim Pembimbing
+                        </div>
+                        ${group.tour_leader ? `
+                        <div class="staff-info-item" style="margin-bottom: 10px; padding: 8px; background: rgba(30, 41, 59, 0.5); border-radius: 6px;">
+                            <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                                <span style="font-size: 12px; margin-right: 6px;">🎯</span>
+                                <span style="color: #4facfe; font-weight: 600; font-size: 12px;">Tour Leader</span>
+                            </div>
+                            <div style="color: #f8fafc; font-weight: 500; font-size: 13px; margin-bottom: 2px;">${group.tour_leader.name}</div>
+                            <div style="color: #cbd5e1; font-size: 10px;">📞 ${group.tour_leader.phone}</div>
+                            <div style="color: #cbd5e1; font-size: 10px;">🎓 ${group.tour_leader.experience} | ${group.tour_leader.languages.join(', ')}</div>
+                        </div>` : ''}
+                        ${group.muthawif ? `
+                        <div class="staff-info-item" style="padding: 8px; background: rgba(30, 41, 59, 0.5); border-radius: 6px;">
+                            <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                                <span style="font-size: 12px; margin-right: 6px;">🕌</span>
+                                <span style="color: #10b981; font-weight: 600; font-size: 12px;">Muthawif</span>
+                            </div>
+                            <div style="color: #f8fafc; font-weight: 500; font-size: 13px; margin-bottom: 2px;">${group.muthawif.name}</div>
+                            <div style="color: #cbd5e1; font-size: 10px;">📞 ${group.muthawif.phone}</div>
+                            <div style="color: #cbd5e1; font-size: 10px;">🎓 ${group.muthawif.experience}</div>
+                            <div style="color: #cbd5e1; font-size: 10px;">📚 ${group.muthawif.specialization}</div>
+                        </div>` : ''}
+                    </div>
+
                     <!-- Group Logistics -->
                     <div class="group-logistics">
                         <div class="group-logistics-title">
@@ -4671,10 +5009,11 @@
 
         function getGroupStatusText(status) {
             const statusMap = {
-                'planning': 'Perencanaan',
-                'active': 'Aktif',
-                'departed': 'Berangkat',
-                'completed': 'Selesai'
+                'open': 'Open',
+                'full': 'Full',
+                'canceled': 'Canceled',
+                'depart': 'Depart',
+                'arrival': 'Arrival'
             };
             return statusMap[status] || status;
         }
@@ -4684,6 +5023,10 @@
             
             const packageSelect = document.getElementById('groupPackage');
             const packageName = packageSelect.options[packageSelect.selectedIndex].text;
+            
+            // Process languages for tour leader
+            const tourLeaderLanguages = document.getElementById('groupTourLeaderLanguages').value
+                .split(',').map(lang => lang.trim()).filter(lang => lang);
             
             const newGroup = {
                 id: Math.max(...groupData.map(g => g.id)) + 1,
@@ -4695,7 +5038,29 @@
                 bus_number: document.getElementById('groupBusNumber').value,
                 meeting_time: document.getElementById('groupMeetingTime').value,
                 meeting_point: document.getElementById('groupMeetingPoint').value,
-                status: 'planning'
+                status: document.getElementById('groupStatus').value,
+                flight_details: {
+                    departure_flight: document.getElementById('groupDepartureFlight').value,
+                    departure_date: document.getElementById('groupDeparture').value,
+                    departure_time: document.getElementById('groupDepartureTime').value,
+                    return_flight: document.getElementById('groupReturnFlight').value,
+                    return_date: '', // Could add return date field if needed
+                    return_time: document.getElementById('groupReturnTime').value,
+                    transit_info: document.getElementById('groupTransitInfo').value,
+                    route: document.getElementById('groupFlightRoute').value
+                },
+                tour_leader: {
+                    name: document.getElementById('groupTourLeaderName').value,
+                    phone: document.getElementById('groupTourLeaderPhone').value,
+                    experience: document.getElementById('groupTourLeaderExperience').value,
+                    languages: tourLeaderLanguages
+                },
+                muthawif: {
+                    name: document.getElementById('groupMuthawifName').value,
+                    phone: document.getElementById('groupMuthawifPhone').value,
+                    experience: document.getElementById('groupMuthawifExperience').value,
+                    specialization: document.getElementById('groupMuthawifSpecialization').value
+                }
             };
             
             groupData.push(newGroup);
