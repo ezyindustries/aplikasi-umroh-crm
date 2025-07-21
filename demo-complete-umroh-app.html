@@ -89,8 +89,6 @@
             border: 1px solid rgba(71, 85, 105, 0.3);
             position: relative;
             overflow: hidden;
-            user-select: none;
-            -webkit-user-select: none;
         }
 
         .nav-item::before {
@@ -102,8 +100,6 @@
             height: 100%;
             background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.2), transparent);
             transition: left 0.5s ease;
-            pointer-events: none;
-            z-index: 0;
         }
 
         .nav-item:hover::before {
@@ -133,13 +129,6 @@
         .nav-item .material-icons {
             margin-right: 15px;
             font-size: 24px;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .nav-item > * {
-            position: relative;
-            z-index: 1;
         }
 
         /* Main Content */
@@ -1373,42 +1362,42 @@
                 Umroh Manager
             </div>
             
-            <div class="nav-item active" data-page="dashboard">
+            <div class="nav-item active" onclick="showPage('dashboard')">
                 <span class="material-icons">dashboard</span>
                 Dashboard
             </div>
             
-            <div class="nav-item" data-page="jamaah">
+            <div class="nav-item" onclick="showPage('jamaah')">
                 <span class="material-icons">people</span>
                 Manajemen Jamaah
             </div>
             
-            <div class="nav-item" data-page="packages">
+            <div class="nav-item" onclick="showPage('packages')">
                 <span class="material-icons">card_travel</span>
                 Paket Umroh
             </div>
             
-            <div class="nav-item" data-page="payments">
+            <div class="nav-item" onclick="showPage('payments')">
                 <span class="material-icons">payment</span>
                 Pembayaran
             </div>
             
-            <div class="nav-item" data-page="documents">
+            <div class="nav-item" onclick="showPage('documents')">
                 <span class="material-icons">description</span>
                 Dokumen
             </div>
             
-            <div class="nav-item" data-page="groups">
+            <div class="nav-item" onclick="showPage('groups')">
                 <span class="material-icons">group</span>
                 Grup Keberangkatan
             </div>
             
-            <div class="nav-item" data-page="reports">
+            <div class="nav-item" onclick="showPage('reports')">
                 <span class="material-icons">assessment</span>
                 Laporan
             </div>
             
-            <div class="nav-item" data-page="excel">
+            <div class="nav-item" onclick="showPage('excel')">
                 <span class="material-icons">table_chart</span>
                 Excel Import/Export
             </div>
@@ -2354,7 +2343,7 @@
                 amount_paid: 15000000,
                 birth_date: "15051985",
                 birth_place: "Jakarta",
-                gender: "L",
+                gender: "male",
                 address: "Jl. Merdeka No. 123, Jakarta",
                 passport_image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzM0MTU1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2Y4ZmFmYyIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkFobWFkIEZhdXppPC90ZXh0Pjx0ZXh0IHg9IjUwJSIgeT0iNzAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTAiIGZpbGw9IiNjYmQ1ZTEiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5QYXNwb3IgSW5kb25lc2lhPC90ZXh0Pjwvc3ZnPg==",
                 passport_number: "A1234567",
@@ -2398,7 +2387,7 @@
                 amount_paid: 15000000,
                 birth_date: "10081987",
                 birth_place: "Jakarta",
-                gender: "P",
+                gender: "female",
                 address: "Jl. Merdeka No. 123, Jakarta",
                 passport_number: "B2345678",
                 passport_name: "Siti Fauzi",
@@ -2436,7 +2425,7 @@
                 amount_paid: 13000000,
                 birth_date: "05122010",
                 birth_place: "Jakarta",
-                gender: "P",
+                gender: "female",
                 address: "Jl. Merdeka No. 123, Jakarta",
                 passport_number: "C3456789",
                 passport_name: "Fatimah Fauzi",
@@ -2474,7 +2463,7 @@
                 amount_paid: 13000000,
                 birth_date: "15062012",
                 birth_place: "Jakarta",
-                gender: "L",
+                gender: "male",
                 address: "Jl. Merdeka No. 123, Jakarta",
                 passport_number: "D4567890",
                 passport_name: "Muhammad Fauzi",
@@ -2513,7 +2502,7 @@
                 amount_paid: 15000000,
                 birth_date: "20031982",
                 birth_place: "Bandung",
-                gender: "L",
+                gender: "male",
                 address: "Jl. Sudirman No. 456, Bandung",
                 passport_number: "E5678901",
                 passport_name: "Budi Santoso",
@@ -2551,7 +2540,7 @@
                 amount_paid: 15000000,
                 birth_date: "12111985",
                 birth_place: "Bandung",
-                gender: "P",
+                gender: "female",
                 address: "Jl. Sudirman No. 456, Bandung",
                 passport_number: "F6789012",
                 passport_name: "Rina Santoso",
@@ -2589,7 +2578,7 @@
                 amount_paid: 13000000,
                 birth_date: "08092008",
                 birth_place: "Bandung",
-                gender: "L",
+                gender: "male",
                 address: "Jl. Sudirman No. 456, Bandung",
                 passport_number: "G7890123",
                 passport_name: "Aditya Santoso",
@@ -2628,7 +2617,7 @@
                 amount_paid: 15000000,
                 birth_date: "25071975",
                 birth_place: "Surabaya",
-                gender: "L",
+                gender: "male",
                 address: "Jl. Pahlawan No. 789, Surabaya",
                 passport_number: "H8901234",
                 passport_name: "Hasan Ibrahim",
@@ -2666,7 +2655,7 @@
                 amount_paid: 10000000,
                 birth_date: "18041980",
                 birth_place: "Medan",
-                gender: "L",
+                gender: "male",
                 address: "Jl. Gatot Subroto No. 321, Medan",
                 passport_number: "I9012345",
                 passport_name: "Abdullah Rahman",
@@ -2704,7 +2693,7 @@
                 amount_paid: 15000000,
                 birth_date: "03021990",
                 birth_place: "Yogyakarta",
-                gender: "L",
+                gender: "male",
                 address: "Jl. Malioboro No. 111, Yogyakarta",
                 passport_number: "J0123456",
                 passport_name: "Yusuf Hakim",
@@ -2727,17 +2716,6 @@
             }
             // Total so far: 10 jamaah for Group 1
             // Add more jamaah to reach 42 members for Group 1...
-        ];
-
-        // Complete Indonesian Provinces Data
-        let provincesData = [
-            "Aceh", "Sumatera Utara", "Sumatera Barat", "Riau", "Kepulauan Riau", 
-            "Jambi", "Sumatera Selatan", "Bangka Belitung", "Bengkulu", "Lampung",
-            "DKI Jakarta", "Jawa Barat", "Jawa Tengah", "DI Yogyakarta", "Jawa Timur", "Banten",
-            "Bali", "Nusa Tenggara Barat", "Nusa Tenggara Timur",
-            "Kalimantan Barat", "Kalimantan Tengah", "Kalimantan Selatan", "Kalimantan Timur", "Kalimantan Utara",
-            "Sulawesi Utara", "Sulawesi Tengah", "Sulawesi Selatan", "Sulawesi Tenggara", "Gorontalo", "Sulawesi Barat",
-            "Maluku", "Maluku Utara", "Papua", "Papua Barat", "Papua Tengah", "Papua Pegunungan", "Papua Selatan", "Papua Barat Daya"
         ];
 
         let packageData = [
@@ -3025,16 +3003,10 @@
             });
             
             // Show selected page
-            const page = document.getElementById(pageId);
-            if (page) {
-                page.classList.add('active');
-            }
+            document.getElementById(pageId).classList.add('active');
             
-            // Add active class to corresponding nav item
-            const navItem = document.querySelector(`.nav-item[data-page="${pageId}"]`);
-            if (navItem) {
-                navItem.classList.add('active');
-            }
+            // Add active class to clicked nav item
+            event.target.closest('.nav-item').classList.add('active');
             
             // Load page specific data
             loadPageData(pageId);
@@ -3297,30 +3269,16 @@
             const passportIssueDate = document.getElementById('jamaahPassportIssueDate').value;
             const passportExpireDate = document.getElementById('jamaahPassportExpireDate').value;
             
-            if (passportIssueDate && passportIssueDate.length > 0) {
-                if (passportIssueDate.length !== 8) {
-                    showNotification('Tanggal penerbitan paspor harus 8 digit (ddmmyyyy)', 'error');
-                    document.getElementById('jamaahPassportIssueDate').focus();
-                    return;
-                }
-                if (!validatePassportDate(passportIssueDate)) {
-                    showNotification('Format tanggal penerbitan paspor tidak valid. Gunakan format ddmmyyyy (contoh: 01012020)', 'error');
-                    document.getElementById('jamaahPassportIssueDate').focus();
-                    return;
-                }
+            if (passportIssueDate && !validatePassportDate(passportIssueDate)) {
+                showNotification('Format tanggal penerbitan paspor tidak valid. Gunakan format ddmmyyyy', 'error');
+                document.getElementById('jamaahPassportIssueDate').focus();
+                return;
             }
             
-            if (passportExpireDate && passportExpireDate.length > 0) {
-                if (passportExpireDate.length !== 8) {
-                    showNotification('Tanggal kadaluarsa paspor harus 8 digit (ddmmyyyy)', 'error');
-                    document.getElementById('jamaahPassportExpireDate').focus();
-                    return;
-                }
-                if (!validatePassportDate(passportExpireDate)) {
-                    showNotification('Format tanggal kadaluarsa paspor tidak valid. Gunakan format ddmmyyyy (contoh: 01012030)', 'error');
-                    document.getElementById('jamaahPassportExpireDate').focus();
-                    return;
-                }
+            if (passportExpireDate && !validatePassportDate(passportExpireDate)) {
+                showNotification('Format tanggal kadaluarsa paspor tidak valid. Gunakan format ddmmyyyy', 'error');
+                document.getElementById('jamaahPassportExpireDate').focus();
+                return;
             }
 
             const formData = {
@@ -4354,33 +4312,22 @@
 
         function allocateRoomsByGender(members, family, gender) {
             const rooms = [];
+            const preferredRoomType = family.preferred_room_type;
+            const capacity = getRoomCapacity(preferredRoomType);
             
-            // Group members by their purchased room preference
-            const membersByRoomType = {};
-            members.forEach(member => {
-                const roomPref = member.room_preference || 'double';
-                if (!membersByRoomType[roomPref]) {
-                    membersByRoomType[roomPref] = [];
-                }
-                membersByRoomType[roomPref].push(member);
-            });
-            
-            // Allocate rooms based on purchased preferences
-            Object.keys(membersByRoomType).forEach(roomType => {
-                const membersOfType = membersByRoomType[roomType];
-                const capacity = getRoomCapacity(roomType);
+            for (let i = 0; i < members.length; i += capacity) {
+                const roomMembers = members.slice(i, i + capacity);
+                const actualCapacity = roomMembers.length;
+                const roomType = getRoomTypeByCapacity(actualCapacity);
                 
-                for (let i = 0; i < membersOfType.length; i += capacity) {
-                    const roomMembers = membersOfType.slice(i, i + capacity);
-                    
-                    rooms.push({
-                        type: roomType, // Use purchased room type
-                        capacity: capacity, // Use room type capacity, not actual occupancy
-                        occupants: roomMembers,
-                        main_family: family.main_family_name,
-                        gender: gender === 'L' ? 'Laki-laki' : 'Perempuan',
-                        special_request: roomMembers.length < capacity ? `Partial occupancy (${roomMembers.length}/${capacity})` : null,
-                        gender_mixed: false
+                rooms.push({
+                    type: roomType,
+                    capacity: actualCapacity,
+                    occupants: roomMembers,
+                    main_family: family.main_family_name,
+                    gender: gender === 'L' ? 'Laki-laki' : 'Perempuan',
+                    special_request: null,
+                    gender_mixed: false
                 });
             }
             
@@ -4418,17 +4365,17 @@
                         ${generateRoomListHTML(allocation, group)}
                     </div>
                     
-                    <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; margin: 20px; padding-top: 20px; border-top: 1px solid rgba(71, 85, 105, 0.3);">
-                        <button class="btn btn-success" onclick="exportRoomListToExcel(${JSON.stringify(allocation).replace(/"/g, '&quot;')}, '${group.name}')" style="font-size: 12px; padding: 8px 12px; min-width: 120px;">
-                            <span class="material-icons" style="font-size: 16px;">download</span>
-                            Export Excel
+                    <div style="display: flex; gap: 10px; justify-content: flex-end; margin: 20px; padding-top: 20px; border-top: 1px solid rgba(71, 85, 105, 0.3);">
+                        <button class="btn btn-success" onclick="exportRoomListToExcel(${JSON.stringify(allocation).replace(/"/g, '&quot;')}, '${group.name}')">
+                            <span class="material-icons">download</span>
+                            Export to Excel
                         </button>
-                        <button class="btn btn-primary" onclick="applyRoomList(${group.id}, ${JSON.stringify(allocation).replace(/"/g, '&quot;')})" style="font-size: 12px; padding: 8px 12px; min-width: 120px;">
-                            <span class="material-icons" style="font-size: 16px;">check_circle</span>
-                            Apply List
+                        <button class="btn btn-primary" onclick="applyRoomList(${group.id}, ${JSON.stringify(allocation).replace(/"/g, '&quot;')})">
+                            <span class="material-icons">check_circle</span>
+                            Apply Room List
                         </button>
-                        <button class="btn btn-secondary" onclick="this.closest('.modal').remove()" style="font-size: 12px; padding: 8px 12px; min-width: 80px;">
-                            <span class="material-icons" style="font-size: 16px;">close</span>
+                        <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">
+                            <span class="material-icons">close</span>
                             Tutup
                         </button>
                     </div>
@@ -4498,51 +4445,32 @@
             hotel.rooms.forEach((room, index) => {
                 const roomNumber = index + 1;
                 html += `
-                    <div style="background: rgba(30, 41, 59, 0.8); padding: 12px; border-radius: 8px; border: 1px solid rgba(71, 85, 105, 0.3);">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; gap: 10px;">
-                            <div style="flex: 1; min-width: 0;">
-                                <div style="color: #f8fafc; font-weight: 600; font-size: 14px; line-height: 1.2;">Room ${roomNumber} (${room.type.toUpperCase()})</div>
-                                <div style="color: rgba(255, 255, 255, 0.7); font-size: 10px; margin-top: 2px; line-height: 1.3; word-wrap: break-word;">
-                                    Main Family: ${room.main_family?.length > 15 ? room.main_family.substring(0, 15) + '...' : room.main_family} | ${room.gender || 'Mixed'}
-                                    ${room.special_request ? ` | ${room.special_request.length > 20 ? room.special_request.substring(0, 20) + '...' : room.special_request}` : ''}
-                                    ${room.gender_mixed ? ' | ⚠️ Mixed (Family)' : ''}
+                    <div style="background: rgba(30, 41, 59, 0.8); padding: 15px; border-radius: 8px; border: 1px solid rgba(71, 85, 105, 0.3);">
+                        <div style="display: flex; justify-content: between; align-items: flex-start; margin-bottom: 10px;">
+                            <div>
+                                <div style="color: #f8fafc; font-weight: 600; font-size: 16px;">Room ${roomNumber} (${room.type.toUpperCase()})</div>
+                                <div style="color: rgba(255, 255, 255, 0.7); font-size: 12px; margin-top: 2px;">
+                                    Main Family: ${room.main_family} | ${room.gender || 'Mixed Gender'}
+                                    ${room.special_request ? ` | ${room.special_request}` : ''}
+                                    ${room.gender_mixed ? ' | ⚠️ Mixed Gender (Family Request)' : ''}
                                 </div>
                             </div>
-                            <div style="text-align: right; flex-shrink: 0;">
-                                <div style="color: #10b981; font-weight: 600; font-size: 14px;">${room.occupants.length}/${room.capacity}</div>
-                                <div style="color: rgba(255, 255, 255, 0.6); font-size: 9px;">orang</div>
+                            <div style="text-align: right;">
+                                <div style="color: #10b981; font-weight: 600;">${room.occupants.length}/${room.capacity}</div>
+                                <div style="color: rgba(255, 255, 255, 0.6); font-size: 10px;">orang</div>
                             </div>
                         </div>
                         
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px;">
-                            ${room.occupants.map((occupant, occIndex) => {
-                                const roomTypeIcon = getRoomTypeIcon(occupant.room_preference);
-                                return `
-                                    <div style="background: rgba(71, 85, 105, 0.3); padding: 8px; border-radius: 6px; position: relative; overflow: hidden;">
-                                        <div style="margin-bottom: 6px;">
-                                            <div style="color: #f8fafc; font-weight: 500; font-size: 12px; line-height: 1.3; margin-bottom: 2px;">${occupant.name.length > 18 ? occupant.name.substring(0, 18) + '...' : occupant.name}</div>
-                                            <div style="display: flex; flex-wrap: wrap; gap: 3px; align-items: center; margin-bottom: 3px;">
-                                                <span title="Dibeli: ${occupant.room_preference}" style="background: rgba(34, 197, 94, 0.3); color: #22c55e; padding: 2px 5px; border-radius: 3px; font-size: 9px; font-weight: 600; white-space: nowrap;">
-                                                    💰 ${(occupant.room_preference?.toUpperCase() || 'N/A')}
-                                                </span>
-                                                <span title="Dialokasikan ke: ${room.type}" style="background: rgba(59, 130, 246, 0.3); color: #60a5fa; padding: 2px 5px; border-radius: 3px; font-size: 9px; font-weight: 600; white-space: nowrap;">
-                                                    🏠 ${room.type.toUpperCase()}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                                            <div style="color: rgba(255, 255, 255, 0.7); font-size: 9px; line-height: 1.2; flex: 1;">
-                                                ${occupant.gender === 'L' ? '👨' : '👩'} ${occupant.family_role}
-                                            </div>
-                                            <button onclick="editRoomAssignment('${hotelName}', ${index}, ${occIndex})" 
-                                                style="background: rgba(251, 191, 36, 0.3); color: #fbbf24; border: none; padding: 3px 6px; border-radius: 3px; cursor: pointer; font-size: 9px; line-height: 1; flex-shrink: 0;" 
-                                                title="Edit Room Assignment">
-                                                ✏️ Edit
-                                            </button>
-                                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                            ${room.occupants.map(occupant => `
+                                <div style="background: rgba(71, 85, 105, 0.3); padding: 8px; border-radius: 6px;">
+                                    <div style="color: #f8fafc; font-weight: 500; font-size: 13px;">${occupant.name}</div>
+                                    <div style="color: rgba(255, 255, 255, 0.7); font-size: 11px;">
+                                        ${occupant.gender === 'L' ? '👨' : '👩'} ${occupant.family_role} | 
+                                        Born: ${formatBirthDate(occupant.birth_date)}
                                     </div>
-                                `;
-                            }).join('')}
+                                </div>
+                            `).join('')}
                         </div>
                     </div>
                 `;
@@ -4601,8 +4529,8 @@
             currentGroupRooms = [];
             
             // Calculate needed rooms based on preferences
-            const maleJamaah = groupJamaah.filter(j => j.gender === 'L');
-            const femaleJamaah = groupJamaah.filter(j => j.gender === 'P');
+            const maleJamaah = groupJamaah.filter(j => j.gender === 'male');
+            const femaleJamaah = groupJamaah.filter(j => j.gender === 'female');
             
             let roomNumber = 1;
             
@@ -4710,7 +4638,7 @@
                     <div>
                         <div style="font-weight: 500; color: #f8fafc; font-size: 13px;">${jamaah.name}</div>
                         <div style="font-size: 11px; color: rgba(255, 255, 255, 0.6);">
-                            ${jamaah.gender === 'L' ? '👨' : '👩'} ${jamaah.gender === 'L' ? 'Laki-laki' : 'Perempuan'} • 
+                            ${jamaah.gender === 'male' ? '👨' : '👩'} ${jamaah.gender} • 
                             Prefer: ${jamaah.room_preference}
                             ${jamaah.family_group ? ` • Family: ${jamaah.family_group}` : ''}
                         </div>
@@ -4768,7 +4696,7 @@
                 <div class="occupant-item">
                     <div class="occupant-info">
                         <div class="occupant-name">${occupant.name}</div>
-                        <div class="occupant-details">${occupant.gender === 'L' ? '👨' : '👩'} ${occupant.phone}</div>
+                        <div class="occupant-details">${occupant.gender === 'male' ? '👨' : '👩'} ${occupant.phone}</div>
                     </div>
                     <div class="bed-assignment">Bed ${index + 1}</div>
                 </div>
@@ -4825,14 +4753,14 @@
 
         function allocateSmartly(jamaahList) {
             // Separate by gender
-            const males = jamaahList.filter(j => j.gender === 'L');
-            const females = jamaahList.filter(j => j.gender === 'P');
+            const males = jamaahList.filter(j => j.gender === 'male');
+            const females = jamaahList.filter(j => j.gender === 'female');
             
             // Allocate males
-            allocateGenderGroup(males, 'L');
+            allocateGenderGroup(males, 'male');
             
             // Allocate females
-            allocateGenderGroup(females, 'P');
+            allocateGenderGroup(females, 'female');
         }
 
         function allocateGenderGroup(jamaahList, gender) {
@@ -4869,8 +4797,8 @@
             
             // Allocate families first
             Object.values(families).forEach(family => {
-                allocateGenderGroup(family.filter(j => j.gender === 'L'), 'L');
-                allocateGenderGroup(family.filter(j => j.gender === 'P'), 'P');
+                allocateGenderGroup(family.filter(j => j.gender === 'male'), 'male');
+                allocateGenderGroup(family.filter(j => j.gender === 'female'), 'female');
             });
             
             // Then allocate singles
@@ -5004,184 +4932,6 @@
             XLSX.writeFile(wb, 'room_list.xlsx');
             
             showNotification('Room list exported successfully!');
-        }
-
-        // Room Type Icon Helper Function
-        function getRoomTypeIcon(roomType) {
-            const icons = {
-                'quad': '🏠',
-                'triple': '🏡', 
-                'double': '🏘️',
-                'single': '🏠'
-            };
-            return icons[roomType] || '🏠';
-        }
-
-        // Edit Room Assignment Function
-        function editRoomAssignment(hotelName, roomIndex, occupantIndex) {
-            showNotification(`Edit assignment for ${hotelName}, Room ${roomIndex + 1}, Occupant ${occupantIndex + 1}`, 'info');
-            // In a real implementation, this would open a detailed edit modal
-            // For now, we'll just show a notification
-        }
-
-        // Export Room List to Excel Function
-        function exportRoomListToExcel(allocation, groupName) {
-            try {
-                // Parse allocation if it's a string
-                if (typeof allocation === 'string') {
-                    allocation = JSON.parse(allocation);
-                }
-
-                const data = [];
-                
-                // Header row
-                data.push([
-                    'Hotel',
-                    'Room Number', 
-                    'Room Type',
-                    'Capacity',
-                    'Occupancy',
-                    'Main Family',
-                    'Gender',
-                    'Occupant 1',
-                    'Occupant 2', 
-                    'Occupant 3',
-                    'Occupant 4',
-                    'Room Preference 1',
-                    'Room Preference 2',
-                    'Room Preference 3', 
-                    'Room Preference 4',
-                    'Special Requests'
-                ]);
-
-                // Process each hotel
-                Object.keys(allocation.hotels).forEach(hotelName => {
-                    const hotel = allocation.hotels[hotelName];
-                    
-                    hotel.rooms.forEach((room, roomIndex) => {
-                        const row = [
-                            hotelName,
-                            roomIndex + 1,
-                            room.type.toUpperCase(),
-                            room.capacity,
-                            room.occupants.length,
-                            room.main_family || '',
-                            room.gender || 'Mixed',
-                        ];
-                        
-                        // Add occupants (up to 4)
-                        for (let i = 0; i < 4; i++) {
-                            row.push(room.occupants[i] ? room.occupants[i].name : '');
-                        }
-                        
-                        // Add room preferences (up to 4)
-                        for (let i = 0; i < 4; i++) {
-                            row.push(room.occupants[i] ? (room.occupants[i].room_preference || '') : '');
-                        }
-                        
-                        // Add special requests
-                        row.push(room.special_request || '');
-                        
-                        data.push(row);
-                    });
-                });
-
-                // Create worksheet
-                const ws = XLSX.utils.aoa_to_sheet(data);
-                
-                // Set column widths
-                const wscols = [
-                    {wch: 25}, // Hotel
-                    {wch: 12}, // Room Number
-                    {wch: 10}, // Room Type
-                    {wch: 8},  // Capacity
-                    {wch: 10}, // Occupancy
-                    {wch: 20}, // Main Family
-                    {wch: 10}, // Gender
-                    {wch: 20}, // Occupant 1
-                    {wch: 20}, // Occupant 2
-                    {wch: 20}, // Occupant 3
-                    {wch: 20}, // Occupant 4
-                    {wch: 12}, // Room Preference 1
-                    {wch: 12}, // Room Preference 2
-                    {wch: 12}, // Room Preference 3
-                    {wch: 12}, // Room Preference 4
-                    {wch: 30}  // Special Requests
-                ];
-                ws['!cols'] = wscols;
-
-                // Create workbook and export
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, 'Room List');
-                
-                const filename = `room-list-${groupName.replace(/\s+/g, '-')}-${new Date().toISOString().slice(0,10)}.xlsx`;
-                XLSX.writeFile(wb, filename);
-                
-                showNotification(`Room list berhasil diekspor ke Excel! (${filename})`, 'success');
-                
-            } catch (error) {
-                console.error('Export error:', error);
-                showNotification('Gagal mengekspor room list ke Excel', 'error');
-            }
-        }
-
-        // Apply Room List Function
-        function applyRoomList(groupId, allocation) {
-            try {
-                // Parse allocation if it's a string
-                if (typeof allocation === 'string') {
-                    allocation = JSON.parse(allocation);
-                }
-
-                const group = groupData.find(g => g.id === groupId);
-                if (!group) {
-                    showNotification('Grup tidak ditemukan', 'error');
-                    return;
-                }
-
-                // Apply room assignments to jamaah data
-                let assignedCount = 0;
-                
-                Object.keys(allocation.hotels).forEach(hotelName => {
-                    const hotel = allocation.hotels[hotelName];
-                    
-                    hotel.rooms.forEach((room, roomIndex) => {
-                        room.occupants.forEach((occupant, occupantIndex) => {
-                            // Find jamaah in main data
-                            const jamaah = jamaahData.find(j => j.id === occupant.id || j.name === occupant.name);
-                            if (jamaah) {
-                                // Assign room information
-                                jamaah.room_number = `${hotelName}-${roomIndex + 1}`;
-                                jamaah.bed_assignment = `Bed ${occupantIndex + 1}`;
-                                jamaah.room_type_assigned = room.type;
-                                jamaah.hotel_assigned = hotelName;
-                                jamaah.room_assignment_date = new Date().toISOString().slice(0, 10);
-                                assignedCount++;
-                            }
-                        });
-                    });
-                });
-
-                // Update group status
-                if (group) {
-                    group.room_list_applied = true;
-                    group.room_list_applied_date = new Date().toISOString().slice(0, 10);
-                    group.total_rooms_assigned = allocation.summary.total_rooms;
-                }
-
-                // Close modal and show success
-                document.querySelector('.modal.active')?.remove();
-                showNotification(`Room list berhasil diterapkan! ${assignedCount} jamaah telah mendapat penempatan kamar.`, 'success');
-                
-                // Refresh group display if needed
-                if (currentPage === 'groups') {
-                    loadGroupCards();
-                }
-
-            } catch (error) {
-                console.error('Apply room list error:', error);
-                showNotification('Gagal menerapkan room list', 'error');
-            }
         }
 
         // Reports
@@ -5531,7 +5281,7 @@
                 manifestData.push([
                     index + 1,                                          // NO
                     jamaah.passport_name || jamaah.name || '',         // NAME PASSPORT
-                    jamaah.gender === 'L' ? 'M' : 'F',              // SEX
+                    jamaah.gender === 'male' ? 'M' : 'F',              // SEX
                     jamaah.birth_place || '',                          // PLACE OF BIRTH
                     birthDate,                                         // DATE OF BIRTH
                     age,                                               // AGE
@@ -5547,8 +5297,8 @@
             manifestData.push(['']);
             manifestData.push(['RINGKASAN']);
             manifestData.push(['Total Jamaah:', jamaahList.length]);
-            manifestData.push(['Laki-laki:', jamaahList.filter(j => j.gender === 'L').length]);
-            manifestData.push(['Perempuan:', jamaahList.filter(j => j.gender === 'P').length]);
+            manifestData.push(['Laki-laki:', jamaahList.filter(j => j.gender === 'male').length]);
+            manifestData.push(['Perempuan:', jamaahList.filter(j => j.gender === 'female').length]);
             manifestData.push(['Sudah Lunas:', jamaahList.filter(j => j.payment_status === 'paid').length]);
             manifestData.push(['Belum Lunas:', jamaahList.filter(j => j.payment_status !== 'paid').length]);
             manifestData.push(['Dokumen Lengkap:', jamaahList.filter(j => j.document_status === 'approved').length]);
@@ -5724,26 +5474,7 @@
         }
 
         function validatePassportDate(ddmmyyyy) {
-            // Allow empty values
-            if (!ddmmyyyy || ddmmyyyy.trim() === '') return true;
-            
-            // Must be exactly 8 digits
-            if (!/^\d{8}$/.test(ddmmyyyy)) return false;
-            
-            const day = parseInt(ddmmyyyy.substring(0, 2));
-            const month = parseInt(ddmmyyyy.substring(2, 4));
-            const year = parseInt(ddmmyyyy.substring(4, 8));
-            
-            // Basic validation
-            if (day < 1 || day > 31) return false;
-            if (month < 1 || month > 12) return false;
-            if (year < 1990 || year > 2050) return false; // Reasonable passport date range
-            
-            // Check if date is valid
-            const testDate = new Date(year, month - 1, day);
-            return testDate.getFullYear() === year && 
-                   testDate.getMonth() === month - 1 && 
-                   testDate.getDate() === day;
+            return validateBirthDate(ddmmyyyy); // Use same validation as birth date
         }
 
         function formatDateInput(inputElement) {
@@ -5886,19 +5617,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadDashboard();
             loadJamaahTable();
-            
-            // Setup navigation click handlers
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const pageId = this.getAttribute('data-page');
-                    if (pageId) {
-                        console.log('Navigating to:', pageId); // Debug log
-                        showPage(pageId);
-                    }
-                });
-            });
             
             // Add input formatting for birth date
             const birthDateInput = document.getElementById('jamaahBirthDate');
