@@ -89,6 +89,8 @@
             border: 1px solid rgba(71, 85, 105, 0.3);
             position: relative;
             overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         .nav-item::before {
@@ -1362,42 +1364,42 @@
                 Umroh Manager
             </div>
             
-            <div class="nav-item active" onclick="showPage('dashboard')">
+            <div class="nav-item active" onclick="showPage('dashboard', event)">
                 <span class="material-icons">dashboard</span>
                 Dashboard
             </div>
             
-            <div class="nav-item" onclick="showPage('jamaah')">
+            <div class="nav-item" onclick="showPage('jamaah', event)">
                 <span class="material-icons">people</span>
                 Manajemen Jamaah
             </div>
             
-            <div class="nav-item" onclick="showPage('packages')">
+            <div class="nav-item" onclick="showPage('packages', event)">
                 <span class="material-icons">card_travel</span>
                 Paket Umroh
             </div>
             
-            <div class="nav-item" onclick="showPage('payments')">
+            <div class="nav-item" onclick="showPage('payments', event)">
                 <span class="material-icons">payment</span>
                 Pembayaran
             </div>
             
-            <div class="nav-item" onclick="showPage('documents')">
+            <div class="nav-item" onclick="showPage('documents', event)">
                 <span class="material-icons">description</span>
                 Dokumen
             </div>
             
-            <div class="nav-item" onclick="showPage('groups')">
+            <div class="nav-item" onclick="showPage('groups', event)">
                 <span class="material-icons">group</span>
                 Grup Keberangkatan
             </div>
             
-            <div class="nav-item" onclick="showPage('reports')">
+            <div class="nav-item" onclick="showPage('reports', event)">
                 <span class="material-icons">assessment</span>
                 Laporan
             </div>
             
-            <div class="nav-item" onclick="showPage('excel')">
+            <div class="nav-item" onclick="showPage('excel', event)">
                 <span class="material-icons">table_chart</span>
                 Excel Import/Export
             </div>
@@ -3002,7 +3004,7 @@
         let selectedAllocationStrategy = 'auto';
 
         // Navigation
-        function showPage(pageId) {
+        function showPage(pageId, event) {
             // Hide all pages
             document.querySelectorAll('.page').forEach(page => {
                 page.classList.remove('active');
@@ -3017,7 +3019,12 @@
             document.getElementById(pageId).classList.add('active');
             
             // Add active class to clicked nav item
-            event.target.closest('.nav-item').classList.add('active');
+            if (event && event.target) {
+                event.target.closest('.nav-item').classList.add('active');
+            } else {
+                // Fallback: find nav item by pageId
+                document.querySelector(`.nav-item[onclick*="${pageId}"]`).classList.add('active');
+            }
             
             // Load page specific data
             loadPageData(pageId);
@@ -3280,16 +3287,30 @@
             const passportIssueDate = document.getElementById('jamaahPassportIssueDate').value;
             const passportExpireDate = document.getElementById('jamaahPassportExpireDate').value;
             
-            if (passportIssueDate && !validatePassportDate(passportIssueDate)) {
-                showNotification('Format tanggal penerbitan paspor tidak valid. Gunakan format ddmmyyyy', 'error');
-                document.getElementById('jamaahPassportIssueDate').focus();
-                return;
+            if (passportIssueDate && passportIssueDate.length > 0) {
+                if (passportIssueDate.length !== 8) {
+                    showNotification('Tanggal penerbitan paspor harus 8 digit (ddmmyyyy)', 'error');
+                    document.getElementById('jamaahPassportIssueDate').focus();
+                    return;
+                }
+                if (!validatePassportDate(passportIssueDate)) {
+                    showNotification('Format tanggal penerbitan paspor tidak valid. Gunakan format ddmmyyyy (contoh: 01012020)', 'error');
+                    document.getElementById('jamaahPassportIssueDate').focus();
+                    return;
+                }
             }
             
-            if (passportExpireDate && !validatePassportDate(passportExpireDate)) {
-                showNotification('Format tanggal kadaluarsa paspor tidak valid. Gunakan format ddmmyyyy', 'error');
-                document.getElementById('jamaahPassportExpireDate').focus();
-                return;
+            if (passportExpireDate && passportExpireDate.length > 0) {
+                if (passportExpireDate.length !== 8) {
+                    showNotification('Tanggal kadaluarsa paspor harus 8 digit (ddmmyyyy)', 'error');
+                    document.getElementById('jamaahPassportExpireDate').focus();
+                    return;
+                }
+                if (!validatePassportDate(passportExpireDate)) {
+                    showNotification('Format tanggal kadaluarsa paspor tidak valid. Gunakan format ddmmyyyy (contoh: 01012030)', 'error');
+                    document.getElementById('jamaahPassportExpireDate').focus();
+                    return;
+                }
             }
 
             const formData = {
@@ -5693,7 +5714,26 @@
         }
 
         function validatePassportDate(ddmmyyyy) {
-            return validateBirthDate(ddmmyyyy); // Use same validation as birth date
+            // Allow empty values
+            if (!ddmmyyyy || ddmmyyyy.trim() === '') return true;
+            
+            // Must be exactly 8 digits
+            if (!/^\d{8}$/.test(ddmmyyyy)) return false;
+            
+            const day = parseInt(ddmmyyyy.substring(0, 2));
+            const month = parseInt(ddmmyyyy.substring(2, 4));
+            const year = parseInt(ddmmyyyy.substring(4, 8));
+            
+            // Basic validation
+            if (day < 1 || day > 31) return false;
+            if (month < 1 || month > 12) return false;
+            if (year < 1990 || year > 2050) return false; // Reasonable passport date range
+            
+            // Check if date is valid
+            const testDate = new Date(year, month - 1, day);
+            return testDate.getFullYear() === year && 
+                   testDate.getMonth() === month - 1 && 
+                   testDate.getDate() === day;
         }
 
         function formatDateInput(inputElement) {
