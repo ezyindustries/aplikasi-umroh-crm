@@ -1376,6 +1376,7 @@
         /* Status badges */
         .status-badge {
             padding: 6px 14px;
+            margin: 4px 0;
             border-radius: 25px;
             font-size: 12px;
             font-weight: 600;
@@ -1383,6 +1384,8 @@
             backdrop-filter: blur(10px);
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            display: inline-block;
+            vertical-align: middle;
         }
 
         .status-verified { 
@@ -4159,12 +4162,19 @@
             
             if (!group || !subGroup) return;
 
+            // Get jamaah assigned to this sub-group
+            const assignedJamaah = jamaahData.filter(j => j.sub_group_id === subGroupId);
+            // Get jamaah in this group but not assigned to any sub-group
+            const unassignedJamaah = jamaahData.filter(j => j.group_id === groupId && !j.sub_group_id);
+            // Get jamaah from other sub-groups in the same group for transfer options
+            const otherSubGroupJamaah = jamaahData.filter(j => j.group_id === groupId && j.sub_group_id && j.sub_group_id !== subGroupId);
+
             // Create modal for managing sub-group
             const modal = document.createElement('div');
             modal.className = 'modal active';
             modal.style.display = 'flex';
             modal.innerHTML = `
-                <div class="modal-content" style="max-width: 700px;">
+                <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
                     <div class="modal-header">
                         <h3>Kelola ${subGroup.name}</h3>
                         <button class="close-btn">&times;</button>
@@ -4177,28 +4187,80 @@
                                 <p><strong>Nama:</strong> ${subGroup.name}</p>
                                 <p><strong>Hotel Makkah:</strong> ${subGroup.hotel_makkah}</p>
                                 <p><strong>Hotel Madinah:</strong> ${subGroup.hotel_madinah}</p>
-                                <p><strong>Anggota:</strong> ${subGroup.members}/${subGroup.max_members}</p>
+                                <p><strong>Anggota:</strong> ${assignedJamaah.length}/${subGroup.max_members}</p>
                             </div>
                             <div style="background: rgba(30, 41, 59, 0.4); padding: 15px; border-radius: 12px;">
                                 <h4 style="color: #10b981; margin-bottom: 10px;">Statistik</h4>
-                                <p><strong>Kapasitas:</strong> ${Math.round((subGroup.members / subGroup.max_members) * 100)}%</p>
-                                <p><strong>Sisa Slot:</strong> ${subGroup.max_members - subGroup.members} orang</p>
-                                <p><strong>Status:</strong> ${subGroup.members === subGroup.max_members ? 'Penuh' : 'Tersedia'}</p>
+                                <p><strong>Kapasitas:</strong> ${Math.round((assignedJamaah.length / subGroup.max_members) * 100)}%</p>
+                                <p><strong>Sisa Slot:</strong> ${subGroup.max_members - assignedJamaah.length} orang</p>
+                                <p><strong>Status:</strong> ${assignedJamaah.length === subGroup.max_members ? 'Penuh' : 'Tersedia'}</p>
                             </div>
                         </div>
                         
+                        <!-- Current Members -->
                         <div style="background: rgba(30, 41, 59, 0.3); border-radius: 8px; padding: 15px; margin-bottom: 20px;">
-                            <h4 style="color: #4facfe; margin-bottom: 15px;">Daftar Anggota Sub Grup</h4>
-                            <div style="color: rgba(255, 255, 255, 0.7); text-align: center; padding: 20px;">
-                                ${subGroup.members > 0 ? 
-                                    `Sub grup ini memiliki ${subGroup.members} anggota terdaftar.` : 
-                                    'Belum ada anggota terdaftar dalam sub grup ini.'
+                            <h4 style="color: #4facfe; margin-bottom: 15px;">Anggota Sub Grup (${assignedJamaah.length})</h4>
+                            <div style="max-height: 200px; overflow-y: auto;">
+                                ${assignedJamaah.length > 0 ? 
+                                    assignedJamaah.map(jamaah => `
+                                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; margin: 5px 0; background: rgba(255,255,255,0.1); border-radius: 6px;">
+                                            <div>
+                                                <strong>${jamaah.name}</strong> 
+                                                <span style="color: rgba(255,255,255,0.7); font-size: 12px;">(${jamaah.gender === 'male' ? 'L' : 'P'}) - ${jamaah.phone}</span>
+                                            </div>
+                                            <button class="btn btn-sm btn-danger" onclick="removeJamaahFromSubGroup(${jamaah.id}, ${subGroupId})" style="padding: 4px 8px; font-size: 11px;">
+                                                Keluarkan
+                                            </button>
+                                        </div>
+                                    `).join('') :
+                                    '<div style="color: rgba(255, 255, 255, 0.7); text-align: center; padding: 20px;">Belum ada anggota terdaftar</div>'
                                 }
-                                <p style="color: rgba(255, 255, 255, 0.5); font-size: 12px; margin-top: 10px;">
-                                    Fitur pengelolaan anggota sub grup akan segera tersedia.
-                                </p>
                             </div>
                         </div>
+
+                        <!-- Available Jamaah to Assign -->
+                        <div style="background: rgba(30, 41, 59, 0.3); border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                            <h4 style="color: #10b981; margin-bottom: 15px;">Jamaah Tersedia untuk Ditambahkan (${unassignedJamaah.length})</h4>
+                            <div style="max-height: 200px; overflow-y: auto;">
+                                ${unassignedJamaah.length > 0 ? 
+                                    unassignedJamaah.map(jamaah => `
+                                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; margin: 5px 0; background: rgba(255,255,255,0.1); border-radius: 6px;">
+                                            <div>
+                                                <strong>${jamaah.name}</strong> 
+                                                <span style="color: rgba(255,255,255,0.7); font-size: 12px;">(${jamaah.gender === 'male' ? 'L' : 'P'}) - ${jamaah.phone}</span>
+                                            </div>
+                                            <button class="btn btn-sm btn-primary" onclick="assignJamaahToSubGroup(${jamaah.id}, ${subGroupId})" style="padding: 4px 8px; font-size: 11px;">
+                                                Tambahkan
+                                            </button>
+                                        </div>
+                                    `).join('') :
+                                    '<div style="color: rgba(255, 255, 255, 0.7); text-align: center; padding: 20px;">Semua jamaah sudah ditugaskan ke sub grup</div>'
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Transfer from Other Sub Groups -->
+                        ${otherSubGroupJamaah.length > 0 ? `
+                            <div style="background: rgba(30, 41, 59, 0.3); border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                                <h4 style="color: #f59e0b; margin-bottom: 15px;">Transfer dari Sub Grup Lain (${otherSubGroupJamaah.length})</h4>
+                                <div style="max-height: 200px; overflow-y: auto;">
+                                    ${otherSubGroupJamaah.map(jamaah => {
+                                        const currentSubGroup = group.sub_groups.find(sg => sg.id === jamaah.sub_group_id);
+                                        return `
+                                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; margin: 5px 0; background: rgba(255,255,255,0.1); border-radius: 6px;">
+                                                <div>
+                                                    <strong>${jamaah.name}</strong> 
+                                                    <span style="color: rgba(255,255,255,0.7); font-size: 12px;">(${jamaah.gender === 'male' ? 'L' : 'P'}) - dari ${currentSubGroup?.name || 'Unknown'}</span>
+                                                </div>
+                                                <button class="btn btn-sm btn-warning" onclick="transferJamaahToSubGroup(${jamaah.id}, ${jamaah.sub_group_id}, ${subGroupId})" style="padding: 4px 8px; font-size: 11px;">
+                                                    Transfer
+                                                </button>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
                         
                         <div class="form-actions" style="display: flex; gap: 10px; justify-content: flex-end;">
                             <button class="btn btn-warning" onclick="editSubGroup(${groupId}, ${subGroupId})">
@@ -4328,11 +4390,15 @@
             if (!group || !group.sub_groups) return;
             
             // Check if sub-group has members
-            const subGroup = group.sub_groups.find(sg => sg.id === subGroupId);
-            if (subGroup && subGroup.members > 0) {
-                if (!confirm(`Sub grup ini memiliki ${subGroup.members} anggota. Yakin ingin menghapus?`)) {
+            const assignedJamaah = jamaahData.filter(j => j.sub_group_id === subGroupId);
+            if (assignedJamaah.length > 0) {
+                if (!confirm(`Sub grup ini memiliki ${assignedJamaah.length} anggota. Mereka akan dikeluarkan dari sub grup. Yakin ingin menghapus?`)) {
                     return;
                 }
+                // Remove sub_group_id from all assigned jamaah
+                assignedJamaah.forEach(jamaah => {
+                    delete jamaah.sub_group_id;
+                });
             }
             
             // Remove sub-group
@@ -4344,6 +4410,84 @@
             // Refresh group cards
             loadGroupCards();
             showNotification('Sub grup berhasil dihapus!');
+        }
+
+        // Jamaah Assignment Functions
+        function assignJamaahToSubGroup(jamaahId, subGroupId) {
+            const jamaah = jamaahData.find(j => j.id === jamaahId);
+            if (!jamaah) {
+                showNotification('Jamaah tidak ditemukan!', 'error');
+                return;
+            }
+
+            // Check if sub-group is at capacity
+            const group = groupData.find(g => g.sub_groups?.some(sg => sg.id === subGroupId));
+            const subGroup = group?.sub_groups?.find(sg => sg.id === subGroupId);
+            const currentMembers = jamaahData.filter(j => j.sub_group_id === subGroupId).length;
+            
+            if (currentMembers >= subGroup.max_members) {
+                showNotification('Sub grup sudah penuh!', 'error');
+                return;
+            }
+
+            // Assign jamaah to sub-group
+            jamaah.sub_group_id = subGroupId;
+            
+            // Close current modal and reopen to refresh
+            document.querySelector('.modal').remove();
+            setTimeout(() => {
+                manageSubGroup(group.id, subGroupId);
+                showNotification(`${jamaah.name} berhasil ditambahkan ke sub grup!`);
+            }, 100);
+        }
+
+        function removeJamaahFromSubGroup(jamaahId, subGroupId) {
+            const jamaah = jamaahData.find(j => j.id === jamaahId);
+            if (!jamaah) {
+                showNotification('Jamaah tidak ditemukan!', 'error');
+                return;
+            }
+
+            // Remove from sub-group
+            delete jamaah.sub_group_id;
+            
+            // Find the group to refresh modal
+            const group = groupData.find(g => g.sub_groups?.some(sg => sg.id === subGroupId));
+            
+            // Close current modal and reopen to refresh
+            document.querySelector('.modal').remove();
+            setTimeout(() => {
+                manageSubGroup(group.id, subGroupId);
+                showNotification(`${jamaah.name} berhasil dikeluarkan dari sub grup!`);
+            }, 100);
+        }
+
+        function transferJamaahToSubGroup(jamaahId, fromSubGroupId, toSubGroupId) {
+            const jamaah = jamaahData.find(j => j.id === jamaahId);
+            if (!jamaah) {
+                showNotification('Jamaah tidak ditemukan!', 'error');
+                return;
+            }
+
+            // Check if target sub-group is at capacity
+            const group = groupData.find(g => g.sub_groups?.some(sg => sg.id === toSubGroupId));
+            const targetSubGroup = group?.sub_groups?.find(sg => sg.id === toSubGroupId);
+            const currentMembers = jamaahData.filter(j => j.sub_group_id === toSubGroupId).length;
+            
+            if (currentMembers >= targetSubGroup.max_members) {
+                showNotification('Sub grup tujuan sudah penuh!', 'error');
+                return;
+            }
+
+            // Transfer jamaah
+            jamaah.sub_group_id = toSubGroupId;
+            
+            // Close current modal and reopen to refresh
+            document.querySelector('.modal').remove();
+            setTimeout(() => {
+                manageSubGroup(group.id, toSubGroupId);
+                showNotification(`${jamaah.name} berhasil dipindahkan ke sub grup!`);
+            }, 100);
         }
 
         // Generate Room List Function - The Main Feature
