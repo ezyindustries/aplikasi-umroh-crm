@@ -102,6 +102,8 @@
             height: 100%;
             background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.2), transparent);
             transition: left 0.5s ease;
+            pointer-events: none;
+            z-index: 0;
         }
 
         .nav-item:hover::before {
@@ -131,6 +133,13 @@
         .nav-item .material-icons {
             margin-right: 15px;
             font-size: 24px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .nav-item > * {
+            position: relative;
+            z-index: 1;
         }
 
         /* Main Content */
@@ -1364,42 +1373,42 @@
                 Umroh Manager
             </div>
             
-            <div class="nav-item active" onclick="showPage('dashboard', event)">
+            <div class="nav-item active" onclick="showPage('dashboard')">
                 <span class="material-icons">dashboard</span>
                 Dashboard
             </div>
             
-            <div class="nav-item" onclick="showPage('jamaah', event)">
+            <div class="nav-item" onclick="showPage('jamaah')">
                 <span class="material-icons">people</span>
                 Manajemen Jamaah
             </div>
             
-            <div class="nav-item" onclick="showPage('packages', event)">
+            <div class="nav-item" onclick="showPage('packages')">
                 <span class="material-icons">card_travel</span>
                 Paket Umroh
             </div>
             
-            <div class="nav-item" onclick="showPage('payments', event)">
+            <div class="nav-item" onclick="showPage('payments')">
                 <span class="material-icons">payment</span>
                 Pembayaran
             </div>
             
-            <div class="nav-item" onclick="showPage('documents', event)">
+            <div class="nav-item" onclick="showPage('documents')">
                 <span class="material-icons">description</span>
                 Dokumen
             </div>
             
-            <div class="nav-item" onclick="showPage('groups', event)">
+            <div class="nav-item" onclick="showPage('groups')">
                 <span class="material-icons">group</span>
                 Grup Keberangkatan
             </div>
             
-            <div class="nav-item" onclick="showPage('reports', event)">
+            <div class="nav-item" onclick="showPage('reports')">
                 <span class="material-icons">assessment</span>
                 Laporan
             </div>
             
-            <div class="nav-item" onclick="showPage('excel', event)">
+            <div class="nav-item" onclick="showPage('excel')">
                 <span class="material-icons">table_chart</span>
                 Excel Import/Export
             </div>
@@ -3004,7 +3013,7 @@
         let selectedAllocationStrategy = 'auto';
 
         // Navigation
-        function showPage(pageId, event) {
+        function showPage(pageId) {
             // Hide all pages
             document.querySelectorAll('.page').forEach(page => {
                 page.classList.remove('active');
@@ -3016,14 +3025,15 @@
             });
             
             // Show selected page
-            document.getElementById(pageId).classList.add('active');
+            const page = document.getElementById(pageId);
+            if (page) {
+                page.classList.add('active');
+            }
             
-            // Add active class to clicked nav item
-            if (event && event.target) {
-                event.target.closest('.nav-item').classList.add('active');
-            } else {
-                // Fallback: find nav item by pageId
-                document.querySelector(`.nav-item[onclick*="${pageId}"]`).classList.add('active');
+            // Add active class to corresponding nav item
+            const navItem = document.querySelector(`.nav-item[onclick*="${pageId}"]`);
+            if (navItem) {
+                navItem.classList.add('active');
             }
             
             // Load page specific data
