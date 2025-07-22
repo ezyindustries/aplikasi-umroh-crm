@@ -379,6 +379,21 @@
             }
         }
 
+        /* Marketing stats and funnel row responsive */
+        .marketing-stats-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 1024px) {
+            .marketing-stats-row {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+
         .stat-card .stat-icon {
             font-size: 48px;
             background: linear-gradient(135deg, #60a5fa, #34d399, #a78bfa);
@@ -2676,66 +2691,62 @@
                         </div>
                     </div>
                     
-                    <!-- Marketing Stats -->
-                    <div class="stat-container-compact">
-                        <div class="stat-card-small" style="background: linear-gradient(145deg, rgba(34, 197, 94, 0.15), rgba(22, 163, 74, 0.1)); border-color: rgba(34, 197, 94, 0.3);">
-                            <div class="stat-number" id="totalLeads" style="color: #22c55e;">0</div>
-                            <div class="stat-label">Total Leads</div>
+                    <!-- Marketing Stats & Conversion Funnel Row -->
+                    <div class="marketing-stats-row">
+                        <!-- Marketing Stats -->
+                        <div class="stat-container-compact">
+                            <div class="stat-card-small" style="background: linear-gradient(145deg, rgba(34, 197, 94, 0.15), rgba(22, 163, 74, 0.1)); border-color: rgba(34, 197, 94, 0.3);">
+                                <div class="stat-number" id="totalLeads" style="color: #22c55e;">0</div>
+                                <div class="stat-label">Total Leads</div>
+                            </div>
+                            
+                            <div class="stat-card-small" style="background: linear-gradient(145deg, rgba(251, 191, 36, 0.15), rgba(245, 158, 11, 0.1)); border-color: rgba(251, 191, 36, 0.3);">
+                                <div class="stat-number" id="hotLeads" style="color: #fbbf24;">0</div>
+                                <div class="stat-label">Hot Leads 🔥</div>
+                            </div>
+                            
+                            <div class="stat-card-small" style="background: linear-gradient(145deg, rgba(79, 172, 254, 0.15), rgba(56, 155, 255, 0.1)); border-color: rgba(79, 172, 254, 0.3);">
+                                <div class="stat-number" id="conversionRate" style="color: #4facfe;">0%</div>
+                                <div class="stat-label">Conversion Rate</div>
+                            </div>
+                            
+                            <div class="stat-card-small">
+                                <div class="stat-number" id="avgResponseTime">0h</div>
+                                <div class="stat-label">Avg Response Time</div>
+                            </div>
                         </div>
-                        
-                        <div class="stat-card-small" style="background: linear-gradient(145deg, rgba(251, 191, 36, 0.15), rgba(245, 158, 11, 0.1)); border-color: rgba(251, 191, 36, 0.3);">
-                            <div class="stat-number" id="hotLeads" style="color: #fbbf24;">0</div>
-                            <div class="stat-label">Hot Leads 🔥</div>
-                        </div>
-                        
-                        <div class="stat-card-small" style="background: linear-gradient(145deg, rgba(79, 172, 254, 0.15), rgba(56, 155, 255, 0.1)); border-color: rgba(79, 172, 254, 0.3);">
-                            <div class="stat-number" id="conversionRate" style="color: #4facfe;">0%</div>
-                            <div class="stat-label">Conversion Rate</div>
-                        </div>
-                        
-                        <div class="stat-card-small">
-                            <div class="stat-number" id="avgResponseTime">0h</div>
-                            <div class="stat-label">Avg Response Time</div>
-                        </div>
-                    </div>
 
-                    <!-- Conversion Funnel -->
-                    <div class="glass-card" style="margin-bottom: 30px;">
-                        <h3 style="margin-bottom: 20px;">Conversion Funnel</h3>
-                        <div class="funnel-container" style="display: flex; align-items: center; gap: 10px; padding: 20px; overflow-x: auto;">
-                            <div class="funnel-stage" style="text-align: center; flex: 1; min-width: 120px;">
-                                <div class="funnel-bar" style="background: #22c55e; height: 80px; border-radius: 8px 8px 0 0; position: relative;">
-                                    <span class="funnel-count" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; color: white;" id="funnelLead">0</span>
+                        <!-- Conversion Funnel (Compact) -->
+                        <div class="glass-card" style="height: fit-content;">
+                            <h4 style="margin-bottom: 15px; font-size: 14px;">Conversion Funnel</h4>
+                            <div class="funnel-container" style="display: flex; align-items: center; gap: 6px; padding: 15px 10px; overflow-x: auto;">
+                                <div class="funnel-stage" style="text-align: center; flex: 1; min-width: 80px;">
+                                    <div class="funnel-bar" style="background: #22c55e; height: 50px; border-radius: 6px; position: relative;">
+                                        <span class="funnel-count" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; color: white; font-size: 11px;" id="funnelLead">0</span>
+                                    </div>
+                                    <div class="funnel-label" style="margin-top: 5px; font-size: 9px; color: #cbd5e1;">Lead</div>
                                 </div>
-                                <div class="funnel-label" style="margin-top: 8px; font-size: 12px; color: #cbd5e1;">Lead</div>
-                            </div>
-                            <span class="material-icons" style="color: #4facfe;">arrow_forward</span>
-                            <div class="funnel-stage" style="text-align: center; flex: 1; min-width: 120px;">
-                                <div class="funnel-bar" style="background: #fbbf24; height: 60px; border-radius: 8px 8px 0 0; position: relative;">
-                                    <span class="funnel-count" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: bold;" id="funnelContacted">0</span>
+                                <span class="material-icons" style="color: #4facfe; font-size: 16px;">arrow_forward</span>
+                                <div class="funnel-stage" style="text-align: center; flex: 1; min-width: 80px;">
+                                    <div class="funnel-bar" style="background: #fbbf24; height: 40px; border-radius: 6px; position: relative;">
+                                        <span class="funnel-count" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; font-size: 11px;" id="funnelContacted">0</span>
+                                    </div>
+                                    <div class="funnel-label" style="margin-top: 5px; font-size: 9px; color: #cbd5e1;">Contact</div>
                                 </div>
-                                <div class="funnel-label" style="margin-top: 8px; font-size: 12px; color: #cbd5e1;">Contacted</div>
-                            </div>
-                            <span class="material-icons" style="color: #4facfe;">arrow_forward</span>
-                            <div class="funnel-stage" style="text-align: center; flex: 1; min-width: 120px;">
-                                <div class="funnel-bar" style="background: #f59e0b; height: 45px; border-radius: 8px 8px 0 0; position: relative;">
-                                    <span class="funnel-count" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: bold;" id="funnelInterested">0</span>
+                                <span class="material-icons" style="color: #4facfe; font-size: 16px;">arrow_forward</span>
+                                <div class="funnel-stage" style="text-align: center; flex: 1; min-width: 80px;">
+                                    <div class="funnel-bar" style="background: #f59e0b; height: 30px; border-radius: 6px; position: relative;">
+                                        <span class="funnel-count" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; font-size: 11px;" id="funnelInterested">0</span>
+                                    </div>
+                                    <div class="funnel-label" style="margin-top: 5px; font-size: 9px; color: #cbd5e1;">Interest</div>
                                 </div>
-                                <div class="funnel-label" style="margin-top: 8px; font-size: 12px; color: #cbd5e1;">Interested</div>
-                            </div>
-                            <span class="material-icons" style="color: #4facfe;">arrow_forward</span>
-                            <div class="funnel-stage" style="text-align: center; flex: 1; min-width: 120px;">
-                                <div class="funnel-bar" style="background: #ef4444; height: 30px; border-radius: 8px 8px 0 0; position: relative;">
-                                    <span class="funnel-count" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; color: white;" id="funnelClosing">0</span>
+                                <span class="material-icons" style="color: #4facfe; font-size: 16px;">arrow_forward</span>
+                                <div class="funnel-stage" style="text-align: center; flex: 1; min-width: 80px;">
+                                    <div class="funnel-bar" style="background: #4facfe; height: 20px; border-radius: 6px; position: relative;">
+                                        <span class="funnel-count" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; color: white; font-size: 11px;" id="funnelConverted">0</span>
+                                    </div>
+                                    <div class="funnel-label" style="margin-top: 5px; font-size: 9px; color: #cbd5e1;">Convert</div>
                                 </div>
-                                <div class="funnel-label" style="margin-top: 8px; font-size: 12px; color: #cbd5e1;">Closing</div>
-                            </div>
-                            <span class="material-icons" style="color: #4facfe;">arrow_forward</span>
-                            <div class="funnel-stage" style="text-align: center; flex: 1; min-width: 120px;">
-                                <div class="funnel-bar" style="background: #4facfe; height: 20px; border-radius: 8px 8px 0 0; position: relative;">
-                                    <span class="funnel-count" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; color: white;" id="funnelConverted">0</span>
-                                </div>
-                                <div class="funnel-label" style="margin-top: 8px; font-size: 12px; color: #cbd5e1;">Converted</div>
                             </div>
                         </div>
                     </div>
