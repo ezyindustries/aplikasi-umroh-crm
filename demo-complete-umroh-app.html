@@ -3540,63 +3540,74 @@
 
     <!-- Package Modal -->
     <div id="packageModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 900px;">
             <div class="modal-header">
                 <h3>Tambah/Edit Paket Umroh</h3>
                 <button class="close-btn">&times;</button>
             </div>
             
             <form onsubmit="savePackage(event)">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Nama Paket</label>
-                        <input type="text" id="packageName" required>
+                <!-- Basic Package Info -->
+                <div style="margin-bottom: 25px;">
+                    <h4 style="color: #4facfe; margin-bottom: 15px;">Informasi Dasar Paket</h4>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Nama Paket</label>
+                            <input type="text" id="packageName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Kode Paket</label>
+                            <input type="text" id="packageCode" placeholder="Contoh: UMR-OCT-2024" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Tanggal Keberangkatan</label>
+                            <input type="date" id="packageDeparture" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Durasi (Hari)</label>
+                            <input type="number" id="packageDuration" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Maskapai</label>
+                            <input type="text" id="packageAirline" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Malam di Makkah</label>
+                            <input type="number" id="packageMakkahNights" value="5" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Malam di Madinah</label>
+                            <input type="number" id="packageMadinahNights" value="7" required>
+                        </div>
                     </div>
+                    
                     <div class="form-group">
-                        <label>Kode Paket</label>
-                        <input type="text" id="packageCode" placeholder="Contoh: PKG001" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Harga (IDR)</label>
-                        <input type="number" id="packagePrice" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Tanggal Keberangkatan</label>
-                        <input type="date" id="packageDeparture" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Durasi (Hari)</label>
-                        <input type="number" id="packageDuration" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Kuota</label>
-                        <input type="number" id="packageQuota" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Hotel Makkah</label>
-                        <input type="text" id="packageMakkahHotel" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Hotel Madinah</label>
-                        <input type="text" id="packageMadinahHotel" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Malam di Makkah</label>
-                        <input type="number" id="packageMakkahNights" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Malam di Madinah</label>
-                        <input type="number" id="packageMadinahNights" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Maskapai</label>
-                        <input type="text" id="packageAirline" required>
+                        <label>Deskripsi</label>
+                        <textarea id="packageDescription" rows="3"></textarea>
                     </div>
                 </div>
-                
-                <div class="form-group">
-                    <label>Deskripsi</label>
-                    <textarea id="packageDescription" rows="3"></textarea>
+
+                <!-- Standard Package Info (when tiers are not used) -->
+                <div id="standardPackageSection">
+                    <h4 style="color: #4facfe; margin-bottom: 15px;">Informasi Harga & Hotel</h4>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Harga (IDR)</label>
+                            <input type="number" id="packagePrice">
+                        </div>
+                        <div class="form-group">
+                            <label>Kuota</label>
+                            <input type="number" id="packageQuota">
+                        </div>
+                        <div class="form-group">
+                            <label>Hotel Makkah</label>
+                            <input type="text" id="packageMakkahHotel">
+                        </div>
+                        <div class="form-group">
+                            <label>Hotel Madinah</label>
+                            <input type="text" id="packageMadinahHotel">
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Flight Details Section -->
@@ -3707,6 +3718,128 @@
                                 <span class="material-icons" style="font-size: 12px; vertical-align: middle;">info</span>
                                 Upload foto hotel, makanan, transportasi, dan fasilitas paket untuk menarik jamaah
                             </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Package Tiers Section -->
+                <div class="section">
+                    <h3 style="color: #4facfe; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                        <span class="material-icons">layers</span>
+                        Tier Paket (Opsional - untuk paket dengan beberapa pilihan level)
+                    </h3>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label>
+                            <input type="checkbox" id="enableTiers" onchange="toggleTierSection()" style="margin-right: 8px;">
+                            Aktifkan sistem tier untuk paket ini
+                        </label>
+                    </div>
+                    
+                    <div id="tierSection" style="display: none;">
+                        <!-- Platinum Tier -->
+                        <div style="background: rgba(229, 231, 235, 0.1); padding: 20px; border-radius: 12px; margin-bottom: 15px; border: 1px solid rgba(229, 231, 235, 0.3);">
+                            <h4 style="color: #e5e7eb; margin-bottom: 15px;">PLATINUM</h4>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Harga Platinum (IDR)</label>
+                                    <input type="number" id="platinumPrice" placeholder="45000000">
+                                </div>
+                                <div class="form-group">
+                                    <label>Kuota Platinum</label>
+                                    <input type="number" id="platinumQuota" placeholder="15">
+                                </div>
+                                <div class="form-group">
+                                    <label>Hotel Makkah</label>
+                                    <input type="text" id="platinumMakkahHotel" placeholder="Pullman Zamzam ⭐⭐⭐⭐⭐">
+                                </div>
+                                <div class="form-group">
+                                    <label>Hotel Madinah</label>
+                                    <input type="text" id="platinumMadinahHotel" placeholder="Madinah Hilton ⭐⭐⭐⭐⭐">
+                                </div>
+                                <div class="form-group">
+                                    <label>Jarak Hotel Makkah</label>
+                                    <input type="text" id="platinumMakkahDistance" placeholder="50 meter dari Masjidil Haram">
+                                </div>
+                                <div class="form-group">
+                                    <label>Jarak Hotel Madinah</label>
+                                    <input type="text" id="platinumMadinahDistance" placeholder="100 meter dari Masjid Nabawi">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Fasilitas Khusus Platinum</label>
+                                <textarea id="platinumFeatures" rows="2" placeholder="Bus Executive, Makan 3x Prasmanan, Air Zam-zam 5L, Free Laundry"></textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- Gold Tier -->
+                        <div style="background: rgba(251, 191, 36, 0.1); padding: 20px; border-radius: 12px; margin-bottom: 15px; border: 1px solid rgba(251, 191, 36, 0.3);">
+                            <h4 style="color: #fbbf24; margin-bottom: 15px;">GOLD</h4>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Harga Gold (IDR)</label>
+                                    <input type="number" id="goldPrice" placeholder="38000000">
+                                </div>
+                                <div class="form-group">
+                                    <label>Kuota Gold</label>
+                                    <input type="number" id="goldQuota" placeholder="20">
+                                </div>
+                                <div class="form-group">
+                                    <label>Hotel Makkah</label>
+                                    <input type="text" id="goldMakkahHotel" placeholder="Anjum Hotel ⭐⭐⭐⭐">
+                                </div>
+                                <div class="form-group">
+                                    <label>Hotel Madinah</label>
+                                    <input type="text" id="goldMadinahHotel" placeholder="Saja Al Madinah ⭐⭐⭐⭐">
+                                </div>
+                                <div class="form-group">
+                                    <label>Jarak Hotel Makkah</label>
+                                    <input type="text" id="goldMakkahDistance" placeholder="200 meter dari Masjidil Haram">
+                                </div>
+                                <div class="form-group">
+                                    <label>Jarak Hotel Madinah</label>
+                                    <input type="text" id="goldMadinahDistance" placeholder="300 meter dari Masjid Nabawi">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Fasilitas Khusus Gold</label>
+                                <textarea id="goldFeatures" rows="2" placeholder="Bus Standard AC, Makan 3x Box/Prasmanan, Air Zam-zam 5L"></textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- Silver Tier -->
+                        <div style="background: rgba(156, 163, 175, 0.1); padding: 20px; border-radius: 12px; margin-bottom: 15px; border: 1px solid rgba(156, 163, 175, 0.3);">
+                            <h4 style="color: #9ca3af; margin-bottom: 15px;">SILVER</h4>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Harga Silver (IDR)</label>
+                                    <input type="number" id="silverPrice" placeholder="32000000">
+                                </div>
+                                <div class="form-group">
+                                    <label>Kuota Silver</label>
+                                    <input type="number" id="silverQuota" placeholder="10">
+                                </div>
+                                <div class="form-group">
+                                    <label>Hotel Makkah</label>
+                                    <input type="text" id="silverMakkahHotel" placeholder="Dar Al Eiman ⭐⭐⭐">
+                                </div>
+                                <div class="form-group">
+                                    <label>Hotel Madinah</label>
+                                    <input type="text" id="silverMadinahHotel" placeholder="Al Eiman Royal ⭐⭐⭐">
+                                </div>
+                                <div class="form-group">
+                                    <label>Jarak Hotel Makkah</label>
+                                    <input type="text" id="silverMakkahDistance" placeholder="500 meter dari Masjidil Haram">
+                                </div>
+                                <div class="form-group">
+                                    <label>Jarak Hotel Madinah</label>
+                                    <input type="text" id="silverMadinahDistance" placeholder="600 meter dari Masjid Nabawi">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Fasilitas Khusus Silver</label>
+                                <textarea id="silverFeatures" rows="2" placeholder="Bus Standard AC, Makan 3x Box, Air Zam-zam 5L"></textarea>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -5204,42 +5337,104 @@ Terima kasih."></textarea>
         let packageData = [
             {
                 id: 1,
-                name: "Umroh Ramadhan 2024",
-                code: "PKG001",
-                price: 25000000,
-                departure_date: "2024-03-15",
-                duration: 14,
-                quota: 45,
-                booked: 10,
-                makkah_hotel: "Hilton Makkah Convention",
-                madinah_hotel: "Pullman Zamzam Madinah",
-                makkah_nights: 7,
-                madinah_nights: 7,
-                airline: "Emirates",
-                airline_code: "EK",
-                description: "Paket umroh spesial bulan Ramadhan dengan fasilitas premium",
+                name: "Umroh 9 Oktober 2024",
+                code: "UMR-OCT-2024-09",
+                hasTiers: true,
+                departure_date: "2024-10-09",
+                duration: 12,
+                airline: "Saudi Airlines",
+                description: "Paket umroh dengan 3 pilihan tier untuk berbagai budget",
                 flight_details: {
-                    flight_numbers: "EK 357 / EK 362",
-                    transit_info: "Dubai (DXB) - 2 jam",
-                    route: "CGK - DXB - JED",
-                    notes: "Bagasi 30kg, meal halal tersedia"
+                    flight_numbers: "SV 816 / SV 815",
+                    route: "CGK - JED - MED - CGK",
+                    notes: "Direct flight, bagasi 30kg"
                 },
-                facilities: {
-                    haramain_train: true,
-                    thaif_tour: true,
-                    equipment_kit: true,
-                    visa_handling: true
-                },
-                brochure_photos: [
-                    {
-                        id: 'bro1',
-                        name: 'Masjid Haram View',
-                        url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjNDMzNDU1Ii8+PHRleHQgeD0iNTAlIiB5PSI0MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2Y4ZmFmYyIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk1hc2ppZCBIYXJhbSBWaWV3PC90ZXh0Pjx0ZXh0IHg9IjUwJSIgeT0iNjAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTAiIGZpbGw9IiNjYmQ1ZTEiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5QYWtldCBSYW1hZGhhbjwvdGV4dD48L3N2Zz4='
+                makkah_nights: 5,
+                madinah_nights: 7,
+                tiers: {
+                    platinum: {
+                        price: 45000000,
+                        quota: 15,
+                        booked: 10,
+                        makkahHotel: "Pullman Zamzam ⭐⭐⭐⭐⭐",
+                        madinahHotel: "Madinah Hilton ⭐⭐⭐⭐⭐",
+                        makkahDistance: "50 meter dari Masjidil Haram",
+                        madinahDistance: "100 meter dari Masjid Nabawi",
+                        features: "Bus Executive, Makan 3x Prasmanan, Air Zam-zam 5L, Free Laundry"
+                    },
+                    gold: {
+                        price: 38000000,
+                        quota: 20,
+                        booked: 8,
+                        makkahHotel: "Anjum Hotel ⭐⭐⭐⭐",
+                        madinahHotel: "Saja Al Madinah ⭐⭐⭐⭐",
+                        makkahDistance: "200 meter dari Masjidil Haram",
+                        madinahDistance: "300 meter dari Masjid Nabawi",
+                        features: "Bus Standard AC, Makan 3x Box/Prasmanan, Air Zam-zam 5L"
+                    },
+                    silver: {
+                        price: 32000000,
+                        quota: 10,
+                        booked: 0,
+                        makkahHotel: "Dar Al Eiman ⭐⭐⭐",
+                        madinahHotel: "Al Eiman Royal ⭐⭐⭐",
+                        makkahDistance: "500 meter dari Masjidil Haram",
+                        madinahDistance: "600 meter dari Masjid Nabawi",
+                        features: "Bus Standard AC, Makan 3x Box, Air Zam-zam 5L"
                     }
-                ]
+                }
             },
             {
                 id: 2,
+                name: "Umroh Ramadhan 2025",
+                code: "UMR-RAM-2025-03",
+                hasTiers: true,
+                departure_date: "2025-03-15",
+                duration: 14,
+                airline: "Garuda Indonesia",
+                description: "Paket spesial Ramadhan dengan pengalaman ibadah optimal",
+                flight_details: {
+                    flight_numbers: "GA 892 / GA 893",
+                    route: "CGK - JED - MED - CGK",
+                    notes: "Direct flight, full service"
+                },
+                makkah_nights: 6,
+                madinah_nights: 8,
+                tiers: {
+                    platinum: {
+                        price: 55000000,
+                        quota: 10,
+                        booked: 5,
+                        makkahHotel: "Raffles Makkah Palace ⭐⭐⭐⭐⭐",
+                        madinahHotel: "The Oberoi Madinah ⭐⭐⭐⭐⭐",
+                        makkahDistance: "View langsung Masjidil Haram",
+                        madinahDistance: "50 meter dari Masjid Nabawi",
+                        features: "Bus VIP, Makan 3x Fine Dining, Air Zam-zam 10L, Laundry & Spa"
+                    },
+                    gold: {
+                        price: 45000000,
+                        quota: 20,
+                        booked: 12,
+                        makkahHotel: "Swissotel Makkah ⭐⭐⭐⭐⭐",
+                        madinahHotel: "Anwar Al Madinah Movenpick ⭐⭐⭐⭐⭐",
+                        makkahDistance: "100 meter dari Masjidil Haram",
+                        madinahDistance: "150 meter dari Masjid Nabawi",
+                        features: "Bus Executive, Makan 3x Buffet, Air Zam-zam 5L, Free Laundry"
+                    },
+                    silver: {
+                        price: 38000000,
+                        quota: 15,
+                        booked: 3,
+                        makkahHotel: "Elaf Kinda ⭐⭐⭐⭐",
+                        madinahHotel: "Taiba Front ⭐⭐⭐⭐",
+                        makkahDistance: "300 meter dari Masjidil Haram",
+                        madinahDistance: "400 meter dari Masjid Nabawi",
+                        features: "Bus AC, Makan 3x Prasmanan, Air Zam-zam 5L"
+                    }
+                }
+            },
+            {
+                id: 3,
                 name: "Umroh Plus Turki",
                 code: "PKG002",
                 price: 35000000,
@@ -6091,6 +6286,21 @@ Terima kasih."></textarea>
             document.getElementById('passportPreview').style.display = 'none';
         }
 
+        // Toggle tier section
+        function toggleTierSection() {
+            const checkbox = document.getElementById('enableTiers');
+            const tierSection = document.getElementById('tierSection');
+            const standardSection = document.getElementById('standardPackageSection');
+            
+            if (checkbox.checked) {
+                tierSection.style.display = 'block';
+                standardSection.style.display = 'none';
+            } else {
+                tierSection.style.display = 'none';
+                standardSection.style.display = 'block';
+            }
+        }
+
         // Package Management
         function loadPackageCards() {
             const container = document.getElementById('packageGrid');
@@ -6100,20 +6310,136 @@ Terima kasih."></textarea>
                 const remainingSeats = package.quota - package.booked;
                 const card = document.createElement('div');
                 card.className = 'glass-card';
-                card.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
-                        <h3 style="color: white; margin: 0;">${package.name}</h3>
-                        <span style="background: rgba(59, 130, 246, 0.2); color: #3b82f6; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500;">${package.code}</span>
-                    </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-                        <div>
-                            <p style="color: rgba(255, 255, 255, 0.7); font-size: 12px;">Harga</p>
-                            <p style="color: #4facfe; font-weight: 600;">Rp ${(package.price || 0).toLocaleString()}</p>
+                
+                // Check if package has tiers
+                if (package.hasTiers && package.tiers) {
+                    // Display with tier system
+                    const totalQuota = (package.tiers.platinum?.quota || 0) + 
+                                     (package.tiers.gold?.quota || 0) + 
+                                     (package.tiers.silver?.quota || 0);
+                    const totalBooked = (package.tiers.platinum?.booked || 0) + 
+                                      (package.tiers.gold?.booked || 0) + 
+                                      (package.tiers.silver?.booked || 0);
+                    
+                    card.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                            <h3 style="color: white; margin: 0;">${package.name}</h3>
+                            <span style="background: rgba(59, 130, 246, 0.2); color: #3b82f6; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500;">${package.code}</span>
                         </div>
-                        <div>
-                            <p style="color: rgba(255, 255, 255, 0.7); font-size: 12px;">Keberangkatan</p>
-                            <p style="color: white;">${formatDate(package.departure_date)}</p>
+                        
+                        <!-- Common Info -->
+                        <div style="background: rgba(30, 41, 59, 0.3); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                                <div>
+                                    <p style="color: rgba(255, 255, 255, 0.7); font-size: 12px;">Keberangkatan</p>
+                                    <p style="color: white; font-weight: 500;">${formatDate(package.departure_date)}</p>
+                                </div>
+                                <div>
+                                    <p style="color: rgba(255, 255, 255, 0.7); font-size: 12px;">Durasi</p>
+                                    <p style="color: white; font-weight: 500;">${package.duration} Hari</p>
+                                </div>
+                                <div>
+                                    <p style="color: rgba(255, 255, 255, 0.7); font-size: 12px;">Maskapai</p>
+                                    <p style="color: white; font-weight: 500;">${package.airline || 'Garuda Indonesia'}</p>
+                                </div>
+                            </div>
                         </div>
+                        
+                        <!-- Tier Options -->
+                        <div style="margin-bottom: 15px;">
+                            <p style="color: #4facfe; font-size: 13px; margin-bottom: 10px; font-weight: 600;">PILIHAN PAKET:</p>
+                            
+                            ${package.tiers.platinum ? `
+                            <div style="background: rgba(229, 231, 235, 0.1); border: 1px solid rgba(229, 231, 235, 0.3); padding: 12px; border-radius: 8px; margin-bottom: 8px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <span style="color: #e5e7eb; font-weight: 600;">PLATINUM</span>
+                                        <span style="color: rgba(255, 255, 255, 0.6); font-size: 12px; margin-left: 10px;">
+                                            ${package.tiers.platinum.makkahHotel || 'Pullman Zamzam'} & ${package.tiers.platinum.madinahHotel || 'Madinah Hilton'}
+                                        </span>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <p style="color: #4facfe; font-weight: 600; margin: 0;">Rp ${(package.tiers.platinum.price || 45000000).toLocaleString()}</p>
+                                        <p style="color: rgba(255, 255, 255, 0.6); font-size: 11px; margin: 0;">
+                                            ${package.tiers.platinum.quota - (package.tiers.platinum.booked || 0)} dari ${package.tiers.platinum.quota} tersisa
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            ` : ''}
+                            
+                            ${package.tiers.gold ? `
+                            <div style="background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); padding: 12px; border-radius: 8px; margin-bottom: 8px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <span style="color: #fbbf24; font-weight: 600;">GOLD</span>
+                                        <span style="color: rgba(255, 255, 255, 0.6); font-size: 12px; margin-left: 10px;">
+                                            ${package.tiers.gold.makkahHotel || 'Anjum Hotel'} & ${package.tiers.gold.madinahHotel || 'Saja Al Madinah'}
+                                        </span>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <p style="color: #4facfe; font-weight: 600; margin: 0;">Rp ${(package.tiers.gold.price || 38000000).toLocaleString()}</p>
+                                        <p style="color: rgba(255, 255, 255, 0.6); font-size: 11px; margin: 0;">
+                                            ${package.tiers.gold.quota - (package.tiers.gold.booked || 0)} dari ${package.tiers.gold.quota} tersisa
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            ` : ''}
+                            
+                            ${package.tiers.silver ? `
+                            <div style="background: rgba(156, 163, 175, 0.1); border: 1px solid rgba(156, 163, 175, 0.3); padding: 12px; border-radius: 8px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <span style="color: #9ca3af; font-weight: 600;">SILVER</span>
+                                        <span style="color: rgba(255, 255, 255, 0.6); font-size: 12px; margin-left: 10px;">
+                                            ${package.tiers.silver.makkahHotel || 'Dar Al Eiman'} & ${package.tiers.silver.madinahHotel || 'Al Eiman Royal'}
+                                        </span>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <p style="color: #4facfe; font-weight: 600; margin: 0;">Rp ${(package.tiers.silver.price || 32000000).toLocaleString()}</p>
+                                        <p style="color: rgba(255, 255, 255, 0.6); font-size: 11px; margin: 0;">
+                                            ${package.tiers.silver.quota - (package.tiers.silver.booked || 0)} dari ${package.tiers.silver.quota} tersisa
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            ` : ''}
+                        </div>
+                        
+                        <div style="border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <p style="color: rgba(255, 255, 255, 0.7); font-size: 12px; margin: 0;">Total Kuota</p>
+                                <p style="color: white; font-weight: 600; margin: 0;">${totalBooked} / ${totalQuota} Terisi</p>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn btn-primary btn-sm" onclick="viewPackageDetails('${package.id}')">
+                                    <span class="material-icons">visibility</span>
+                                    Detail
+                                </button>
+                                <button class="btn btn-success btn-sm" onclick="editPackage('${package.id}')">
+                                    <span class="material-icons">edit</span>
+                                    Edit
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Display without tier system (original)
+                    card.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                            <h3 style="color: white; margin: 0;">${package.name}</h3>
+                            <span style="background: rgba(59, 130, 246, 0.2); color: #3b82f6; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500;">${package.code}</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                            <div>
+                                <p style="color: rgba(255, 255, 255, 0.7); font-size: 12px;">Harga</p>
+                                <p style="color: #4facfe; font-weight: 600;">Rp ${(package.price || 0).toLocaleString()}</p>
+                            </div>
+                            <div>
+                                <p style="color: rgba(255, 255, 255, 0.7); font-size: 12px;">Keberangkatan</p>
+                                <p style="color: white;">${formatDate(package.departure_date)}</p>
+                            </div>
                         <div>
                             <p style="color: rgba(255, 255, 255, 0.7); font-size: 12px;">Durasi</p>
                             <p style="color: white;">${package.duration} hari</p>
@@ -6227,42 +6553,149 @@ Terima kasih."></textarea>
             }
         }
 
+        function viewPackageDetails(id) {
+            const package = packageData.find(p => p.id == id);
+            if (!package) return;
+            
+            // For now, just show an alert with package details
+            let details = `Paket: ${package.name}\n`;
+            details += `Kode: ${package.code}\n`;
+            details += `Keberangkatan: ${formatDate(package.departure_date)}\n`;
+            details += `Durasi: ${package.duration} hari\n`;
+            details += `Maskapai: ${package.airline}\n\n`;
+            
+            if (package.hasTiers && package.tiers) {
+                details += `PILIHAN TIER:\n\n`;
+                if (package.tiers.platinum) {
+                    details += `PLATINUM:\n`;
+                    details += `- Harga: Rp ${package.tiers.platinum.price.toLocaleString()}\n`;
+                    details += `- Hotel: ${package.tiers.platinum.makkahHotel} & ${package.tiers.platinum.madinahHotel}\n`;
+                    details += `- Kuota: ${package.tiers.platinum.quota} (${package.tiers.platinum.booked} terisi)\n\n`;
+                }
+                if (package.tiers.gold) {
+                    details += `GOLD:\n`;
+                    details += `- Harga: Rp ${package.tiers.gold.price.toLocaleString()}\n`;
+                    details += `- Hotel: ${package.tiers.gold.makkahHotel} & ${package.tiers.gold.madinahHotel}\n`;
+                    details += `- Kuota: ${package.tiers.gold.quota} (${package.tiers.gold.booked} terisi)\n\n`;
+                }
+                if (package.tiers.silver) {
+                    details += `SILVER:\n`;
+                    details += `- Harga: Rp ${package.tiers.silver.price.toLocaleString()}\n`;
+                    details += `- Hotel: ${package.tiers.silver.makkahHotel} & ${package.tiers.silver.madinahHotel}\n`;
+                    details += `- Kuota: ${package.tiers.silver.quota} (${package.tiers.silver.booked} terisi)\n`;
+                }
+            } else {
+                details += `Harga: Rp ${package.price.toLocaleString()}\n`;
+                details += `Hotel Makkah: ${package.makkah_hotel}\n`;
+                details += `Hotel Madinah: ${package.madinah_hotel}\n`;
+                details += `Kuota: ${package.quota} (${package.booked} terisi)\n`;
+            }
+            
+            alert(details);
+        }
+
+        function editPackage(id) {
+            const package = packageData.find(p => p.id == id);
+            if (!package) return;
+            
+            // Populate form with package data
+            document.getElementById('packageName').value = package.name;
+            document.getElementById('packageCode').value = package.code;
+            document.getElementById('packageDeparture').value = package.departure_date;
+            document.getElementById('packageDuration').value = package.duration;
+            document.getElementById('packageAirline').value = package.airline;
+            document.getElementById('packageDescription').value = package.description || '';
+            
+            // For now, just open the modal for editing
+            openModal('packageModal');
+            showNotification('Edit mode - Update the form and save');
+        }
+
         function savePackage(event) {
             event.preventDefault();
             
-            // Get facilities data
+            // Get facilities data (check if elements exist)
             const facilities = {
-                haramain_train: document.getElementById('facilityHaramin').checked,
-                thaif_tour: document.getElementById('facilityThaif').checked,
-                equipment_kit: document.getElementById('facilityKit').checked,
-                visa_handling: document.getElementById('facilityVisa').checked
+                haramain_train: document.getElementById('packageHighSpeedTrain')?.checked || false,
+                thaif_tour: document.getElementById('packageThaifTour')?.checked || false,
+                equipment_kit: document.getElementById('packageKitProvided')?.checked || false,
+                visa_handling: document.getElementById('packageVisaHandling')?.checked || false
             };
             
             // Get flight details data
             const flightDetails = {
-                flight_numbers: document.getElementById('flightNumbers').value,
-                transit_info: document.getElementById('transitInfo').value,
-                route: document.getElementById('flightRoute').value,
-                notes: document.getElementById('flightNotes').value
+                flight_numbers: `${document.getElementById('packageDepartFlightNumber')?.value || ''} / ${document.getElementById('packageReturnFlightNumber')?.value || ''}`,
+                depart_transit: document.getElementById('packageDepartTransit')?.value || '',
+                return_transit: document.getElementById('packageReturnTransit')?.value || '',
+                route: document.getElementById('packageFlightRoute')?.value || '',
+                notes: document.getElementById('packageFlightNotes')?.value || ''
             };
+            
+            // Check if tiers are enabled
+            const hasTiers = document.getElementById('enableTiers').checked;
+            let tierData = null;
+            
+            if (hasTiers) {
+                tierData = {
+                    platinum: {
+                        price: parseInt(document.getElementById('platinumPrice').value) || 0,
+                        quota: parseInt(document.getElementById('platinumQuota').value) || 0,
+                        booked: 0,
+                        makkahHotel: document.getElementById('platinumMakkahHotel').value,
+                        madinahHotel: document.getElementById('platinumMadinahHotel').value,
+                        makkahDistance: document.getElementById('platinumMakkahDistance').value,
+                        madinahDistance: document.getElementById('platinumMadinahDistance').value,
+                        features: document.getElementById('platinumFeatures').value
+                    },
+                    gold: {
+                        price: parseInt(document.getElementById('goldPrice').value) || 0,
+                        quota: parseInt(document.getElementById('goldQuota').value) || 0,
+                        booked: 0,
+                        makkahHotel: document.getElementById('goldMakkahHotel').value,
+                        madinahHotel: document.getElementById('goldMadinahHotel').value,
+                        makkahDistance: document.getElementById('goldMakkahDistance').value,
+                        madinahDistance: document.getElementById('goldMadinahDistance').value,
+                        features: document.getElementById('goldFeatures').value
+                    },
+                    silver: {
+                        price: parseInt(document.getElementById('silverPrice').value) || 0,
+                        quota: parseInt(document.getElementById('silverQuota').value) || 0,
+                        booked: 0,
+                        makkahHotel: document.getElementById('silverMakkahHotel').value,
+                        madinahHotel: document.getElementById('silverMadinahHotel').value,
+                        makkahDistance: document.getElementById('silverMakkahDistance').value,
+                        madinahDistance: document.getElementById('silverMadinahDistance').value,
+                        features: document.getElementById('silverFeatures').value
+                    }
+                };
+            }
             
             const formData = {
                 name: document.getElementById('packageName').value,
                 code: document.getElementById('packageCode').value,
-                price: parseInt(document.getElementById('packagePrice').value),
                 departure_date: document.getElementById('packageDeparture').value,
                 duration: parseInt(document.getElementById('packageDuration').value),
-                quota: parseInt(document.getElementById('packageQuota').value),
-                makkah_hotel: document.getElementById('packageMakkahHotel').value,
-                madinah_hotel: document.getElementById('packageMadinahHotel').value,
-                makkah_nights: parseInt(document.getElementById('packageMakkahNights').value),
-                madinah_nights: parseInt(document.getElementById('packageMadinahNights').value),
                 airline: document.getElementById('packageAirline').value,
                 description: document.getElementById('packageDescription').value,
                 flight_details: flightDetails,
                 facilities: facilities,
-                brochure_photos: brochurePhotos || []
+                brochure_photos: brochurePhotos || [],
+                hasTiers: hasTiers
             };
+            
+            // Add tier-specific or standard fields
+            if (hasTiers) {
+                formData.tiers = tierData;
+                formData.makkah_nights = parseInt(document.getElementById('packageMakkahNights')?.value || 5);
+                formData.madinah_nights = parseInt(document.getElementById('packageMadinahNights')?.value || 7);
+            } else {
+                formData.price = parseInt(document.getElementById('packagePrice').value);
+                formData.quota = parseInt(document.getElementById('packageQuota').value);
+                formData.makkah_hotel = document.getElementById('packageMakkahHotel').value;
+                formData.madinah_hotel = document.getElementById('packageMadinahHotel').value;
+                formData.makkah_nights = parseInt(document.getElementById('packageMakkahNights').value);
+                formData.madinah_nights = parseInt(document.getElementById('packageMadinahNights').value);
+            }
             
             const newId = Math.max(...packageData.map(p => p.id)) + 1;
             packageData.push({
