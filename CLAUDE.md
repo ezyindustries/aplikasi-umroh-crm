@@ -138,7 +138,56 @@ Aktor & Flow:
   - Modular & secure
 - Gunakan fallback ke standar industri jika ada ketidakjelasan: OWASP, Google Engineering Guide, Laravel Docs, dsb.
 
-## 7. Task Output Format
+## 7. Development Workflow (WAJIB)
+
+### Alur Development Setiap Fitur:
+**PERHATIKAN: Setiap fitur WAJIB melalui tahapan berikut secara berurutan:**
+
+1. **Frontend Development**
+   - Buat UI/UX sesuai permintaan user
+   - Implementasi form, tabel, modal, navigasi
+   - Styling dengan glass morphism design existing
+   - Validasi frontend dan user experience
+
+2. **Backend Development** 
+   - Implementasi business logic sesuai requirement
+   - Setup database schema dan migration
+   - Buat API endpoint (RESTful)
+   - Implementasi validasi server-side
+   - Setup authentication & authorization
+   - Error handling dan logging
+
+3. **Testing & Quality Assurance (WAJIB)**
+   - **Docker Desktop Testing**: Gunakan Docker untuk virtual environment
+   - Unit testing untuk setiap function
+   - Integration testing untuk API endpoints
+   - Frontend testing (form submission, data display)
+   - Performance testing untuk load handling
+   - Security testing (input validation, SQL injection, XSS)
+
+### Docker Testing Environment:
+- Setup containerized development environment
+- Database testing dengan PostgreSQL container
+- Backend testing dengan Node.js container  
+- Frontend testing dengan Nginx container
+- Volume mounting untuk hot reload development
+
+### Testing Checklist:
+- [ ] Frontend forms working correctly
+- [ ] API endpoints responding properly
+- [ ] Database operations (CRUD) working
+- [ ] Validation working on both frontend & backend
+- [ ] Error handling functioning
+- [ ] Security measures implemented
+- [ ] Performance within acceptable limits
+- [ ] Cross-browser compatibility
+- [ ] Mobile responsiveness
+
+**CRITICAL**: Tidak boleh melanjutkan ke fitur berikutnya sebelum testing selesai dan lulus semua checklist.
+
+---
+
+## 8. Task Output Format
 - Ringkasan hasil (fitur, endpoint, validasi)
 - Perubahan file/folder
 - Prompt/plan yang digunakan

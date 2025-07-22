@@ -1809,6 +1809,217 @@
                 grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             }
         }
+
+        /* Marketing Tools Styles */
+        .tab-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid rgba(71, 85, 105, 0.3);
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: #4facfe;
+            background: rgba(79, 172, 254, 0.1);
+        }
+
+        .tab-btn.active {
+            color: #4facfe;
+            border-bottom-color: #4facfe;
+            background: rgba(79, 172, 254, 0.05);
+        }
+
+        .marketing-tab {
+            display: none;
+        }
+
+        .marketing-tab.active {
+            display: block;
+        }
+
+        .lead-temperature {
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .lead-score {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .lead-score.high {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
+        .lead-score.medium {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+        }
+
+        .lead-score.low {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .follow-up-card {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.7));
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .follow-up-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(79, 172, 254, 0.5);
+        }
+
+        .follow-up-overdue {
+            border-color: rgba(239, 68, 68, 0.5);
+            background: linear-gradient(145deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.05));
+        }
+
+        .campaign-card {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.7));
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .campaign-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .campaign-stat {
+            padding: 10px;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 8px;
+        }
+
+        .team-card {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.7));
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .team-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #4facfe, #00f2fe);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .performance-metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(71, 85, 105, 0.2);
+        }
+
+        .performance-metric:last-child {
+            border-bottom: none;
+        }
+
+        .timeline-container {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline-container::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: rgba(79, 172, 254, 0.3);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            background: rgba(30, 41, 59, 0.4);
+            border-radius: 8px;
+            border: 1px solid rgba(71, 85, 105, 0.3);
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -25px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4facfe;
+            border: 2px solid #1e293b;
+        }
+
+        .campaign-grid, .team-performance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .lead-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .lead-actions .btn {
+            padding: 4px 8px;
+            font-size: 11px;
+        }
+
+        .lead-tags {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            margin-top: 5px;
+        }
+
+        .lead-tag {
+            padding: 2px 8px;
+            background: rgba(79, 172, 254, 0.2);
+            color: #4facfe;
+            border-radius: 12px;
+            font-size: 11px;
+        }
     </style>
 </head>
 <body>
@@ -1852,6 +2063,16 @@
             <div class="nav-item" onclick="showPage('finance')">
                 <span class="material-icons">account_balance</span>
                 Keuangan
+            </div>
+            
+            <div class="nav-item" onclick="showPage('marketing')">
+                <span class="material-icons">campaign</span>
+                Marketing Tools
+            </div>
+            
+            <div class="nav-item" onclick="showPage('automation')">
+                <span class="material-icons">smart_toy</span>
+                WhatsApp Automation
             </div>
             
             <div class="nav-item" onclick="showPage('reports')">
@@ -2328,6 +2549,359 @@
                                     <!-- Journals will be populated here -->
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Marketing Tools Page -->
+            <div id="marketing" class="page">
+                <div class="glass-card">
+                    <div class="header-section">
+                        <h2><span class="material-icons" style="vertical-align: middle; margin-right: 10px;">campaign</span>Marketing Tools</h2>
+                        <div class="button-group">
+                            <button class="btn btn-primary" onclick="openModal('leadModal')">
+                                <span class="material-icons">person_add</span>
+                                Input Lead Baru
+                            </button>
+                            <button class="btn btn-success" onclick="openModal('broadcastModal')">
+                                <span class="material-icons">send</span>
+                                WhatsApp Broadcast
+                            </button>
+                            <button class="btn btn-warning" onclick="showCampaignReport()">
+                                <span class="material-icons">analytics</span>
+                                Campaign Report
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Marketing Stats -->
+                    <div class="stat-container" style="margin-bottom: 30px;">
+                        <div class="stat-card" style="background: linear-gradient(145deg, rgba(34, 197, 94, 0.15), rgba(22, 163, 74, 0.1)); border-color: rgba(34, 197, 94, 0.3);">
+                            <div class="stat-number" id="totalLeads" style="color: #22c55e;">0</div>
+                            <div class="stat-label">Total Leads</div>
+                        </div>
+                        
+                        <div class="stat-card" style="background: linear-gradient(145deg, rgba(251, 191, 36, 0.15), rgba(245, 158, 11, 0.1)); border-color: rgba(251, 191, 36, 0.3);">
+                            <div class="stat-number" id="hotLeads" style="color: #fbbf24;">0</div>
+                            <div class="stat-label">Hot Leads 🔥</div>
+                        </div>
+                        
+                        <div class="stat-card" style="background: linear-gradient(145deg, rgba(79, 172, 254, 0.15), rgba(56, 155, 255, 0.1)); border-color: rgba(79, 172, 254, 0.3);">
+                            <div class="stat-number" id="conversionRate" style="color: #4facfe;">0%</div>
+                            <div class="stat-label">Conversion Rate</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-number" id="avgResponseTime">0h</div>
+                            <div class="stat-label">Avg Response Time</div>
+                        </div>
+                    </div>
+
+                    <!-- Conversion Funnel -->
+                    <div class="glass-card" style="margin-bottom: 30px;">
+                        <h3 style="margin-bottom: 20px;">Conversion Funnel</h3>
+                        <div class="funnel-container" style="display: flex; align-items: center; gap: 10px; padding: 20px; overflow-x: auto;">
+                            <div class="funnel-stage" style="text-align: center; flex: 1; min-width: 120px;">
+                                <div class="funnel-bar" style="background: #22c55e; height: 80px; border-radius: 8px 8px 0 0; position: relative;">
+                                    <span class="funnel-count" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; color: white;" id="funnelLead">0</span>
+                                </div>
+                                <div class="funnel-label" style="margin-top: 8px; font-size: 12px; color: #cbd5e1;">Lead</div>
+                            </div>
+                            <span class="material-icons" style="color: #4facfe;">arrow_forward</span>
+                            <div class="funnel-stage" style="text-align: center; flex: 1; min-width: 120px;">
+                                <div class="funnel-bar" style="background: #fbbf24; height: 60px; border-radius: 8px 8px 0 0; position: relative;">
+                                    <span class="funnel-count" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: bold;" id="funnelContacted">0</span>
+                                </div>
+                                <div class="funnel-label" style="margin-top: 8px; font-size: 12px; color: #cbd5e1;">Contacted</div>
+                            </div>
+                            <span class="material-icons" style="color: #4facfe;">arrow_forward</span>
+                            <div class="funnel-stage" style="text-align: center; flex: 1; min-width: 120px;">
+                                <div class="funnel-bar" style="background: #f59e0b; height: 45px; border-radius: 8px 8px 0 0; position: relative;">
+                                    <span class="funnel-count" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: bold;" id="funnelInterested">0</span>
+                                </div>
+                                <div class="funnel-label" style="margin-top: 8px; font-size: 12px; color: #cbd5e1;">Interested</div>
+                            </div>
+                            <span class="material-icons" style="color: #4facfe;">arrow_forward</span>
+                            <div class="funnel-stage" style="text-align: center; flex: 1; min-width: 120px;">
+                                <div class="funnel-bar" style="background: #ef4444; height: 30px; border-radius: 8px 8px 0 0; position: relative;">
+                                    <span class="funnel-count" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; color: white;" id="funnelClosing">0</span>
+                                </div>
+                                <div class="funnel-label" style="margin-top: 8px; font-size: 12px; color: #cbd5e1;">Closing</div>
+                            </div>
+                            <span class="material-icons" style="color: #4facfe;">arrow_forward</span>
+                            <div class="funnel-stage" style="text-align: center; flex: 1; min-width: 120px;">
+                                <div class="funnel-bar" style="background: #4facfe; height: 20px; border-radius: 8px 8px 0 0; position: relative;">
+                                    <span class="funnel-count" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; color: white;" id="funnelConverted">0</span>
+                                </div>
+                                <div class="funnel-label" style="margin-top: 8px; font-size: 12px; color: #cbd5e1;">Converted</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lead Management Tabs -->
+                    <div class="tab-container" style="margin-bottom: 20px;">
+                        <button class="tab-btn active" onclick="showMarketingTab('leads')">
+                            <span class="material-icons">people</span>
+                            Lead Management
+                        </button>
+                        <button class="tab-btn" onclick="showMarketingTab('followup')">
+                            <span class="material-icons">schedule</span>
+                            Follow-up Tracker
+                        </button>
+                        <button class="tab-btn" onclick="showMarketingTab('campaigns')">
+                            <span class="material-icons">ads_click</span>
+                            Campaigns
+                        </button>
+                        <button class="tab-btn" onclick="showMarketingTab('team')">
+                            <span class="material-icons">groups</span>
+                            Team Performance
+                        </button>
+                    </div>
+
+                    <!-- Lead Management Tab -->
+                    <div id="leadsTab" class="marketing-tab active">
+                        <div class="filters" style="margin-bottom: 20px;">
+                            <div class="filter-group">
+                                <label>Search</label>
+                                <input type="text" id="searchLead" placeholder="Nama/No. WhatsApp" onkeyup="filterLeads()">
+                            </div>
+                            <div class="filter-group">
+                                <label>Status</label>
+                                <select id="filterLeadStatus" onchange="filterLeads()">
+                                    <option value="">Semua Status</option>
+                                    <option value="new">New</option>
+                                    <option value="contacted">Contacted</option>
+                                    <option value="interested">Interested</option>
+                                    <option value="not_interested">Not Interested</option>
+                                    <option value="converted">Converted</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Temperature</label>
+                                <select id="filterLeadTemp" onchange="filterLeads()">
+                                    <option value="">Semua</option>
+                                    <option value="hot">🔥 Hot</option>
+                                    <option value="warm">🌡️ Warm</option>
+                                    <option value="cold">❄️ Cold</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Source</label>
+                                <select id="filterLeadSource" onchange="filterLeads()">
+                                    <option value="">Semua Source</option>
+                                    <option value="fb_ads">FB Ads</option>
+                                    <option value="google_ads">Google Ads</option>
+                                    <option value="instagram">Instagram</option>
+                                    <option value="referral">Referral</option>
+                                    <option value="website">Website</option>
+                                    <option value="other">Lainnya</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Temp</th>
+                                        <th>Nama</th>
+                                        <th>No. WhatsApp</th>
+                                        <th>Source</th>
+                                        <th>Status</th>
+                                        <th>Marketer</th>
+                                        <th>Last Contact</th>
+                                        <th>Score</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="leadTableBody">
+                                    <!-- Lead data will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Follow-up Tab -->
+                    <div id="followupTab" class="marketing-tab">
+                        <div class="follow-up-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;">
+                            <!-- Follow-up cards will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Campaigns Tab -->
+                    <div id="campaignsTab" class="marketing-tab">
+                        <div class="campaign-grid" id="campaignGrid">
+                            <!-- Campaign cards will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Team Performance Tab -->
+                    <div id="teamTab" class="marketing-tab">
+                        <div class="team-performance-grid" id="teamGrid">
+                            <!-- Team performance cards will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WhatsApp Automation Page -->
+            <div id="automation" class="page">
+                <div class="glass-card">
+                    <div class="header-section">
+                        <h2><span class="material-icons" style="vertical-align: middle; margin-right: 10px;">smart_toy</span>WhatsApp Automation</h2>
+                        <div class="button-group">
+                            <button class="btn btn-primary" onclick="openModal('automationRuleModal')">
+                                <span class="material-icons">add</span>
+                                Tambah Rule
+                            </button>
+                            <button class="btn btn-success" onclick="openModal('messageTemplateModal')">
+                                <span class="material-icons">message</span>
+                                Template Pesan
+                            </button>
+                            <button class="btn btn-warning" onclick="showQueueMonitor()">
+                                <span class="material-icons">queue</span>
+                                Monitor Queue
+                            </button>
+                            <button class="btn btn-info" onclick="testWAHAConnection()">
+                                <span class="material-icons">wifi</span>
+                                Test WAHA
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Automation Status Cards -->
+                    <div class="stat-container" style="margin-bottom: 30px;">
+                        <div class="stat-card" style="background: linear-gradient(145deg, rgba(34, 197, 94, 0.15), rgba(22, 163, 74, 0.1)); border-color: rgba(34, 197, 94, 0.3);">
+                            <div class="stat-number" id="activeRules" style="color: #22c55e;">0</div>
+                            <div class="stat-label">Active Rules</div>
+                        </div>
+                        
+                        <div class="stat-card" style="background: linear-gradient(145deg, rgba(59, 130, 246, 0.15), rgba(37, 99, 235, 0.1)); border-color: rgba(59, 130, 246, 0.3);">
+                            <div class="stat-number" id="queuedMessages" style="color: #3b82f6;">0</div>
+                            <div class="stat-label">Queued Messages</div>
+                        </div>
+                        
+                        <div class="stat-card" style="background: linear-gradient(145deg, rgba(168, 85, 247, 0.15), rgba(147, 51, 234, 0.1)); border-color: rgba(168, 85, 247, 0.3);">
+                            <div class="stat-number" id="sentToday" style="color: #a855f7;">0</div>
+                            <div class="stat-label">Sent Today</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-number" id="deliveryRate">95%</div>
+                            <div class="stat-label">Delivery Rate</div>
+                        </div>
+                    </div>
+
+                    <!-- WAHA Connection Status -->
+                    <div class="glass-card" style="margin-bottom: 30px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="margin: 0;">WAHA Connection Status</h4>
+                                <p style="margin: 5px 0; color: #cbd5e1;">WhatsApp HTTP API Integration</p>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div id="wahaStatus" class="status-badge status-pending">Disconnected</div>
+                                <button class="btn btn-primary btn-sm" onclick="testWAHAConnection()">
+                                    <span class="material-icons">refresh</span>
+                                    Test Connection
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 15px; padding: 15px; background: rgba(59, 130, 246, 0.1); border-radius: 8px;">
+                            <p style="margin: 0; font-size: 14px; color: #cbd5e1;">
+                                <span class="material-icons" style="font-size: 16px; vertical-align: middle;">info</span>
+                                WAHA server configuration akan dilakukan saat server sudah ready. 
+                                Saat ini sistem automation sudah siap untuk integrasi.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Automation Tabs -->
+                    <div class="tab-container" style="margin-bottom: 20px;">
+                        <button class="tab-btn active" onclick="showAutomationTab('rules')">
+                            <span class="material-icons">rule</span>
+                            Automation Rules
+                        </button>
+                        <button class="tab-btn" onclick="showAutomationTab('templates')">
+                            <span class="material-icons">message</span>
+                            Message Templates
+                        </button>
+                        <button class="tab-btn" onclick="showAutomationTab('queue')">
+                            <span class="material-icons">schedule_send</span>
+                            Message Queue
+                        </button>
+                        <button class="tab-btn" onclick="showAutomationTab('analytics')">
+                            <span class="material-icons">analytics</span>
+                            Analytics
+                        </button>
+                    </div>
+
+                    <!-- Rules Tab -->
+                    <div id="rulesTab" class="automation-tab active">
+                        <div class="automation-rules-grid" id="rulesGrid">
+                            <!-- Rules will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Templates Tab -->
+                    <div id="templatesTab" class="automation-tab">
+                        <div class="templates-grid" id="templatesGrid">
+                            <!-- Templates will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Queue Tab -->
+                    <div id="queueTab" class="automation-tab">
+                        <div class="filters" style="margin-bottom: 20px;">
+                            <div class="filter-group">
+                                <label>Status</label>
+                                <select id="filterQueueStatus" onchange="filterQueue()">
+                                    <option value="">Semua Status</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="sending">Sending</option>
+                                    <option value="sent">Sent</option>
+                                    <option value="failed">Failed</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Date Range</label>
+                                <input type="date" id="filterQueueDate" onchange="filterQueue()">
+                            </div>
+                        </div>
+                        
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Jamaah</th>
+                                        <th>Phone</th>
+                                        <th>Template</th>
+                                        <th>Scheduled</th>
+                                        <th>Status</th>
+                                        <th>Sent</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="queueTableBody">
+                                    <!-- Queue items will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Analytics Tab -->
+                    <div id="analyticsTab" class="automation-tab">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                            <div class="glass-card">
+                                <h4>Message Performance</h4>
+                                <canvas id="messageChart" width="300" height="200"></canvas>
+                            </div>
+                            <div class="glass-card">
+                                <h4>Popular Templates</h4>
+                                <div id="popularTemplates"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -3539,6 +4113,554 @@
         </div>
     </div>
 
+    <!-- Lead Modal -->
+    <div id="leadModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3>Input Lead Baru</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            
+            <form onsubmit="saveLead(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="leadName">Nama <span class="required">*</span></label>
+                        <input type="text" id="leadName" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="leadPhone">No. WhatsApp <span class="required">*</span></label>
+                        <input type="tel" id="leadPhone" placeholder="081234567890" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="leadSource">Source <span class="required">*</span></label>
+                        <select id="leadSource" required>
+                            <option value="">Pilih Source</option>
+                            <option value="fb_ads">Facebook Ads</option>
+                            <option value="google_ads">Google Ads</option>
+                            <option value="instagram">Instagram</option>
+                            <option value="referral">Referral</option>
+                            <option value="website">Website</option>
+                            <option value="other">Lainnya</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="leadMarketer">Marketer <span class="required">*</span></label>
+                        <select id="leadMarketer" required>
+                            <option value="">Pilih Marketer</option>
+                            <option value="1">Ani - Marketing 1</option>
+                            <option value="2">Budi - Marketing 2</option>
+                            <option value="3">Citra - Marketing 3</option>
+                            <option value="4">Dodi - Marketing 4</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="leadBudget">Budget Range</label>
+                        <select id="leadBudget">
+                            <option value="">Belum Diketahui</option>
+                            <option value="low">< 15 Juta</option>
+                            <option value="medium">15-20 Juta</option>
+                            <option value="high">> 20 Juta</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="leadPackageInterest">Minat Paket</label>
+                        <select id="leadPackageInterest">
+                            <option value="">Belum Tahu</option>
+                            <option value="1">Umroh Ramadhan</option>
+                            <option value="2">Umroh Plus</option>
+                            <option value="3">Umroh Keluarga</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="leadNotes">Catatan Awal</label>
+                    <textarea id="leadNotes" rows="3" placeholder="Catatan dari percakapan awal..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Tags</label>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" name="leadTags" value="urgent">
+                            <span>Urgent</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" name="leadTags" value="family">
+                            <span>Keluarga</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" name="leadTags" value="first_time">
+                            <span>First Timer</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" name="leadTags" value="repeat">
+                            <span>Repeat Customer</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('leadModal')">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Lead</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Broadcast Modal -->
+    <div id="broadcastModal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3>WhatsApp Broadcast</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            
+            <form onsubmit="sendBroadcast(event)">
+                <div class="form-group">
+                    <label>Target Audience <span class="required">*</span></label>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" name="broadcastTarget" value="all_leads">
+                            <span>Semua Leads (${leadData?.length || 0})</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" name="broadcastTarget" value="hot_leads">
+                            <span>Hot Leads Only</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" name="broadcastTarget" value="new_leads">
+                            <span>New Leads (< 7 hari)</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" name="broadcastTarget" value="interested">
+                            <span>Status Interested</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" name="broadcastTarget" value="no_response">
+                            <span>Belum Ada Response</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" name="broadcastTarget" value="specific_package">
+                            <span>Minat Paket Tertentu</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="broadcastTemplate">Template Pesan</label>
+                    <select id="broadcastTemplate" onchange="loadMessageTemplate()">
+                        <option value="">Custom Message</option>
+                        <option value="promo">Promo Terbaru</option>
+                        <option value="reminder">Follow-up Reminder</option>
+                        <option value="info">Info Keberangkatan</option>
+                        <option value="greeting">Salam & Perkenalan</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="broadcastMessage">Pesan <span class="required">*</span></label>
+                    <textarea id="broadcastMessage" rows="6" required placeholder="Assalamualaikum {name},
+
+Kami dari Vauza Tamma ingin menginformasikan...
+
+Gunakan {name} untuk nama, {package} untuk paket interest"></textarea>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="broadcastSchedule">Jadwal Kirim</label>
+                        <select id="broadcastSchedule">
+                            <option value="now">Kirim Sekarang</option>
+                            <option value="scheduled">Jadwalkan</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" id="scheduleTimeGroup" style="display: none;">
+                        <label for="broadcastTime">Waktu Kirim</label>
+                        <input type="datetime-local" id="broadcastTime">
+                    </div>
+                </div>
+                
+                <div style="background: rgba(251, 191, 36, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <p style="margin: 0; color: #fbbf24; font-size: 14px;">
+                        <span class="material-icons" style="font-size: 16px; vertical-align: middle;">info</span>
+                        Estimasi <span id="broadcastCount">0</span> pesan akan dikirim
+                    </p>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('broadcastModal')">Batal</button>
+                    <button type="submit" class="btn btn-success">
+                        <span class="material-icons">send</span>
+                        Kirim Broadcast
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lead Detail Modal -->
+    <div id="leadDetailModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3>Detail Lead</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            
+            <div style="padding: 20px;">
+                <!-- Lead Info -->
+                <div class="glass-card" style="margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div>
+                            <h4 id="leadDetailName" style="margin: 0;">-</h4>
+                            <p id="leadDetailPhone" style="margin: 5px 0; color: #cbd5e1;">-</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <div id="leadDetailTemp" style="font-size: 24px;">-</div>
+                            <div id="leadDetailScore" class="lead-score">-</div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                        <div>
+                            <small style="color: #94a3b8;">Source</small>
+                            <p id="leadDetailSource">-</p>
+                        </div>
+                        <div>
+                            <small style="color: #94a3b8;">Status</small>
+                            <p id="leadDetailStatus">-</p>
+                        </div>
+                        <div>
+                            <small style="color: #94a3b8;">Marketer</small>
+                            <p id="leadDetailMarketer">-</p>
+                        </div>
+                        <div>
+                            <small style="color: #94a3b8;">Created</small>
+                            <p id="leadDetailCreated">-</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Communication Timeline -->
+                <div class="glass-card">
+                    <h4 style="margin-bottom: 20px;">Timeline Komunikasi</h4>
+                    <div class="timeline-container" id="leadTimeline">
+                        <!-- Timeline items will be populated here -->
+                    </div>
+                    
+                    <!-- Add Note Form -->
+                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(71, 85, 105, 0.3);">
+                        <form onsubmit="addLeadNote(event)">
+                            <input type="hidden" id="leadDetailId">
+                            <div class="form-group">
+                                <label>Tambah Catatan</label>
+                                <textarea id="leadNewNote" rows="3" placeholder="Update komunikasi dengan lead..." required></textarea>
+                            </div>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <select id="leadUpdateStatus" style="flex: 1;">
+                                    <option value="">Update Status (Optional)</option>
+                                    <option value="contacted">Contacted</option>
+                                    <option value="interested">Interested</option>
+                                    <option value="not_interested">Not Interested</option>
+                                    <option value="closing">Closing</option>
+                                    <option value="converted">Converted</option>
+                                </select>
+                                <button type="submit" class="btn btn-primary">
+                                    <span class="material-icons">add</span>
+                                    Tambah Note
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Automation Rule Modal -->
+    <div id="automationRuleModal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3>Automation Rule</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            
+            <form onsubmit="saveAutomationRule(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="ruleName">Nama Rule <span class="required">*</span></label>
+                        <input type="text" id="ruleName" required placeholder="Payment Reminder H-7">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="ruleStatus">Status</label>
+                        <select id="ruleStatus">
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="ruleTrigger">Trigger Type <span class="required">*</span></label>
+                    <select id="ruleTrigger" required onchange="updateTriggerOptions()">
+                        <option value="">Pilih Trigger</option>
+                        <option value="time_based">Time Based (Daily/Weekly)</option>
+                        <option value="date_based">Date Based (Days before/after)</option>
+                        <option value="status_based">Status Change</option>
+                        <option value="payment_based">Payment Related</option>
+                        <option value="document_based">Document Related</option>
+                    </select>
+                </div>
+
+                <div id="triggerOptions" style="display: none;">
+                    <!-- Dynamic trigger options will appear here -->
+                </div>
+
+                <div class="form-group">
+                    <label for="ruleConditions">Conditions (JavaScript Expression)</label>
+                    <textarea id="ruleConditions" rows="3" placeholder="jamaah.total_paid < jamaah.total_amount && daysUntilDeparture <= 7"></textarea>
+                    <small style="color: #94a3b8;">Available variables: jamaah, daysUntilDeparture, daysAfterRegistration</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="ruleTemplate">Message Template <span class="required">*</span></label>
+                    <select id="ruleTemplate" required>
+                        <option value="">Pilih Template</option>
+                        <!-- Templates will be populated dynamically -->
+                    </select>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="ruleDelay">Delay (minutes)</label>
+                        <input type="number" id="ruleDelay" min="0" value="0" placeholder="30">
+                        <small style="color: #94a3b8;">Delay sebelum mengirim pesan</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="rulePriority">Priority</label>
+                        <select id="rulePriority">
+                            <option value="low">Low</option>
+                            <option value="normal" selected>Normal</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Sending Time Restrictions</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div>
+                            <label for="ruleStartTime">Start Time</label>
+                            <input type="time" id="ruleStartTime" value="08:00">
+                        </div>
+                        <div>
+                            <label for="ruleEndTime">End Time</label>
+                            <input type="time" id="ruleEndTime" value="20:00">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Options</label>
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" id="ruleSkipWeekends">
+                            <span>Skip Weekends</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" id="ruleOncePerJamaah">
+                            <span>Once per Jamaah</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" id="ruleRespectBlacklist" checked>
+                            <span>Respect Blacklist</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('automationRuleModal')">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Rule</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Message Template Modal -->
+    <div id="messageTemplateModal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3>Message Template</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            
+            <form onsubmit="saveMessageTemplate(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="templateName">Nama Template <span class="required">*</span></label>
+                        <input type="text" id="templateName" required placeholder="Payment Reminder">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="templateCategory">Kategori</label>
+                        <select id="templateCategory">
+                            <option value="payment">Payment</option>
+                            <option value="document">Document</option>
+                            <option value="departure">Departure</option>
+                            <option value="general">General</option>
+                            <option value="greeting">Greeting</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="templateMessage">Pesan <span class="required">*</span></label>
+                    <textarea id="templateMessage" rows="6" required placeholder="Assalamualaikum {name},
+
+Kami ingin mengingatkan bahwa masih ada sisa pembayaran sebesar Rp {remaining_amount} untuk paket umroh {package}.
+
+Mohon segera melunasi sebelum tanggal keberangkatan {departure_date}.
+
+Terima kasih."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Available Variables</label>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px; background: rgba(59, 130, 246, 0.1); border-radius: 8px;">
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="insertVariable('name')">
+                            {name}
+                        </button>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="insertVariable('phone')">
+                            {phone}
+                        </button>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="insertVariable('package')">
+                            {package}
+                        </button>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="insertVariable('total_amount')">
+                            {total_amount}
+                        </button>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="insertVariable('remaining_amount')">
+                            {remaining_amount}
+                        </button>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="insertVariable('departure_date')">
+                            {departure_date}
+                        </button>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="insertVariable('days_left')">
+                            {days_left}
+                        </button>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="insertVariable('registration_number')">
+                            {registration_number}
+                        </button>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="insertVariable('group_name')">
+                            {group_name}
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="templateMedia">Media Attachment (Optional)</label>
+                    <input type="file" id="templateMedia" accept="image/*,application/pdf">
+                    <small style="color: #94a3b8;">Supported: Images (JPG, PNG) and PDF files</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Template Preview</label>
+                    <div id="templatePreview" style="padding: 15px; background: rgba(30, 41, 59, 0.4); border-radius: 8px; min-height: 100px; color: #cbd5e1;">
+                        Preview akan muncul di sini...
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('messageTemplateModal')">Batal</button>
+                    <button type="button" class="btn btn-warning" onclick="previewTemplate()">Preview</button>
+                    <button type="submit" class="btn btn-primary">Simpan Template</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Queue Monitor Modal -->
+    <div id="queueMonitorModal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h3>Message Queue Monitor</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            
+            <div style="padding: 20px;">
+                <!-- Queue Stats -->
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px;">
+                    <div style="text-align: center; padding: 15px; background: rgba(59, 130, 246, 0.1); border-radius: 8px;">
+                        <div style="font-size: 24px; font-weight: bold; color: #3b82f6;" id="queuePending">0</div>
+                        <div style="font-size: 12px; color: #94a3b8;">Pending</div>
+                    </div>
+                    <div style="text-align: center; padding: 15px; background: rgba(251, 191, 36, 0.1); border-radius: 8px;">
+                        <div style="font-size: 24px; font-weight: bold; color: #fbbf24;" id="queueSending">0</div>
+                        <div style="font-size: 12px; color: #94a3b8;">Sending</div>
+                    </div>
+                    <div style="text-align: center; padding: 15px; background: rgba(34, 197, 94, 0.1); border-radius: 8px;">
+                        <div style="font-size: 24px; font-weight: bold; color: #22c55e;" id="queueSent">0</div>
+                        <div style="font-size: 12px; color: #94a3b8;">Sent</div>
+                    </div>
+                    <div style="text-align: center; padding: 15px; background: rgba(239, 68, 68, 0.1); border-radius: 8px;">
+                        <div style="font-size: 24px; font-weight: bold; color: #ef4444;" id="queueFailed">0</div>
+                        <div style="font-size: 12px; color: #94a3b8;">Failed</div>
+                    </div>
+                </div>
+
+                <!-- Queue Actions -->
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <button class="btn btn-primary" onclick="processQueue()">
+                        <span class="material-icons">play_arrow</span>
+                        Process Queue
+                    </button>
+                    <button class="btn btn-warning" onclick="pauseQueue()">
+                        <span class="material-icons">pause</span>
+                        Pause Queue
+                    </button>
+                    <button class="btn btn-danger" onclick="clearFailedQueue()">
+                        <span class="material-icons">clear</span>
+                        Clear Failed
+                    </button>
+                    <button class="btn btn-success" onclick="retryFailedQueue()">
+                        <span class="material-icons">refresh</span>
+                        Retry Failed
+                    </button>
+                </div>
+
+                <!-- Queue Table -->
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Jamaah</th>
+                                <th>Phone</th>
+                                <th>Template</th>
+                                <th>Scheduled</th>
+                                <th>Status</th>
+                                <th>Attempts</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="queueMonitorTableBody">
+                            <!-- Queue items will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Sample Data
         let jamaahData = [
@@ -4364,6 +5486,12 @@
                     break;
                 case 'finance':
                     loadFinancePage();
+                    break;
+                case 'marketing':
+                    loadMarketingPage();
+                    break;
+                case 'automation':
+                    loadAutomationPage();
                     break;
             }
         }
@@ -7814,6 +8942,168 @@
         let journalEntries = [];
         let financialTransactions = [];
 
+        // Marketing Data
+        let leadData = [
+            {
+                id: 1,
+                name: "Ibu Fatimah",
+                phone: "081234567890",
+                source: "fb_ads",
+                status: "interested",
+                temperature: "hot",
+                marketer_id: "1",
+                marketer_name: "Ani - Marketing 1",
+                score: 85,
+                budget: "medium",
+                package_interest: "1",
+                created_date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+                last_contact: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+                tags: ["urgent", "family"],
+                notes: [
+                    {
+                        date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+                        note: "First contact via FB. Tertarik paket ramadhan untuk keluarga 4 orang.",
+                        by: "Ani"
+                    },
+                    {
+                        date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+                        note: "Follow up WA. Sudah kirim brosur dan price list. Minta waktu diskusi dengan suami.",
+                        by: "Ani"
+                    },
+                    {
+                        date: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+                        note: "Suami setuju. Minta info cicilan dan proses pendaftaran. Schedule meeting besok.",
+                        by: "Ani"
+                    }
+                ]
+            },
+            {
+                id: 2,
+                name: "Bapak Rahman",
+                phone: "081234567891",
+                source: "google_ads",
+                status: "contacted",
+                temperature: "warm",
+                marketer_id: "2",
+                marketer_name: "Budi - Marketing 2",
+                score: 65,
+                budget: "high",
+                package_interest: "2",
+                created_date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+                last_contact: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+                tags: ["first_time"],
+                notes: [
+                    {
+                        date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+                        note: "Inquiry from Google Ads. Looking for premium package.",
+                        by: "Budi"
+                    },
+                    {
+                        date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+                        note: "Sent package details. Interested but comparing with other travel.",
+                        by: "Budi"
+                    }
+                ]
+            },
+            {
+                id: 3,
+                name: "Ibu Siti Nurhaliza",
+                phone: "081234567892",
+                source: "referral",
+                status: "new",
+                temperature: "cold",
+                marketer_id: "1",
+                marketer_name: "Ani - Marketing 1",
+                score: 40,
+                budget: "low",
+                package_interest: "",
+                created_date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+                last_contact: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+                tags: ["referral"],
+                notes: [
+                    {
+                        date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+                        note: "Referral from Ibu Aminah. Just asking for information.",
+                        by: "Ani"
+                    }
+                ]
+            }
+        ];
+
+        let campaigns = [
+            {
+                id: 1,
+                name: "Ramadhan Early Bird",
+                type: "fb_ads",
+                status: "active",
+                budget: 5000000,
+                spent: 3500000,
+                leads: 45,
+                conversions: 8,
+                start_date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+                end_date: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString()
+            },
+            {
+                id: 2,
+                name: "Google Search - Umroh",
+                type: "google_ads",
+                status: "active",
+                budget: 3000000,
+                spent: 2100000,
+                leads: 28,
+                conversions: 5,
+                start_date: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
+                end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+            }
+        ];
+
+        let marketers = [
+            {
+                id: "1",
+                name: "Ani",
+                full_name: "Ani - Marketing 1",
+                total_leads: 68,
+                hot_leads: 12,
+                conversions: 15,
+                conversion_rate: 22,
+                avg_response_time: 2.5,
+                active: true
+            },
+            {
+                id: "2", 
+                name: "Budi",
+                full_name: "Budi - Marketing 2",
+                total_leads: 45,
+                hot_leads: 8,
+                conversions: 10,
+                conversion_rate: 22.2,
+                avg_response_time: 3.2,
+                active: true
+            },
+            {
+                id: "3",
+                name: "Citra",
+                full_name: "Citra - Marketing 3",
+                total_leads: 52,
+                hot_leads: 10,
+                conversions: 12,
+                conversion_rate: 23.1,
+                avg_response_time: 2.8,
+                active: true
+            },
+            {
+                id: "4",
+                name: "Dodi",
+                full_name: "Dodi - Marketing 4",
+                total_leads: 38,
+                hot_leads: 5,
+                conversions: 7,
+                conversion_rate: 18.4,
+                avg_response_time: 4.1,
+                active: true
+            }
+        ];
+
         // Initialize default COA if empty
         function initializeFinancialData() {
             if (chartOfAccounts.length === 0) {
@@ -9036,6 +10326,448 @@
             document.body.appendChild(modal);
         }
 
+        // Marketing Functions
+        function loadMarketingPage() {
+            updateMarketingStats();
+            updateConversionFunnel();
+            loadLeadTable();
+            showMarketingTab('leads');
+        }
+
+        function updateMarketingStats() {
+            const totalLeads = leadData.length;
+            const hotLeads = leadData.filter(lead => lead.temperature === 'hot').length;
+            const convertedLeads = leadData.filter(lead => lead.status === 'converted').length;
+            const conversionRate = totalLeads > 0 ? Math.round((convertedLeads / totalLeads) * 100) : 0;
+            
+            // Calculate average response time
+            const totalResponseTime = marketers.reduce((sum, m) => sum + m.avg_response_time, 0);
+            const avgResponseTime = Math.round(totalResponseTime / marketers.length * 10) / 10;
+            
+            document.getElementById('totalLeads').textContent = totalLeads;
+            document.getElementById('hotLeads').textContent = hotLeads;
+            document.getElementById('conversionRate').textContent = `${conversionRate}%`;
+            document.getElementById('avgResponseTime').textContent = `${avgResponseTime}h`;
+        }
+
+        function updateConversionFunnel() {
+            const leadCount = leadData.length;
+            const contactedCount = leadData.filter(l => ['contacted', 'interested', 'closing', 'converted'].includes(l.status)).length;
+            const interestedCount = leadData.filter(l => ['interested', 'closing', 'converted'].includes(l.status)).length;
+            const closingCount = leadData.filter(l => ['closing', 'converted'].includes(l.status)).length;
+            const convertedCount = leadData.filter(l => l.status === 'converted').length;
+            
+            document.getElementById('funnelLead').textContent = leadCount;
+            document.getElementById('funnelContacted').textContent = contactedCount;
+            document.getElementById('funnelInterested').textContent = interestedCount;
+            document.getElementById('funnelClosing').textContent = closingCount;
+            document.getElementById('funnelConverted').textContent = convertedCount;
+        }
+
+        function showMarketingTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.marketing-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active from all tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            
+            // Add active to clicked button
+            event.target.classList.add('active');
+            
+            // Load tab-specific data
+            switch(tabName) {
+                case 'leads':
+                    loadLeadTable();
+                    break;
+                case 'followup':
+                    loadFollowUpCards();
+                    break;
+                case 'campaigns':
+                    loadCampaignCards();
+                    break;
+                case 'team':
+                    loadTeamPerformance();
+                    break;
+            }
+        }
+
+        function loadLeadTable() {
+            const tbody = document.getElementById('leadTableBody');
+            if (!tbody) return;
+            
+            // Get filter values
+            const searchTerm = document.getElementById('searchLead').value.toLowerCase();
+            const statusFilter = document.getElementById('filterLeadStatus').value;
+            const tempFilter = document.getElementById('filterLeadTemp').value;
+            const sourceFilter = document.getElementById('filterLeadSource').value;
+            
+            // Filter leads
+            let filteredLeads = leadData.filter(lead => {
+                const matchesSearch = !searchTerm || 
+                    lead.name.toLowerCase().includes(searchTerm) ||
+                    lead.phone.includes(searchTerm);
+                const matchesStatus = !statusFilter || lead.status === statusFilter;
+                const matchesTemp = !tempFilter || lead.temperature === tempFilter;
+                const matchesSource = !sourceFilter || lead.source === sourceFilter;
+                
+                return matchesSearch && matchesStatus && matchesTemp && matchesSource;
+            });
+            
+            tbody.innerHTML = filteredLeads.map(lead => {
+                const tempEmoji = {
+                    'hot': '🔥',
+                    'warm': '🌡️',
+                    'cold': '❄️'
+                }[lead.temperature] || '❓';
+                
+                const scoreClass = lead.score >= 80 ? 'high' : lead.score >= 60 ? 'medium' : 'low';
+                const statusText = getStatusText(lead.status);
+                const lastContact = new Date(lead.last_contact);
+                const daysSinceContact = Math.floor((Date.now() - lastContact.getTime()) / (1000 * 60 * 60 * 24));
+                
+                return `
+                    <tr>
+                        <td class="lead-temperature">${tempEmoji}</td>
+                        <td>
+                            <strong>${lead.name}</strong>
+                            <div class="lead-tags">
+                                ${lead.tags.map(tag => `<span class="lead-tag">${tag}</span>`).join('')}
+                            </div>
+                        </td>
+                        <td>
+                            <a href="https://wa.me/${lead.phone.replace(/^0/, '62')}" target="_blank" style="color: #4facfe; text-decoration: none;">
+                                ${lead.phone}
+                                <span class="material-icons" style="font-size: 14px; vertical-align: middle;">open_in_new</span>
+                            </a>
+                        </td>
+                        <td>${getSourceText(lead.source)}</td>
+                        <td><span class="status-badge status-${lead.status}">${statusText}</span></td>
+                        <td>${lead.marketer_name}</td>
+                        <td>${daysSinceContact}d ago</td>
+                        <td><span class="lead-score ${scoreClass}">${lead.score}</span></td>
+                        <td>
+                            <div class="lead-actions">
+                                <button class="btn btn-primary" onclick="openLeadDetail(${lead.id})" title="Detail">
+                                    <span class="material-icons">visibility</span>
+                                </button>
+                                <button class="btn btn-success" onclick="editLead(${lead.id})" title="Edit">
+                                    <span class="material-icons">edit</span>
+                                </button>
+                                <button class="btn btn-warning" onclick="updateLeadStatus(${lead.id})" title="Update Status">
+                                    <span class="material-icons">update</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function loadFollowUpCards() {
+            const container = document.querySelector('#followupTab .follow-up-container');
+            if (!container) return;
+            
+            // Get leads that need follow-up
+            const needsFollowUp = leadData.filter(lead => {
+                const lastContact = new Date(lead.last_contact);
+                const hoursSinceContact = (Date.now() - lastContact.getTime()) / (1000 * 60 * 60);
+                
+                // Needs follow-up if no contact in 24h and not converted/rejected
+                return hoursSinceContact > 24 && !['converted', 'not_interested'].includes(lead.status);
+            });
+            
+            container.innerHTML = needsFollowUp.map(lead => {
+                const lastContact = new Date(lead.last_contact);
+                const hoursSinceContact = Math.floor((Date.now() - lastContact.getTime()) / (1000 * 60 * 60));
+                const isOverdue = hoursSinceContact > 48;
+                
+                return `
+                    <div class="follow-up-card ${isOverdue ? 'follow-up-overdue' : ''}">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <div>
+                                <h4 style="margin: 0;">${lead.name}</h4>
+                                <p style="margin: 5px 0; color: #cbd5e1;">${lead.phone}</p>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 20px; margin-bottom: 5px;">
+                                    ${lead.temperature === 'hot' ? '🔥' : lead.temperature === 'warm' ? '🌡️' : '❄️'}
+                                </div>
+                                <small style="color: #94a3b8;">${hoursSinceContact}h ago</small>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <small style="color: #94a3b8;">Last Note:</small>
+                            <p style="margin: 5px 0; font-size: 14px;">${lead.notes[lead.notes.length - 1]?.note || 'No notes yet'}</p>
+                        </div>
+                        
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn btn-primary btn-sm" onclick="quickFollowUp(${lead.id})" style="flex: 1;">
+                                <span class="material-icons">message</span>
+                                Quick Follow-up
+                            </button>
+                            <button class="btn btn-success btn-sm" onclick="openLeadDetail(${lead.id})">
+                                <span class="material-icons">visibility</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            if (needsFollowUp.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 40px;">Semua leads sudah di-follow up!</div>';
+            }
+        }
+
+        function loadCampaignCards() {
+            const container = document.getElementById('campaignGrid');
+            if (!container) return;
+            
+            container.innerHTML = campaigns.map(campaign => {
+                const roi = campaign.conversions > 0 ? Math.round(((campaign.conversions * 15000000) - campaign.spent) / campaign.spent * 100) : 0;
+                const conversionRate = campaign.leads > 0 ? Math.round((campaign.conversions / campaign.leads) * 100) : 0;
+                const costPerLead = campaign.leads > 0 ? Math.round(campaign.spent / campaign.leads) : 0;
+                
+                return `
+                    <div class="campaign-card">
+                        <h4 style="margin-bottom: 10px;">${campaign.name}</h4>
+                        <div style="margin-bottom: 15px;">
+                            <span class="status-badge status-${campaign.status}">${campaign.status}</span>
+                        </div>
+                        
+                        <div class="campaign-stats">
+                            <div class="campaign-stat">
+                                <div style="font-size: 18px; font-weight: bold; color: #4facfe;">${campaign.leads}</div>
+                                <div style="font-size: 12px; color: #94a3b8;">Leads</div>
+                            </div>
+                            <div class="campaign-stat">
+                                <div style="font-size: 18px; font-weight: bold; color: #22c55e;">${campaign.conversions}</div>
+                                <div style="font-size: 12px; color: #94a3b8;">Conversions</div>
+                            </div>
+                            <div class="campaign-stat">
+                                <div style="font-size: 18px; font-weight: bold; color: #f59e0b;">${conversionRate}%</div>
+                                <div style="font-size: 12px; color: #94a3b8;">Conv. Rate</div>
+                            </div>
+                            <div class="campaign-stat">
+                                <div style="font-size: 16px; font-weight: bold; color: ${roi > 0 ? '#22c55e' : '#ef4444'};">${roi}%</div>
+                                <div style="font-size: 12px; color: #94a3b8;">ROI</div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 15px; font-size: 13px; color: #cbd5e1;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Budget:</span>
+                                <span>Rp ${campaign.budget.toLocaleString()}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Spent:</span>
+                                <span>Rp ${campaign.spent.toLocaleString()}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Cost/Lead:</span>
+                                <span>Rp ${costPerLead.toLocaleString()}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function loadTeamPerformance() {
+            const container = document.getElementById('teamGrid');
+            if (!container) return;
+            
+            container.innerHTML = marketers.map(marketer => {
+                const performanceColor = marketer.conversion_rate >= 20 ? '#22c55e' : marketer.conversion_rate >= 15 ? '#f59e0b' : '#ef4444';
+                
+                return `
+                    <div class="team-card">
+                        <div class="team-avatar">
+                            ${marketer.name.charAt(0)}
+                        </div>
+                        <h4 style="margin-bottom: 15px;">${marketer.full_name}</h4>
+                        
+                        <div class="performance-metric">
+                            <span>Total Leads</span>
+                            <span style="font-weight: bold;">${marketer.total_leads}</span>
+                        </div>
+                        <div class="performance-metric">
+                            <span>Hot Leads</span>
+                            <span style="font-weight: bold; color: #f59e0b;">🔥 ${marketer.hot_leads}</span>
+                        </div>
+                        <div class="performance-metric">
+                            <span>Conversions</span>
+                            <span style="font-weight: bold; color: #22c55e;">${marketer.conversions}</span>
+                        </div>
+                        <div class="performance-metric">
+                            <span>Conversion Rate</span>
+                            <span style="font-weight: bold; color: ${performanceColor};">${marketer.conversion_rate}%</span>
+                        </div>
+                        <div class="performance-metric">
+                            <span>Avg Response Time</span>
+                            <span style="font-weight: bold;">${marketer.avg_response_time}h</span>
+                        </div>
+                        
+                        <div style="margin-top: 15px;">
+                            <div style="background: rgba(79, 172, 254, 0.1); height: 8px; border-radius: 4px; overflow: hidden;">
+                                <div style="height: 100%; background: ${performanceColor}; width: ${Math.min(marketer.conversion_rate * 4, 100)}%; border-radius: 4px;"></div>
+                            </div>
+                            <small style="color: #94a3b8; margin-top: 5px; display: block;">Performance Score</small>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterLeads() {
+            loadLeadTable();
+        }
+
+        function saveLead(event) {
+            event.preventDefault();
+            
+            const formData = {
+                id: Date.now(),
+                name: document.getElementById('leadName').value,
+                phone: document.getElementById('leadPhone').value,
+                source: document.getElementById('leadSource').value,
+                status: 'new',
+                temperature: 'cold',
+                marketer_id: document.getElementById('leadMarketer').value,
+                marketer_name: document.getElementById('leadMarketer').selectedOptions[0].text,
+                score: 40,
+                budget: document.getElementById('leadBudget').value,
+                package_interest: document.getElementById('leadPackageInterest').value,
+                created_date: new Date().toISOString(),
+                last_contact: new Date().toISOString(),
+                tags: Array.from(document.querySelectorAll('input[name="leadTags"]:checked')).map(cb => cb.value),
+                notes: [
+                    {
+                        date: new Date().toISOString(),
+                        note: document.getElementById('leadNotes').value || 'Lead baru ditambahkan ke sistem.',
+                        by: 'System'
+                    }
+                ]
+            };
+            
+            leadData.push(formData);
+            closeModal('leadModal');
+            updateMarketingStats();
+            updateConversionFunnel();
+            loadLeadTable();
+            showNotification('Lead baru berhasil ditambahkan!');
+            event.target.reset();
+        }
+
+        function openLeadDetail(leadId) {
+            const lead = leadData.find(l => l.id === leadId);
+            if (!lead) return;
+            
+            // Populate lead info
+            document.getElementById('leadDetailName').textContent = lead.name;
+            document.getElementById('leadDetailPhone').textContent = lead.phone;
+            document.getElementById('leadDetailTemp').textContent = {
+                'hot': '🔥',
+                'warm': '🌡️',
+                'cold': '❄️'
+            }[lead.temperature];
+            document.getElementById('leadDetailScore').textContent = lead.score;
+            document.getElementById('leadDetailScore').className = `lead-score ${lead.score >= 80 ? 'high' : lead.score >= 60 ? 'medium' : 'low'}`;
+            document.getElementById('leadDetailSource').textContent = getSourceText(lead.source);
+            document.getElementById('leadDetailStatus').textContent = getStatusText(lead.status);
+            document.getElementById('leadDetailMarketer').textContent = lead.marketer_name;
+            document.getElementById('leadDetailCreated').textContent = formatDate(lead.created_date);
+            document.getElementById('leadDetailId').value = leadId;
+            
+            // Load timeline
+            const timeline = document.getElementById('leadTimeline');
+            timeline.innerHTML = lead.notes.map(note => `
+                <div class="timeline-item">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                        <strong>${note.by}</strong>
+                        <small style="color: #94a3b8;">${formatDateTime(note.date)}</small>
+                    </div>
+                    <p style="margin: 0; font-size: 14px;">${note.note}</p>
+                </div>
+            `).join('');
+            
+            openModal('leadDetailModal');
+        }
+
+        function addLeadNote(event) {
+            event.preventDefault();
+            
+            const leadId = parseInt(document.getElementById('leadDetailId').value);
+            const note = document.getElementById('leadNewNote').value;
+            const newStatus = document.getElementById('leadUpdateStatus').value;
+            
+            const lead = leadData.find(l => l.id === leadId);
+            if (!lead) return;
+            
+            // Add note
+            lead.notes.push({
+                date: new Date().toISOString(),
+                note: note,
+                by: 'Current User'
+            });
+            
+            // Update status if provided
+            if (newStatus) {
+                lead.status = newStatus;
+                lead.last_contact = new Date().toISOString();
+                
+                // Update temperature based on status
+                if (newStatus === 'interested') {
+                    lead.temperature = 'warm';
+                    lead.score = Math.min(lead.score + 15, 100);
+                } else if (newStatus === 'closing') {
+                    lead.temperature = 'hot';
+                    lead.score = Math.min(lead.score + 25, 100);
+                }
+            }
+            
+            // Refresh displays
+            updateMarketingStats();
+            updateConversionFunnel();
+            loadLeadTable();
+            openLeadDetail(leadId); // Refresh modal
+            
+            showNotification('Note berhasil ditambahkan!');
+            document.getElementById('leadNewNote').value = '';
+            document.getElementById('leadUpdateStatus').value = '';
+        }
+
+        function getSourceText(source) {
+            const sources = {
+                'fb_ads': 'FB Ads',
+                'google_ads': 'Google Ads',
+                'instagram': 'Instagram',
+                'referral': 'Referral',
+                'website': 'Website',
+                'other': 'Lainnya'
+            };
+            return sources[source] || source;
+        }
+
+        function getStatusText(status) {
+            const statuses = {
+                'new': 'New',
+                'contacted': 'Contacted',
+                'interested': 'Interested',
+                'not_interested': 'Not Interested',
+                'closing': 'Closing',
+                'converted': 'Converted'
+            };
+            return statuses[status] || status;
+        }
+
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
             loadDashboard();
@@ -9083,6 +10815,740 @@
                     }
                 });
             });
+        });
+
+        // WhatsApp Automation System
+        let automationRules = [
+            {
+                id: 1,
+                name: "Welcome New Lead",
+                trigger: "new_lead",
+                conditions: {
+                    source: "facebook",
+                    timeDelay: 0
+                },
+                template: "welcome_message",
+                status: "active",
+                created_date: "2024-01-15",
+                last_executed: "2024-01-22 14:30",
+                executions: 157
+            },
+            {
+                id: 2,
+                name: "Follow-up Day 3",
+                trigger: "time_based",
+                conditions: {
+                    days_since_last_contact: 3,
+                    lead_status: "new",
+                    timeDelay: 72
+                },
+                template: "followup_day3",
+                status: "active",
+                created_date: "2024-01-10",
+                last_executed: "2024-01-22 09:15",
+                executions: 89
+            },
+            {
+                id: 3,
+                name: "Payment Reminder",
+                trigger: "payment_overdue",
+                conditions: {
+                    days_overdue: 7,
+                    payment_status: "partial"
+                },
+                template: "payment_reminder",
+                status: "paused",
+                created_date: "2024-01-05",
+                last_executed: "2024-01-20 16:45",
+                executions: 23
+            }
+        ];
+
+        let messageTemplates = [
+            {
+                id: 1,
+                name: "welcome_message",
+                title: "Welcome New Lead",
+                content: "Assalamu'alaikum {name} 🙏\n\nTerima kasih telah menghubungi Vauza Tamma! Saya {agent_name} siap membantu perjalanan umroh impian Anda.\n\nAda yang bisa saya bantu?",
+                variables: ["name", "agent_name"],
+                category: "welcome",
+                created_date: "2024-01-15",
+                usage_count: 157
+            },
+            {
+                id: 2,
+                name: "followup_day3",
+                title: "Follow-up Day 3",
+                content: "Halo {name} 👋\n\nKami ingin mengetahui apakah Anda masih berminat dengan paket umroh kami?\n\nJika ada pertanyaan, jangan ragu untuk bertanya ya!",
+                variables: ["name"],
+                category: "followup",
+                created_date: "2024-01-10",
+                usage_count: 89
+            },
+            {
+                id: 3,
+                name: "payment_reminder",
+                title: "Payment Reminder",
+                content: "Dear {name},\n\nKami ingatkan bahwa pembayaran untuk paket {package_name} sebesar Rp {remaining_amount} sudah jatuh tempo {days_overdue} hari yang lalu.\n\nMohon segera melakukan pembayaran. Terima kasih.",
+                variables: ["name", "package_name", "remaining_amount", "days_overdue"],
+                category: "payment",
+                created_date: "2024-01-05",
+                usage_count: 23
+            },
+            {
+                id: 4,
+                name: "birthday_greeting",
+                title: "Birthday Greeting",
+                content: "🎉 Selamat ulang tahun {name}! 🎂\n\nSemoga Allah SWT memberikan berkah dan kesehatan selalu. Sebagai hadiah ulang tahun, dapatkan diskon khusus 5% untuk paket umroh!\n\nValid hingga {valid_until}",
+                variables: ["name", "valid_until"],
+                category: "special",
+                created_date: "2024-01-20",
+                usage_count: 12
+            }
+        ];
+
+        let messageQueue = [
+            {
+                id: 1,
+                phone: "6281234567890",
+                name: "Ahmad Fauzi",
+                template: "welcome_message",
+                scheduled_time: "2024-01-22 15:00",
+                status: "pending",
+                created_date: "2024-01-22 14:45",
+                rule_id: 1,
+                attempts: 0,
+                priority: "normal"
+            },
+            {
+                id: 2,
+                phone: "6281234567891",
+                name: "Siti Aminah",
+                template: "followup_day3",
+                scheduled_time: "2024-01-22 16:30",
+                status: "processing",
+                created_date: "2024-01-22 16:25",
+                rule_id: 2,
+                attempts: 1,
+                priority: "high"
+            },
+            {
+                id: 3,
+                phone: "6281234567892",
+                name: "Budi Santoso",
+                template: "payment_reminder",
+                scheduled_time: "2024-01-22 10:00",
+                status: "sent",
+                created_date: "2024-01-22 09:55",
+                rule_id: 3,
+                attempts: 1,
+                priority: "urgent"
+            },
+            {
+                id: 4,
+                phone: "6281234567893",
+                name: "Dewi Maharani",
+                template: "welcome_message",
+                scheduled_time: "2024-01-22 17:00",
+                status: "failed",
+                created_date: "2024-01-22 16:45",
+                rule_id: 1,
+                attempts: 3,
+                priority: "normal",
+                error: "Invalid phone number format"
+            }
+        ];
+
+        // WhatsApp Automation Functions
+        function loadAutomationPage() {
+            loadAutomationRules();
+            loadMessageTemplates();
+            loadMessageQueue();
+            loadAutomationAnalytics();
+        }
+
+        function loadAutomationRules() {
+            const container = document.getElementById('rulesTableBody');
+            if (!container) return;
+
+            container.innerHTML = automationRules.map(rule => {
+                const statusClass = rule.status === 'active' ? 'status-verified' : 'status-pending';
+                const statusText = rule.status === 'active' ? 'Aktif' : 'Nonaktif';
+                
+                return `
+                    <tr>
+                        <td>
+                            <div style="font-weight: 500;">${rule.name}</div>
+                            <small style="color: #94a3b8;">${rule.trigger.replace('_', ' ').toUpperCase()}</small>
+                        </td>
+                        <td>
+                            <span class="status-badge ${statusClass}">${statusText}</span>
+                        </td>
+                        <td>${rule.executions}</td>
+                        <td>${rule.last_executed || 'Belum pernah'}</td>
+                        <td>
+                            <div class="btn-group" style="display: flex; gap: 5px;">
+                                <button class="btn btn-sm btn-primary" onclick="editAutomationRule(${rule.id})">
+                                    <span class="material-icons">edit</span>
+                                </button>
+                                <button class="btn btn-sm btn-${rule.status === 'active' ? 'warning' : 'success'}" onclick="toggleRuleStatus(${rule.id})">
+                                    <span class="material-icons">${rule.status === 'active' ? 'pause' : 'play_arrow'}</span>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteAutomationRule(${rule.id})">
+                                    <span class="material-icons">delete</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function loadMessageTemplates() {
+            const container = document.getElementById('templatesGrid');
+            if (!container) return;
+
+            container.innerHTML = messageTemplates.map(template => {
+                const categoryColors = {
+                    welcome: '#4facfe',
+                    followup: '#f59e0b',
+                    payment: '#ef4444',
+                    special: '#22c55e'
+                };
+
+                return `
+                    <div class="template-card" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; padding: 20px; backdrop-filter: blur(10px);">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                            <div>
+                                <h4 style="margin-bottom: 5px;">${template.title}</h4>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span class="status-badge" style="background: ${categoryColors[template.category]}20; color: ${categoryColors[template.category]}; border: 1px solid ${categoryColors[template.category]}50;">
+                                        ${template.category.toUpperCase()}
+                                    </span>
+                                    <small style="color: #94a3b8;">Used ${template.usage_count} times</small>
+                                </div>
+                            </div>
+                            <div class="btn-group" style="display: flex; gap: 5px;">
+                                <button class="btn btn-sm btn-primary" onclick="editMessageTemplate(${template.id})" title="Edit">
+                                    <span class="material-icons">edit</span>
+                                </button>
+                                <button class="btn btn-sm btn-success" onclick="previewTemplate(${template.id})" title="Preview">
+                                    <span class="material-icons">visibility</span>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteMessageTemplate(${template.id})" title="Delete">
+                                    <span class="material-icons">delete</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div style="background: rgba(0, 0, 0, 0.2); border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                            <div style="font-size: 14px; line-height: 1.5; color: rgba(255, 255, 255, 0.9);">
+                                ${template.content.substring(0, 120)}${template.content.length > 120 ? '...' : ''}
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #94a3b8;">
+                            <span>Variables: ${template.variables.join(', ')}</span>
+                            <span>${template.created_date}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function loadMessageQueue() {
+            const container = document.getElementById('queueTableBody');
+            if (!container) return;
+
+            container.innerHTML = messageQueue.map(item => {
+                const statusColors = {
+                    pending: '#f59e0b',
+                    processing: '#4facfe',
+                    sent: '#22c55e',
+                    failed: '#ef4444',
+                    scheduled: '#8b5cf6'
+                };
+
+                const priorityColors = {
+                    normal: '#94a3b8',
+                    high: '#f59e0b',
+                    urgent: '#ef4444'
+                };
+
+                return `
+                    <tr>
+                        <td>
+                            <div style="font-weight: 500;">${item.name}</div>
+                            <small style="color: #94a3b8;">${item.phone}</small>
+                        </td>
+                        <td>
+                            <div style="font-weight: 500;">${messageTemplates.find(t => t.name === item.template)?.title || item.template}</div>
+                        </td>
+                        <td>
+                            <span style="color: ${priorityColors[item.priority]}; font-weight: 500; text-transform: uppercase; font-size: 12px;">
+                                ${item.priority}
+                            </span>
+                        </td>
+                        <td>${item.scheduled_time}</td>
+                        <td>
+                            <span class="status-badge" style="background: ${statusColors[item.status]}20; color: ${statusColors[item.status]}; border: 1px solid ${statusColors[item.status]}50;">
+                                ${item.status.toUpperCase()}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group" style="display: flex; gap: 5px;">
+                                ${item.status === 'pending' || item.status === 'failed' ? `
+                                    <button class="btn btn-sm btn-success" onclick="retryMessage(${item.id})" title="Retry">
+                                        <span class="material-icons">refresh</span>
+                                    </button>
+                                ` : ''}
+                                <button class="btn btn-sm btn-primary" onclick="viewMessageDetail(${item.id})" title="Detail">
+                                    <span class="material-icons">visibility</span>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteQueueItem(${item.id})" title="Delete">
+                                    <span class="material-icons">delete</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function loadAutomationAnalytics() {
+            // Update analytics stats
+            const totalRules = automationRules.length;
+            const activeRules = automationRules.filter(r => r.status === 'active').length;
+            const totalQueue = messageQueue.length;
+            const pendingMessages = messageQueue.filter(m => m.status === 'pending').length;
+            const totalSent = messageQueue.filter(m => m.status === 'sent').length;
+            const failedMessages = messageQueue.filter(m => m.status === 'failed').length;
+            const successRate = totalSent > 0 ? Math.round((totalSent / (totalSent + failedMessages)) * 100) : 0;
+
+            // Update stat cards
+            document.getElementById('totalRulesCount').textContent = totalRules;
+            document.getElementById('activeRulesCount').textContent = activeRules;
+            document.getElementById('queueCountStat').textContent = totalQueue;
+            document.getElementById('pendingMessagesCount').textContent = pendingMessages;
+            document.getElementById('sentMessagesCount').textContent = totalSent;
+            document.getElementById('successRatePercent').textContent = successRate + '%';
+        }
+
+        // Automation Rule Management
+        function openAutomationRuleModal(ruleId = null) {
+            const modal = document.getElementById('automationRuleModal');
+            const form = document.getElementById('automationRuleForm');
+            
+            if (ruleId) {
+                const rule = automationRules.find(r => r.id === ruleId);
+                if (rule) {
+                    document.getElementById('ruleId').value = rule.id;
+                    document.getElementById('ruleName').value = rule.name;
+                    document.getElementById('ruleTrigger').value = rule.trigger;
+                    document.getElementById('ruleTemplate').value = rule.template;
+                    document.getElementById('ruleStatus').value = rule.status;
+                    
+                    // Set conditions based on trigger type
+                    if (rule.trigger === 'time_based' && rule.conditions.days_since_last_contact) {
+                        document.getElementById('timeDelay').value = rule.conditions.days_since_last_contact;
+                    }
+                }
+            } else {
+                form.reset();
+                document.getElementById('ruleId').value = '';
+            }
+            
+            // Populate template options
+            const templateSelect = document.getElementById('ruleTemplate');
+            templateSelect.innerHTML = '<option value="">Pilih Template</option>' + 
+                messageTemplates.map(t => `<option value="${t.name}">${t.title}</option>`).join('');
+            
+            openModal('automationRuleModal');
+        }
+
+        function saveAutomationRule(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const ruleData = {
+                name: formData.get('ruleName'),
+                trigger: formData.get('ruleTrigger'),
+                template: formData.get('ruleTemplate'),
+                status: formData.get('ruleStatus') || 'active',
+                conditions: {}
+            };
+            
+            // Add conditions based on trigger type
+            if (ruleData.trigger === 'time_based') {
+                ruleData.conditions.days_since_last_contact = parseInt(formData.get('timeDelay')) || 1;
+                ruleData.conditions.timeDelay = (parseInt(formData.get('timeDelay')) || 1) * 24;
+            }
+            
+            const ruleId = formData.get('ruleId');
+            
+            if (ruleId) {
+                // Update existing rule
+                const index = automationRules.findIndex(r => r.id === parseInt(ruleId));
+                if (index !== -1) {
+                    automationRules[index] = { ...automationRules[index], ...ruleData };
+                    showNotification('Automation rule updated successfully!');
+                }
+            } else {
+                // Create new rule
+                ruleData.id = Math.max(...automationRules.map(r => r.id), 0) + 1;
+                ruleData.created_date = new Date().toLocaleDateString('id-ID');
+                ruleData.executions = 0;
+                automationRules.push(ruleData);
+                showNotification('Automation rule created successfully!');
+            }
+            
+            loadAutomationRules();
+            loadAutomationAnalytics();
+            closeModal('automationRuleModal');
+        }
+
+        function editAutomationRule(ruleId) {
+            openAutomationRuleModal(ruleId);
+        }
+
+        function toggleRuleStatus(ruleId) {
+            const rule = automationRules.find(r => r.id === ruleId);
+            if (rule) {
+                rule.status = rule.status === 'active' ? 'paused' : 'active';
+                loadAutomationRules();
+                loadAutomationAnalytics();
+                showNotification(`Rule ${rule.status === 'active' ? 'activated' : 'paused'}!`);
+            }
+        }
+
+        function deleteAutomationRule(ruleId) {
+            if (confirm('Are you sure you want to delete this automation rule?')) {
+                const index = automationRules.findIndex(r => r.id === ruleId);
+                if (index !== -1) {
+                    automationRules.splice(index, 1);
+                    loadAutomationRules();
+                    loadAutomationAnalytics();
+                    showNotification('Automation rule deleted!');
+                }
+            }
+        }
+
+        // Message Template Management
+        function openMessageTemplateModal(templateId = null) {
+            const modal = document.getElementById('messageTemplateModal');
+            const form = document.getElementById('messageTemplateForm');
+            
+            if (templateId) {
+                const template = messageTemplates.find(t => t.id === templateId);
+                if (template) {
+                    document.getElementById('templateId').value = template.id;
+                    document.getElementById('templateName').value = template.name;
+                    document.getElementById('templateTitle').value = template.title;
+                    document.getElementById('templateContent').value = template.content;
+                    document.getElementById('templateCategory').value = template.category;
+                    document.getElementById('templateVariables').value = template.variables.join(', ');
+                }
+            } else {
+                form.reset();
+                document.getElementById('templateId').value = '';
+            }
+            
+            openModal('messageTemplateModal');
+        }
+
+        function saveMessageTemplate(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const templateData = {
+                name: formData.get('templateName'),
+                title: formData.get('templateTitle'),
+                content: formData.get('templateContent'),
+                category: formData.get('templateCategory'),
+                variables: formData.get('templateVariables').split(',').map(v => v.trim()).filter(v => v)
+            };
+            
+            const templateId = formData.get('templateId');
+            
+            if (templateId) {
+                // Update existing template
+                const index = messageTemplates.findIndex(t => t.id === parseInt(templateId));
+                if (index !== -1) {
+                    messageTemplates[index] = { ...messageTemplates[index], ...templateData };
+                    showNotification('Message template updated successfully!');
+                }
+            } else {
+                // Create new template
+                templateData.id = Math.max(...messageTemplates.map(t => t.id), 0) + 1;
+                templateData.created_date = new Date().toLocaleDateString('id-ID');
+                templateData.usage_count = 0;
+                messageTemplates.push(templateData);
+                showNotification('Message template created successfully!');
+            }
+            
+            loadMessageTemplates();
+            closeModal('messageTemplateModal');
+        }
+
+        function editMessageTemplate(templateId) {
+            openMessageTemplateModal(templateId);
+        }
+
+        function previewTemplate(templateId) {
+            const template = messageTemplates.find(t => t.id === templateId);
+            if (template) {
+                // Show preview with sample data
+                let previewContent = template.content;
+                template.variables.forEach(variable => {
+                    const sampleData = {
+                        name: 'Ahmad Fauzi',
+                        agent_name: 'Siti Customer Service',
+                        package_name: 'Umroh Ramadhan 2024',
+                        remaining_amount: '5.000.000',
+                        days_overdue: '3',
+                        valid_until: '31 Januari 2024'
+                    };
+                    previewContent = previewContent.replace(new RegExp(`{${variable}}`, 'g'), sampleData[variable] || `{${variable}}`);
+                });
+                
+                alert(`Preview Template: ${template.title}\n\n${previewContent}`);
+            }
+        }
+
+        function deleteMessageTemplate(templateId) {
+            if (confirm('Are you sure you want to delete this message template?')) {
+                const index = messageTemplates.findIndex(t => t.id === templateId);
+                if (index !== -1) {
+                    messageTemplates.splice(index, 1);
+                    loadMessageTemplates();
+                    showNotification('Message template deleted!');
+                }
+            }
+        }
+
+        // Message Queue Management
+        function retryMessage(itemId) {
+            const item = messageQueue.find(m => m.id === itemId);
+            if (item) {
+                item.status = 'pending';
+                item.attempts += 1;
+                item.scheduled_time = new Date(Date.now() + 60000).toLocaleString('sv-SE').replace('T', ' ').substring(0, 16); // Retry in 1 minute
+                loadMessageQueue();
+                loadAutomationAnalytics();
+                showNotification('Message queued for retry!');
+            }
+        }
+
+        function viewMessageDetail(itemId) {
+            const item = messageQueue.find(m => m.id === itemId);
+            const template = messageTemplates.find(t => t.name === item.template);
+            
+            if (item && template) {
+                const detail = `
+Message Details:
+
+Recipient: ${item.name} (${item.phone})
+Template: ${template.title}
+Status: ${item.status.toUpperCase()}
+Scheduled: ${item.scheduled_time}
+Attempts: ${item.attempts}
+Priority: ${item.priority.toUpperCase()}
+${item.error ? `Error: ${item.error}` : ''}
+
+Message Content:
+${template.content}
+                `;
+                alert(detail);
+            }
+        }
+
+        function deleteQueueItem(itemId) {
+            if (confirm('Are you sure you want to delete this queue item?')) {
+                const index = messageQueue.findIndex(m => m.id === itemId);
+                if (index !== -1) {
+                    messageQueue.splice(index, 1);
+                    loadMessageQueue();
+                    loadAutomationAnalytics();
+                    showNotification('Queue item deleted!');
+                }
+            }
+        }
+
+        // WAHA API Integration Functions (Ready for Server Configuration)
+        const WAHA_CONFIG = {
+            baseUrl: 'http://localhost:3000', // Will be configured when server is ready
+            sessionName: 'umroh-automation',
+            webhook: '/webhook/whatsapp'
+        };
+
+        async function sendWhatsAppMessage(phone, message, mediaUrl = null) {
+            try {
+                // This function will be activated when WAHA server is configured
+                const payload = {
+                    chatId: phone + '@c.us',
+                    text: message,
+                    session: WAHA_CONFIG.sessionName
+                };
+
+                if (mediaUrl) {
+                    payload.file = {
+                        mimetype: 'image/jpeg',
+                        filename: 'image.jpg',
+                        data: mediaUrl
+                    };
+                }
+
+                // Placeholder for actual WAHA API call
+                console.log('WAHA API Call (Ready for server):', payload);
+                
+                // Simulate API response for now
+                return {
+                    success: true,
+                    messageId: 'msg_' + Date.now(),
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Actual implementation (uncomment when server is ready):
+                /*
+                const response = await fetch(`${WAHA_CONFIG.baseUrl}/api/sendText`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                return await response.json();
+                */
+            } catch (error) {
+                console.error('WAHA API Error:', error);
+                return {
+                    success: false,
+                    error: error.message
+                };
+            }
+        }
+
+        async function processMessageQueue() {
+            const now = new Date();
+            const pendingMessages = messageQueue.filter(item => 
+                item.status === 'pending' && 
+                new Date(item.scheduled_time) <= now
+            );
+
+            for (const item of pendingMessages) {
+                try {
+                    item.status = 'processing';
+                    loadMessageQueue();
+
+                    const template = messageTemplates.find(t => t.name === item.template);
+                    if (!template) {
+                        throw new Error('Template not found');
+                    }
+
+                    // Process template variables (placeholder implementation)
+                    let message = template.content;
+                    template.variables.forEach(variable => {
+                        // In real implementation, get actual data from lead/jamaah records
+                        const sampleData = {
+                            name: item.name,
+                            agent_name: 'Customer Service',
+                            package_name: 'Umroh Ramadhan 2024'
+                        };
+                        message = message.replace(new RegExp(`{${variable}}`, 'g'), sampleData[variable] || `{${variable}}`);
+                    });
+
+                    const result = await sendWhatsAppMessage(item.phone, message);
+                    
+                    if (result.success) {
+                        item.status = 'sent';
+                        item.sent_time = new Date().toISOString();
+                        
+                        // Update template usage count
+                        template.usage_count += 1;
+                        
+                        // Update rule execution count
+                        const rule = automationRules.find(r => r.id === item.rule_id);
+                        if (rule) {
+                            rule.executions += 1;
+                            rule.last_executed = new Date().toLocaleString('sv-SE').replace('T', ' ').substring(0, 16);
+                        }
+                    } else {
+                        item.status = 'failed';
+                        item.error = result.error || 'Unknown error';
+                    }
+                } catch (error) {
+                    item.status = 'failed';
+                    item.error = error.message;
+                }
+            }
+
+            loadMessageQueue();
+            loadAutomationAnalytics();
+            loadAutomationRules();
+        }
+
+        // Automation Scheduling Engine
+        function startAutomationEngine() {
+            // Process queue every minute
+            setInterval(processMessageQueue, 60000);
+            
+            // Check for new automation triggers every 5 minutes
+            setInterval(checkAutomationTriggers, 300000);
+            
+            console.log('WhatsApp Automation Engine Started');
+            showNotification('Automation engine started!');
+        }
+
+        function checkAutomationTriggers() {
+            // This function will check for triggers like:
+            // - New leads (trigger: new_lead)
+            // - Time-based triggers (trigger: time_based)
+            // - Payment overdue (trigger: payment_overdue)
+            // - Special events (birthdays, etc.)
+            
+            console.log('Checking automation triggers...');
+            
+            // Placeholder implementation - in real system, this would:
+            // 1. Check lead data for new entries
+            // 2. Check for time-based conditions
+            // 3. Check payment status
+            // 4. Create new queue items for matching conditions
+        }
+
+        // Test Functions for Development
+        function testAutomationSystem() {
+            console.log('Testing automation system...');
+            
+            // Test message queue processing
+            processMessageQueue();
+            
+            // Test trigger checking
+            checkAutomationTriggers();
+            
+            showNotification('Automation system test completed!');
+        }
+
+        function addTestQueueItem() {
+            const testItem = {
+                id: Math.max(...messageQueue.map(m => m.id), 0) + 1,
+                phone: "6281234567899",
+                name: "Test User",
+                template: "welcome_message",
+                scheduled_time: new Date(Date.now() + 30000).toLocaleString('sv-SE').replace('T', ' ').substring(0, 16), // 30 seconds from now
+                status: "pending",
+                created_date: new Date().toLocaleString('sv-SE').replace('T', ' ').substring(0, 16),
+                rule_id: 1,
+                attempts: 0,
+                priority: "normal"
+            };
+            
+            messageQueue.push(testItem);
+            loadMessageQueue();
+            loadAutomationAnalytics();
+            showNotification('Test message added to queue!');
+        }
+
         });
     </script>
 </body>
