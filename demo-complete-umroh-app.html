@@ -11601,7 +11601,9 @@ ${template.content}
             showNotification('Test message added to queue!');
         }
 
-        // Debug and test functions
+        });
+
+        // Debug and test functions (outside DOMContentLoaded)
         function testNavigation() {
             console.log('Testing navigation...');
             const pages = ['dashboard', 'jamaah', 'packages', 'payments', 'documents', 'groups', 'finance', 'marketing', 'automation', 'reports', 'excel'];
@@ -11629,8 +11631,6 @@ ${template.content}
         // Make test functions available globally
         window.testNavigation = testNavigation;
         window.testButtonClicks = testButtonClicks;
-
-        });
     </script>
 </body>
 </html>
