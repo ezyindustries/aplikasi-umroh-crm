@@ -283,13 +283,14 @@
             background: linear-gradient(145deg, rgba(51, 65, 85, 0.8), rgba(30, 41, 59, 0.7));
             backdrop-filter: blur(15px);
             border: 1px solid rgba(71, 85, 105, 0.4);
-            border-radius: 12px;
-            padding: 15px;
+            border-radius: 10px;
+            padding: 12px;
             text-align: center;
             transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             position: relative;
             overflow: hidden;
             min-height: auto;
+            height: fit-content;
         }
 
         .stat-card-small::before {
@@ -316,21 +317,66 @@
         }
 
         .stat-card-small .stat-number {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
             background: linear-gradient(135deg, #ffffff, #e2e8f0);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
+            line-height: 1.2;
         }
 
         .stat-card-small .stat-label {
-            font-size: 11px;
+            font-size: 10px;
             color: rgba(203, 213, 225, 0.9);
             text-transform: uppercase;
             letter-spacing: 0.5px;
             font-weight: 500;
+            line-height: 1.2;
+        }
+
+        /* Horizontal layout for stat containers */
+        .stat-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        /* Extra compact layout for pages with multiple sections */
+        .stat-container-compact {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1024px) {
+            .stat-container {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 12px;
+            }
+            
+            .stat-container-compact {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                gap: 10px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stat-container, .stat-container-compact {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stat-container, .stat-container-compact {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
         }
 
         .stat-card .stat-icon {
@@ -2631,7 +2677,7 @@
                     </div>
                     
                     <!-- Marketing Stats -->
-                    <div class="stat-container" style="margin-bottom: 30px;">
+                    <div class="stat-container-compact">
                         <div class="stat-card-small" style="background: linear-gradient(145deg, rgba(34, 197, 94, 0.15), rgba(22, 163, 74, 0.1)); border-color: rgba(34, 197, 94, 0.3);">
                             <div class="stat-number" id="totalLeads" style="color: #22c55e;">0</div>
                             <div class="stat-label">Total Leads</div>
@@ -2826,7 +2872,7 @@
                     </div>
 
                     <!-- Automation Status Cards -->
-                    <div class="stat-container" style="margin-bottom: 30px;">
+                    <div class="stat-container-compact">
                         <div class="stat-card-small" style="background: linear-gradient(145deg, rgba(34, 197, 94, 0.15), rgba(22, 163, 74, 0.1)); border-color: rgba(34, 197, 94, 0.3);">
                             <div class="stat-number" id="activeRules" style="color: #22c55e;">0</div>
                             <div class="stat-label">Active Rules</div>
