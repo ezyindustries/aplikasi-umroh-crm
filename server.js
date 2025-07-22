@@ -8,16 +8,7 @@ const path = require('path');
 require('dotenv').config();
 
 // Import routes
-const authRoutes = require('./routes/auth');
-const jamaahRoutes = require('./routes/jamaah');
-const packageRoutes = require('./routes/packages');
-const paymentRoutes = require('./routes/payments');
-const groupRoutes = require('./routes/groups');
-const documentRoutes = require('./routes/documents');
-const financeRoutes = require('./routes/finance');
-const marketingRoutes = require('./routes/marketing');
-const automationRoutes = require('./routes/automation');
-const reportRoutes = require('./routes/reports');
+const apiRoutes = require('./routes/index');
 
 // Import database
 const { sequelize } = require('./config/database');
@@ -71,16 +62,7 @@ app.get('/health', (req, res) => {
 });
 
 // API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/jamaah', jamaahRoutes);
-app.use('/api/packages', packageRoutes);
-app.use('/api/payments', paymentRoutes);
-app.use('/api/groups', groupRoutes);
-app.use('/api/documents', documentRoutes);
-app.use('/api/finance', financeRoutes);
-app.use('/api/marketing', marketingRoutes);
-app.use('/api/automation', automationRoutes);
-app.use('/api/reports', reportRoutes);
+app.use('/api', apiRoutes);
 
 // Serve frontend for all non-API routes
 app.get('*', (req, res) => {
