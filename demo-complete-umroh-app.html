@@ -394,6 +394,27 @@
             }
         }
 
+        /* 3x2 Stats Grid */
+        .stats-grid-3x2 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid-3x2 {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid-3x2 {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+        }
+
         .stat-card .stat-icon {
             font-size: 48px;
             background: linear-gradient(135deg, #60a5fa, #34d399, #a78bfa);
@@ -2694,7 +2715,7 @@
                     <!-- Marketing Stats & Conversion Funnel Row -->
                     <div class="marketing-stats-row">
                         <!-- Marketing Stats -->
-                        <div class="stat-container-compact">
+                        <div class="stats-grid-3x2">
                             <div class="stat-card-small" style="background: linear-gradient(145deg, rgba(34, 197, 94, 0.15), rgba(22, 163, 74, 0.1)); border-color: rgba(34, 197, 94, 0.3);">
                                 <div class="stat-number" id="totalLeads" style="color: #22c55e;">0</div>
                                 <div class="stat-label">Total Leads</div>
@@ -2708,6 +2729,16 @@
                             <div class="stat-card-small" style="background: linear-gradient(145deg, rgba(79, 172, 254, 0.15), rgba(56, 155, 255, 0.1)); border-color: rgba(79, 172, 254, 0.3);">
                                 <div class="stat-number" id="conversionRate" style="color: #4facfe;">0%</div>
                                 <div class="stat-label">Conversion Rate</div>
+                            </div>
+                            
+                            <div class="stat-card-small" style="background: linear-gradient(145deg, rgba(168, 85, 247, 0.15), rgba(147, 51, 234, 0.1)); border-color: rgba(168, 85, 247, 0.3);">
+                                <div class="stat-number" id="leadsThisYear" style="color: #a855f7;">0</div>
+                                <div class="stat-label">Leads Tahun Ini</div>
+                            </div>
+                            
+                            <div class="stat-card-small" style="background: linear-gradient(145deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.1)); border-color: rgba(239, 68, 68, 0.3);">
+                                <div class="stat-number" id="leadsThisMonth" style="color: #ef4444;">0</div>
+                                <div class="stat-label">Leads Bulan Ini</div>
                             </div>
                             
                             <div class="stat-card-small">
@@ -10480,6 +10511,21 @@ Terima kasih."></textarea>
             const convertedLeads = leadData.filter(lead => lead.status === 'converted').length;
             const conversionRate = totalLeads > 0 ? Math.round((convertedLeads / totalLeads) * 100) : 0;
             
+            // Calculate leads this year and month
+            const currentYear = new Date().getFullYear();
+            const currentMonth = new Date().getMonth();
+            const currentYearMonth = new Date().getFullYear() + '-' + (new Date().getMonth() + 1).toString().padStart(2, '0');
+            
+            const leadsThisYear = leadData.filter(lead => {
+                const leadDate = new Date(lead.first_contact);
+                return leadDate.getFullYear() === currentYear;
+            }).length;
+            
+            const leadsThisMonth = leadData.filter(lead => {
+                const leadDate = new Date(lead.first_contact);
+                return leadDate.getFullYear() === currentYear && leadDate.getMonth() === currentMonth;
+            }).length;
+            
             // Calculate average response time
             const totalResponseTime = marketers.reduce((sum, m) => sum + m.avg_response_time, 0);
             const avgResponseTime = Math.round(totalResponseTime / marketers.length * 10) / 10;
@@ -10487,6 +10533,8 @@ Terima kasih."></textarea>
             document.getElementById('totalLeads').textContent = totalLeads;
             document.getElementById('hotLeads').textContent = hotLeads;
             document.getElementById('conversionRate').textContent = `${conversionRate}%`;
+            document.getElementById('leadsThisYear').textContent = leadsThisYear;
+            document.getElementById('leadsThisMonth').textContent = leadsThisMonth;
             document.getElementById('avgResponseTime').textContent = `${avgResponseTime}h`;
         }
 
