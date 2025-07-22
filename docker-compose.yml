@@ -1,0 +1,134 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: vauza-tamma-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-vauza_tamma_db}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - vauza-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-vauza_tamma_db}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Redis for session storage and caching
+  redis:
+    image: redis:7-alpine
+    container_name: vauza-tamma-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - vauza-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: vauza-tamma-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${PORT:-3000}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-vauza_tamma_db}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-password}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:8080}
+    ports:
+      - "${PORT:-3000}:3000"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - vauza-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Frontend (Nginx)
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: vauza-tamma-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+    networks:
+      - vauza-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # WAHA WhatsApp API (Optional)
+  waha:
+    image: devlikeapro/waha:latest
+    container_name: vauza-tamma-waha
+    restart: unless-stopped
+    environment:
+      WHATSAPP_HOOK_URL: http://backend:3000/api/automation/webhook
+      WHATSAPP_HOOK_EVENTS: message,session.status
+    ports:
+      - "${WAHA_PORT:-3001}:3000"
+    volumes:
+      - waha_data:/app/.sessions
+    networks:
+      - vauza-network
+    profiles:
+      - waha
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/sessions"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  waha_data:
+    driver: local
+
+networks:
+  vauza-network:
+    driver: bridge

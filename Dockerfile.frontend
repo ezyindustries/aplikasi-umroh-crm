@@ -1,0 +1,27 @@
+# Frontend Dockerfile
+FROM nginx:alpine
+
+# Install curl for health checks
+RUN apk add --no-cache curl
+
+# Copy custom nginx config
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Copy HTML file
+COPY demo-complete-umroh-app.html /usr/share/nginx/html/index.html
+
+# Copy any static assets if they exist
+COPY --chown=nginx:nginx . /usr/share/nginx/html/
+
+# Set proper permissions
+RUN chown -R nginx:nginx /usr/share/nginx/html
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost || exit 1
+
+# Expose port
+EXPOSE 80
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]
