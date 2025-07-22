@@ -1754,6 +1754,42 @@
             to { transform: translateX(0); opacity: 1; }
         }
 
+        /* Financial Report Cards */
+        .report-card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .report-card:hover {
+            background: rgba(79, 172, 254, 0.1);
+            border-color: rgba(79, 172, 254, 0.3);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(79, 172, 254, 0.2);
+        }
+
+        .report-icon {
+            font-size: 48px;
+            color: #4facfe;
+            margin-bottom: 15px;
+        }
+
+        .report-card h4 {
+            color: #f8fafc;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .report-card p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .app-container {
@@ -1811,6 +1847,11 @@
             <div class="nav-item" onclick="showPage('groups')">
                 <span class="material-icons">group</span>
                 Grup Keberangkatan
+            </div>
+            
+            <div class="nav-item" onclick="showPage('finance')">
+                <span class="material-icons">account_balance</span>
+                Keuangan
             </div>
             
             <div class="nav-item" onclick="showPage('reports')">
@@ -2138,6 +2179,156 @@
                     <!-- Group Cards -->
                     <div class="cards-grid" id="groupGrid">
                         <!-- Group cards will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Finance Page -->
+            <div id="finance" class="page">
+                <div class="glass-card">
+                    <div class="header-section">
+                        <h2><span class="material-icons" style="vertical-align: middle; margin-right: 10px;">account_balance</span>Manajemen Keuangan</h2>
+                        <div class="button-group">
+                            <button class="btn btn-primary" onclick="openModal('journalModal')">
+                                <span class="material-icons">add</span>
+                                Jurnal Umum
+                            </button>
+                            <button class="btn btn-primary" onclick="openModal('expenseModal')">
+                                <span class="material-icons">payment</span>
+                                Pengeluaran
+                            </button>
+                            <button class="btn btn-success" onclick="showFinanceTutorial()">
+                                <span class="material-icons">help</span>
+                                Tutorial
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Finance Stats -->
+                    <div class="stats-grid" style="margin-bottom: 30px;">
+                        <div class="stat-card">
+                            <div class="stat-icon material-icons">account_balance_wallet</div>
+                            <div class="stat-number" id="totalCash">Rp 0</div>
+                            <div class="stat-label">Saldo Kas</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon material-icons">trending_up</div>
+                            <div class="stat-number" id="totalRevenue">Rp 0</div>
+                            <div class="stat-label">Total Pendapatan</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon material-icons">trending_down</div>
+                            <div class="stat-number" id="totalExpense">Rp 0</div>
+                            <div class="stat-label">Total Pengeluaran</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon material-icons">attach_money</div>
+                            <div class="stat-number" id="netProfit">Rp 0</div>
+                            <div class="stat-label">Laba Bersih</div>
+                        </div>
+                    </div>
+
+                    <!-- COA Section -->
+                    <div class="glass-card" style="margin-bottom: 20px;">
+                        <h3 style="color: #4facfe; margin-bottom: 15px;">Chart of Accounts (Daftar Akun)</h3>
+                        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                            <button class="btn btn-primary btn-sm" onclick="openModal('coaModal')">
+                                <span class="material-icons">add</span>
+                                Tambah Akun
+                            </button>
+                            <button class="btn btn-success btn-sm" onclick="loadDefaultCOA()">
+                                <span class="material-icons">download</span>
+                                Load Default COA
+                            </button>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Kode Akun</th>
+                                        <th>Nama Akun</th>
+                                        <th>Kategori</th>
+                                        <th>Saldo Normal</th>
+                                        <th>Saldo</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="coaTableBody">
+                                    <!-- COA will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Financial Reports Section -->
+                    <div class="glass-card">
+                        <h3 style="color: #4facfe; margin-bottom: 20px;">Laporan Keuangan</h3>
+                        <div class="report-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                            <!-- Balance Sheet -->
+                            <div class="report-card" onclick="generateFinancialReport('balance_sheet')">
+                                <div class="report-icon material-icons">account_balance</div>
+                                <h4>Neraca (Balance Sheet)</h4>
+                                <p>Laporan posisi keuangan yang menunjukkan aset, kewajiban, dan modal</p>
+                            </div>
+                            
+                            <!-- Income Statement -->
+                            <div class="report-card" onclick="generateFinancialReport('income_statement')">
+                                <div class="report-icon material-icons">trending_up</div>
+                                <h4>Laba Rugi (Income Statement)</h4>
+                                <p>Laporan pendapatan dan beban untuk menghitung laba/rugi</p>
+                            </div>
+                            
+                            <!-- Cash Flow -->
+                            <div class="report-card" onclick="generateFinancialReport('cash_flow')">
+                                <div class="report-icon material-icons">paid</div>
+                                <h4>Arus Kas (Cash Flow)</h4>
+                                <p>Laporan aliran kas masuk dan keluar dari aktivitas operasi, investasi, dan pendanaan</p>
+                            </div>
+                            
+                            <!-- General Journal -->
+                            <div class="report-card" onclick="generateFinancialReport('general_journal')">
+                                <div class="report-icon material-icons">menu_book</div>
+                                <h4>Jurnal Umum</h4>
+                                <p>Catatan kronologis semua transaksi keuangan</p>
+                            </div>
+                            
+                            <!-- Special Journal -->
+                            <div class="report-card" onclick="generateFinancialReport('special_journal')">
+                                <div class="report-icon material-icons">library_books</div>
+                                <h4>Jurnal Khusus</h4>
+                                <p>Jurnal penjualan, pembelian, penerimaan kas, dan pengeluaran kas</p>
+                            </div>
+                            
+                            <!-- General Ledger -->
+                            <div class="report-card" onclick="generateFinancialReport('general_ledger')">
+                                <div class="report-icon material-icons">book</div>
+                                <h4>Buku Besar</h4>
+                                <p>Catatan pergerakan saldo untuk setiap akun</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Transactions -->
+                    <div class="glass-card" style="margin-top: 20px;">
+                        <h3 style="color: #4facfe; margin-bottom: 15px;">Transaksi Terbaru</h3>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>No. Jurnal</th>
+                                        <th>Deskripsi</th>
+                                        <th>Debit</th>
+                                        <th>Kredit</th>
+                                        <th>Status</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="journalTableBody">
+                                    <!-- Journals will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -3037,6 +3228,203 @@
                         Buat Grup
                     </button>
                     <button type="button" class="btn btn-danger" onclick="closeModal('groupModal')">
+                        <span class="material-icons">cancel</span>
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- COA Modal -->
+    <div id="coaModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Tambah Akun (Chart of Accounts)</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            
+            <form onsubmit="saveCOA(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Kode Akun</label>
+                        <input type="text" id="coaCode" placeholder="Contoh: 1-10001" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nama Akun</label>
+                        <input type="text" id="coaName" placeholder="Contoh: Kas" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Kategori</label>
+                        <select id="coaCategory" required onchange="updateNormalBalance()">
+                            <option value="">Pilih Kategori</option>
+                            <option value="asset">Aset</option>
+                            <option value="liability">Kewajiban</option>
+                            <option value="equity">Modal</option>
+                            <option value="revenue">Pendapatan</option>
+                            <option value="expense">Beban</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Saldo Normal</label>
+                        <input type="text" id="coaNormalBalance" readonly>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary">
+                        <span class="material-icons">save</span>
+                        Simpan
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="closeModal('coaModal')">
+                        <span class="material-icons">cancel</span>
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Journal Entry Modal -->
+    <div id="journalModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3>Input Jurnal Umum</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            
+            <form onsubmit="saveJournal(event)">
+                <div class="form-group">
+                    <label>Tanggal Transaksi</label>
+                    <input type="date" id="journalDate" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Deskripsi</label>
+                    <textarea id="journalDescription" rows="2" placeholder="Deskripsi transaksi" required></textarea>
+                </div>
+                
+                <!-- Journal Lines -->
+                <div class="section">
+                    <h4 style="color: #4facfe;">Detail Jurnal</h4>
+                    <div id="journalLines">
+                        <!-- Line 1 -->
+                        <div class="journal-line" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <select class="form-control" style="flex: 2;" required>
+                                <option value="">Pilih Akun</option>
+                            </select>
+                            <input type="number" class="form-control" placeholder="Debit" style="flex: 1;">
+                            <input type="number" class="form-control" placeholder="Kredit" style="flex: 1;">
+                            <button type="button" class="btn btn-danger btn-sm" onclick="removeJournalLine(this)">
+                                <span class="material-icons">delete</span>
+                            </button>
+                        </div>
+                        <!-- Line 2 -->
+                        <div class="journal-line" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <select class="form-control" style="flex: 2;" required>
+                                <option value="">Pilih Akun</option>
+                            </select>
+                            <input type="number" class="form-control" placeholder="Debit" style="flex: 1;">
+                            <input type="number" class="form-control" placeholder="Kredit" style="flex: 1;">
+                            <button type="button" class="btn btn-danger btn-sm" onclick="removeJournalLine(this)">
+                                <span class="material-icons">delete</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="btn btn-primary btn-sm" onclick="addJournalLine()">
+                        <span class="material-icons">add</span>
+                        Tambah Baris
+                    </button>
+                    
+                    <!-- Balance Check -->
+                    <div style="margin-top: 15px; padding: 10px; background: rgba(30, 41, 59, 0.5); border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Total Debit: <span id="totalDebit">Rp 0</span></span>
+                            <span>Total Kredit: <span id="totalCredit">Rp 0</span></span>
+                            <span id="balanceStatus" style="font-weight: bold;">Tidak Balance</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary" id="saveJournalBtn" disabled>
+                        <span class="material-icons">save</span>
+                        Simpan Jurnal
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="closeModal('journalModal')">
+                        <span class="material-icons">cancel</span>
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Expense Modal -->
+    <div id="expenseModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Input Pengeluaran</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            
+            <form onsubmit="saveExpense(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Tanggal</label>
+                        <input type="date" id="expenseDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Kategori Pengeluaran</label>
+                        <select id="expenseCategory" required>
+                            <option value="">Pilih Kategori</option>
+                            <option value="hotel">Hotel</option>
+                            <option value="flight">Tiket Pesawat</option>
+                            <option value="visa">Visa</option>
+                            <option value="transport">Transportasi</option>
+                            <option value="meal">Makan</option>
+                            <option value="guide">Guide/Muthawif</option>
+                            <option value="admin">Administrasi</option>
+                            <option value="other">Lainnya</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Jumlah</label>
+                        <input type="number" id="expenseAmount" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Metode Pembayaran</label>
+                        <select id="expenseMethod" required>
+                            <option value="">Pilih Metode</option>
+                            <option value="cash">Cash</option>
+                            <option value="transfer">Transfer Bank</option>
+                            <option value="credit_card">Kartu Kredit</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Vendor/Penerima</label>
+                    <input type="text" id="expenseVendor" placeholder="Nama vendor atau penerima" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Deskripsi</label>
+                    <textarea id="expenseDescription" rows="3" placeholder="Detail pengeluaran"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>No. Referensi/Invoice</label>
+                    <input type="text" id="expenseReference" placeholder="Nomor invoice atau referensi">
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary">
+                        <span class="material-icons">save</span>
+                        Simpan
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="closeModal('expenseModal')">
                         <span class="material-icons">cancel</span>
                         Batal
                     </button>
@@ -3974,6 +4362,9 @@
                 case 'reports':
                     loadReportCharts();
                     break;
+                case 'finance':
+                    loadFinancePage();
+                    break;
             }
         }
 
@@ -4361,9 +4752,40 @@
                 total_paid: 0
             });
             
+            // Get package price for receivable entry
+            const selectedPackage = packageData.find(p => p.name === packageName);
+            const packagePrice = selectedPackage ? selectedPackage.price : 0;
+            
+            // Create automatic journal entry for receivable
+            if (packagePrice > 0) {
+                const journalEntry = {
+                    id: Date.now(),
+                    date: new Date().toISOString().split('T')[0],
+                    description: `Pendaftaran jamaah ${formData.name} - ${packageName}`,
+                    lines: [
+                        { account: '1-20001', debit: packagePrice, credit: 0 }, // Debit Piutang Jamaah
+                        { account: '4-10001', debit: 0, credit: packagePrice }  // Credit Pendapatan Umroh
+                    ],
+                    status: 'posted',
+                    type: 'registration'
+                };
+                
+                // Update account balances
+                const receivableAcc = chartOfAccounts.find(a => a.code === '1-20001');
+                const revenueAcc = chartOfAccounts.find(a => a.code === '4-10001');
+                
+                if (receivableAcc) receivableAcc.balance += packagePrice;
+                if (revenueAcc) revenueAcc.balance += packagePrice;
+                
+                journalEntries.push(journalEntry);
+            }
+            
             closeModal('jamaahModal');
             loadJamaahTable();
-            showNotification('Data jamaah berhasil disimpan!');
+            loadJournalTable();
+            loadCOATable();
+            updateFinancialStats();
+            showNotification('Data jamaah berhasil disimpan dan dicatat ke jurnal!');
             
             // Reset form
             event.target.reset();
@@ -4661,8 +5083,16 @@
             const payment = paymentData.find(p => p.id === id);
             if (payment && confirm('Verifikasi pembayaran ini?')) {
                 payment.status = 'verified';
+                
+                // Automatically post to journal
+                postPaymentToJournal(payment);
+                
                 loadPaymentTable();
-                showNotification('Pembayaran berhasil diverifikasi!');
+                loadJournalTable();
+                loadCOATable();
+                updateFinancialStats();
+                
+                showNotification('Pembayaran berhasil diverifikasi dan dicatat ke jurnal!');
             }
         }
 
@@ -7379,6 +7809,19 @@
         // Package Brochure Functions
         let brochurePhotos = [];
 
+        // Financial Data Structures
+        let chartOfAccounts = [];
+        let journalEntries = [];
+        let financialTransactions = [];
+
+        // Initialize default COA if empty
+        function initializeFinancialData() {
+            if (chartOfAccounts.length === 0) {
+                loadDefaultCOA();
+            }
+            updateFinancialStats();
+        }
+
         function handleBrochureUpload(event) {
             const files = Array.from(event.target.files);
             
@@ -7517,6 +7960,1080 @@
                     this.remove();
                 }
             });
+        }
+
+        // Financial Management Functions
+        function loadFinancePage() {
+            updateFinancialStats();
+            loadCOATable();
+            loadJournalTable();
+        }
+
+        function loadDefaultCOA() {
+            chartOfAccounts = [
+                // Assets (1-xxxxx)
+                { code: '1-10001', name: 'Kas', category: 'asset', normalBalance: 'debit', balance: 0 },
+                { code: '1-10002', name: 'Bank BCA', category: 'asset', normalBalance: 'debit', balance: 0 },
+                { code: '1-10003', name: 'Bank Mandiri', category: 'asset', normalBalance: 'debit', balance: 0 },
+                { code: '1-20001', name: 'Piutang Jamaah', category: 'asset', normalBalance: 'debit', balance: 0 },
+                { code: '1-30001', name: 'Perlengkapan Kantor', category: 'asset', normalBalance: 'debit', balance: 0 },
+                { code: '1-40001', name: 'Kendaraan', category: 'asset', normalBalance: 'debit', balance: 0 },
+                
+                // Liabilities (2-xxxxx)
+                { code: '2-10001', name: 'Hutang Vendor', category: 'liability', normalBalance: 'credit', balance: 0 },
+                { code: '2-10002', name: 'Hutang Hotel', category: 'liability', normalBalance: 'credit', balance: 0 },
+                { code: '2-10003', name: 'Hutang Tiket', category: 'liability', normalBalance: 'credit', balance: 0 },
+                { code: '2-20001', name: 'Pendapatan Diterima Dimuka', category: 'liability', normalBalance: 'credit', balance: 0 },
+                
+                // Equity (3-xxxxx)
+                { code: '3-10001', name: 'Modal Pemilik', category: 'equity', normalBalance: 'credit', balance: 0 },
+                { code: '3-20001', name: 'Laba Ditahan', category: 'equity', normalBalance: 'credit', balance: 0 },
+                
+                // Revenue (4-xxxxx)
+                { code: '4-10001', name: 'Pendapatan Umroh', category: 'revenue', normalBalance: 'credit', balance: 0 },
+                { code: '4-10002', name: 'Pendapatan Administrasi', category: 'revenue', normalBalance: 'credit', balance: 0 },
+                { code: '4-20001', name: 'Pendapatan Lain-lain', category: 'revenue', normalBalance: 'credit', balance: 0 },
+                
+                // Expenses (5-xxxxx)
+                { code: '5-10001', name: 'Beban Hotel', category: 'expense', normalBalance: 'debit', balance: 0 },
+                { code: '5-10002', name: 'Beban Tiket Pesawat', category: 'expense', normalBalance: 'debit', balance: 0 },
+                { code: '5-10003', name: 'Beban Visa', category: 'expense', normalBalance: 'debit', balance: 0 },
+                { code: '5-10004', name: 'Beban Transportasi', category: 'expense', normalBalance: 'debit', balance: 0 },
+                { code: '5-10005', name: 'Beban Makan', category: 'expense', normalBalance: 'debit', balance: 0 },
+                { code: '5-10006', name: 'Beban Guide/Muthawif', category: 'expense', normalBalance: 'debit', balance: 0 },
+                { code: '5-20001', name: 'Beban Gaji', category: 'expense', normalBalance: 'debit', balance: 0 },
+                { code: '5-20002', name: 'Beban Administrasi', category: 'expense', normalBalance: 'debit', balance: 0 },
+                { code: '5-20003', name: 'Beban Sewa Kantor', category: 'expense', normalBalance: 'debit', balance: 0 },
+                { code: '5-30001', name: 'Beban Lain-lain', category: 'expense', normalBalance: 'debit', balance: 0 }
+            ];
+            
+            loadCOATable();
+            showNotification('Default Chart of Accounts berhasil dimuat!');
+        }
+
+        function loadCOATable() {
+            const tbody = document.getElementById('coaTableBody');
+            if (!tbody) return;
+            
+            tbody.innerHTML = '';
+            
+            chartOfAccounts.forEach(account => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${account.code}</td>
+                    <td>${account.name}</td>
+                    <td>${getCategoryText(account.category)}</td>
+                    <td>${account.normalBalance === 'debit' ? 'Debit' : 'Kredit'}</td>
+                    <td>Rp ${(account.balance || 0).toLocaleString()}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" onclick="editCOA('${account.code}')">
+                            <span class="material-icons">edit</span>
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteCOA('${account.code}')">
+                            <span class="material-icons">delete</span>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function getCategoryText(category) {
+            const categories = {
+                'asset': 'Aset',
+                'liability': 'Kewajiban',
+                'equity': 'Modal',
+                'revenue': 'Pendapatan',
+                'expense': 'Beban'
+            };
+            return categories[category] || category;
+        }
+
+        function updateNormalBalance() {
+            const category = document.getElementById('coaCategory').value;
+            const normalBalanceInput = document.getElementById('coaNormalBalance');
+            
+            if (category === 'asset' || category === 'expense') {
+                normalBalanceInput.value = 'Debit';
+            } else if (category === 'liability' || category === 'equity' || category === 'revenue') {
+                normalBalanceInput.value = 'Kredit';
+            } else {
+                normalBalanceInput.value = '';
+            }
+        }
+
+        function saveCOA(event) {
+            event.preventDefault();
+            
+            const code = document.getElementById('coaCode').value;
+            const name = document.getElementById('coaName').value;
+            const category = document.getElementById('coaCategory').value;
+            const normalBalance = document.getElementById('coaNormalBalance').value.toLowerCase() === 'debit' ? 'debit' : 'credit';
+            
+            // Check if code already exists
+            if (chartOfAccounts.some(acc => acc.code === code)) {
+                showNotification('Kode akun sudah ada!', 'error');
+                return;
+            }
+            
+            chartOfAccounts.push({
+                code: code,
+                name: name,
+                category: category,
+                normalBalance: normalBalance,
+                balance: 0
+            });
+            
+            chartOfAccounts.sort((a, b) => a.code.localeCompare(b.code));
+            
+            closeModal('coaModal');
+            loadCOATable();
+            showNotification('Akun berhasil ditambahkan!');
+            event.target.reset();
+        }
+
+        function deleteCOA(code) {
+            if (confirm('Yakin ingin menghapus akun ini?')) {
+                chartOfAccounts = chartOfAccounts.filter(acc => acc.code !== code);
+                loadCOATable();
+                showNotification('Akun berhasil dihapus!');
+            }
+        }
+
+        // Journal Entry Functions
+        function addJournalLine() {
+            const journalLines = document.getElementById('journalLines');
+            const newLine = document.createElement('div');
+            newLine.className = 'journal-line';
+            newLine.style.cssText = 'display: flex; gap: 10px; margin-bottom: 10px;';
+            
+            const accountOptions = chartOfAccounts.map(acc => 
+                `<option value="${acc.code}">${acc.code} - ${acc.name}</option>`
+            ).join('');
+            
+            newLine.innerHTML = `
+                <select class="form-control" style="flex: 2;" required onchange="validateJournal()">
+                    <option value="">Pilih Akun</option>
+                    ${accountOptions}
+                </select>
+                <input type="number" class="form-control" placeholder="Debit" style="flex: 1;" onkeyup="validateJournal()">
+                <input type="number" class="form-control" placeholder="Kredit" style="flex: 1;" onkeyup="validateJournal()">
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeJournalLine(this)">
+                    <span class="material-icons">delete</span>
+                </button>
+            `;
+            
+            journalLines.appendChild(newLine);
+        }
+
+        function removeJournalLine(button) {
+            const journalLines = document.getElementById('journalLines');
+            if (journalLines.children.length > 2) {
+                button.parentElement.remove();
+                validateJournal();
+            } else {
+                showNotification('Minimal harus ada 2 baris jurnal!', 'error');
+            }
+        }
+
+        function validateJournal() {
+            const journalLines = document.getElementById('journalLines').getElementsByClassName('journal-line');
+            let totalDebit = 0;
+            let totalCredit = 0;
+            
+            Array.from(journalLines).forEach(line => {
+                const debitInput = line.querySelector('input[placeholder="Debit"]');
+                const creditInput = line.querySelector('input[placeholder="Kredit"]');
+                
+                totalDebit += parseFloat(debitInput.value) || 0;
+                totalCredit += parseFloat(creditInput.value) || 0;
+            });
+            
+            document.getElementById('totalDebit').textContent = `Rp ${totalDebit.toLocaleString()}`;
+            document.getElementById('totalCredit').textContent = `Rp ${totalCredit.toLocaleString()}`;
+            
+            const isBalanced = totalDebit > 0 && totalCredit > 0 && totalDebit === totalCredit;
+            const balanceStatus = document.getElementById('balanceStatus');
+            const saveButton = document.getElementById('saveJournalBtn');
+            
+            if (isBalanced) {
+                balanceStatus.textContent = 'Balance ✓';
+                balanceStatus.style.color = '#10b981';
+                saveButton.disabled = false;
+            } else {
+                balanceStatus.textContent = 'Tidak Balance';
+                balanceStatus.style.color = '#ef4444';
+                saveButton.disabled = true;
+            }
+        }
+
+        function saveJournal(event) {
+            event.preventDefault();
+            
+            const date = document.getElementById('journalDate').value;
+            const description = document.getElementById('journalDescription').value;
+            const journalLines = document.getElementById('journalLines').getElementsByClassName('journal-line');
+            
+            const journalEntry = {
+                id: Date.now(),
+                date: date,
+                description: description,
+                lines: [],
+                status: 'posted'
+            };
+            
+            Array.from(journalLines).forEach(line => {
+                const account = line.querySelector('select').value;
+                const debit = parseFloat(line.querySelector('input[placeholder="Debit"]').value) || 0;
+                const credit = parseFloat(line.querySelector('input[placeholder="Kredit"]').value) || 0;
+                
+                if (account && (debit > 0 || credit > 0)) {
+                    journalEntry.lines.push({
+                        account: account,
+                        debit: debit,
+                        credit: credit
+                    });
+                    
+                    // Update account balance
+                    const accObj = chartOfAccounts.find(a => a.code === account);
+                    if (accObj) {
+                        if (accObj.normalBalance === 'debit') {
+                            accObj.balance += debit - credit;
+                        } else {
+                            accObj.balance += credit - debit;
+                        }
+                    }
+                }
+            });
+            
+            journalEntries.push(journalEntry);
+            
+            closeModal('journalModal');
+            loadJournalTable();
+            loadCOATable();
+            updateFinancialStats();
+            showNotification('Jurnal berhasil disimpan!');
+            event.target.reset();
+        }
+
+        function loadJournalTable() {
+            const tbody = document.getElementById('journalTableBody');
+            if (!tbody) return;
+            
+            tbody.innerHTML = '';
+            
+            journalEntries.slice(-10).reverse().forEach(entry => {
+                entry.lines.forEach((line, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${index === 0 ? formatDate(entry.date) : ''}</td>
+                        <td>${index === 0 ? `JV-${entry.id}` : ''}</td>
+                        <td>${index === 0 ? entry.description : ''}</td>
+                        <td>Rp ${line.debit > 0 ? line.debit.toLocaleString() : '-'}</td>
+                        <td>Rp ${line.credit > 0 ? line.credit.toLocaleString() : '-'}</td>
+                        <td>${index === 0 ? '<span class="status-badge status-verified">Posted</span>' : ''}</td>
+                        <td>${index === 0 ? `<button class="btn btn-primary btn-sm" onclick="viewJournal(${entry.id})"><span class="material-icons">visibility</span></button>` : ''}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            });
+        }
+
+        // Expense Functions
+        function saveExpense(event) {
+            event.preventDefault();
+            
+            const date = document.getElementById('expenseDate').value;
+            const category = document.getElementById('expenseCategory').value;
+            const amount = parseFloat(document.getElementById('expenseAmount').value);
+            const method = document.getElementById('expenseMethod').value;
+            const vendor = document.getElementById('expenseVendor').value;
+            const description = document.getElementById('expenseDescription').value;
+            const reference = document.getElementById('expenseReference').value;
+            
+            // Map expense category to COA
+            const expenseAccountMap = {
+                'hotel': '5-10001',
+                'flight': '5-10002',
+                'visa': '5-10003',
+                'transport': '5-10004',
+                'meal': '5-10005',
+                'guide': '5-10006',
+                'admin': '5-20002',
+                'other': '5-30001'
+            };
+            
+            const cashAccount = method === 'cash' ? '1-10001' : '1-10002'; // Kas or Bank
+            const expenseAccount = expenseAccountMap[category];
+            
+            // Create journal entry
+            const journalEntry = {
+                id: Date.now(),
+                date: date,
+                description: `${description} - ${vendor} (${reference})`,
+                lines: [
+                    { account: expenseAccount, debit: amount, credit: 0 },
+                    { account: cashAccount, debit: 0, credit: amount }
+                ],
+                status: 'posted',
+                type: 'expense'
+            };
+            
+            // Update account balances
+            const expAcc = chartOfAccounts.find(a => a.code === expenseAccount);
+            const cashAcc = chartOfAccounts.find(a => a.code === cashAccount);
+            
+            if (expAcc) expAcc.balance += amount;
+            if (cashAcc) cashAcc.balance -= amount;
+            
+            journalEntries.push(journalEntry);
+            
+            closeModal('expenseModal');
+            loadJournalTable();
+            loadCOATable();
+            updateFinancialStats();
+            showNotification('Pengeluaran berhasil dicatat!');
+            event.target.reset();
+        }
+
+        // Automatic posting from payment
+        function postPaymentToJournal(payment) {
+            if (payment.status !== 'verified') return;
+            
+            const cashAccount = payment.method === 'cash' ? '1-10001' : '1-10002';
+            const revenueAccount = '4-10001'; // Pendapatan Umroh
+            const receivableAccount = '1-20001'; // Piutang Jamaah
+            
+            // Create journal entry for payment
+            const journalEntry = {
+                id: Date.now(),
+                date: payment.date,
+                description: `Pembayaran dari ${payment.jamaah_name} - ${payment.package}`,
+                lines: [
+                    { account: cashAccount, debit: payment.amount, credit: 0 },
+                    { account: receivableAccount, debit: 0, credit: payment.amount }
+                ],
+                status: 'posted',
+                type: 'receipt',
+                reference: payment.reference
+            };
+            
+            // Update balances
+            const cash = chartOfAccounts.find(a => a.code === cashAccount);
+            const receivable = chartOfAccounts.find(a => a.code === receivableAccount);
+            
+            if (cash) cash.balance += payment.amount;
+            if (receivable) receivable.balance -= payment.amount;
+            
+            journalEntries.push(journalEntry);
+        }
+
+        // Update financial statistics
+        function updateFinancialStats() {
+            if (!document.getElementById('totalCash')) return;
+            
+            // Calculate totals
+            const totalCash = chartOfAccounts
+                .filter(acc => acc.code.startsWith('1-1'))
+                .reduce((sum, acc) => sum + acc.balance, 0);
+            
+            const totalRevenue = chartOfAccounts
+                .filter(acc => acc.category === 'revenue')
+                .reduce((sum, acc) => sum + acc.balance, 0);
+            
+            const totalExpense = chartOfAccounts
+                .filter(acc => acc.category === 'expense')
+                .reduce((sum, acc) => sum + acc.balance, 0);
+            
+            const netProfit = totalRevenue - totalExpense;
+            
+            // Update displays
+            document.getElementById('totalCash').textContent = `Rp ${totalCash.toLocaleString()}`;
+            document.getElementById('totalRevenue').textContent = `Rp ${totalRevenue.toLocaleString()}`;
+            document.getElementById('totalExpense').textContent = `Rp ${totalExpense.toLocaleString()}`;
+            document.getElementById('netProfit').textContent = `Rp ${netProfit.toLocaleString()}`;
+            
+            // Update profit color
+            document.getElementById('netProfit').parentElement.style.background = 
+                netProfit >= 0 ? 
+                'linear-gradient(145deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.1))' : 
+                'linear-gradient(145deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.1))';
+        }
+
+        // Generate Financial Reports
+        function generateFinancialReport(reportType) {
+            switch(reportType) {
+                case 'balance_sheet':
+                    generateBalanceSheet();
+                    break;
+                case 'income_statement':
+                    generateIncomeStatement();
+                    break;
+                case 'cash_flow':
+                    generateCashFlow();
+                    break;
+                case 'general_journal':
+                    generateGeneralJournal();
+                    break;
+                case 'special_journal':
+                    generateSpecialJournal();
+                    break;
+                case 'general_ledger':
+                    generateGeneralLedger();
+                    break;
+            }
+        }
+
+        function generateBalanceSheet() {
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.style.display = 'flex';
+            
+            const assets = chartOfAccounts.filter(acc => acc.category === 'asset');
+            const liabilities = chartOfAccounts.filter(acc => acc.category === 'liability');
+            const equity = chartOfAccounts.filter(acc => acc.category === 'equity');
+            
+            const totalAssets = assets.reduce((sum, acc) => sum + acc.balance, 0);
+            const totalLiabilities = liabilities.reduce((sum, acc) => sum + acc.balance, 0);
+            const totalEquity = equity.reduce((sum, acc) => sum + acc.balance, 0);
+            
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 800px;">
+                    <div class="modal-header">
+                        <h3>Neraca (Balance Sheet)</h3>
+                        <button class="close-btn" onclick="this.closest('.modal').remove()">&times;</button>
+                    </div>
+                    <div style="padding: 20px;">
+                        <h4 style="text-align: center; color: #4facfe;">VAUZA TAMMA MANAGEMENT</h4>
+                        <h5 style="text-align: center; color: #cbd5e1;">NERACA</h5>
+                        <p style="text-align: center; color: #94a3b8;">Per ${new Date().toLocaleDateString('id-ID')}</p>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px;">
+                            <!-- Assets -->
+                            <div>
+                                <h4 style="color: #4facfe; border-bottom: 2px solid #4facfe; padding-bottom: 10px;">ASET</h4>
+                                ${assets.map(acc => `
+                                    <div style="display: flex; justify-content: space-between; padding: 5px 0;">
+                                        <span>${acc.name}</span>
+                                        <span>Rp ${acc.balance.toLocaleString()}</span>
+                                    </div>
+                                `).join('')}
+                                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-top: 1px solid #475569; margin-top: 10px; font-weight: bold;">
+                                    <span>Total Aset</span>
+                                    <span>Rp ${totalAssets.toLocaleString()}</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Liabilities & Equity -->
+                            <div>
+                                <h4 style="color: #4facfe; border-bottom: 2px solid #4facfe; padding-bottom: 10px;">KEWAJIBAN & MODAL</h4>
+                                <h5 style="color: #cbd5e1; margin-top: 15px;">Kewajiban</h5>
+                                ${liabilities.map(acc => `
+                                    <div style="display: flex; justify-content: space-between; padding: 5px 0;">
+                                        <span>${acc.name}</span>
+                                        <span>Rp ${acc.balance.toLocaleString()}</span>
+                                    </div>
+                                `).join('')}
+                                <div style="display: flex; justify-content: space-between; padding: 10px 0; margin-bottom: 15px;">
+                                    <span style="font-weight: 600;">Total Kewajiban</span>
+                                    <span style="font-weight: 600;">Rp ${totalLiabilities.toLocaleString()}</span>
+                                </div>
+                                
+                                <h5 style="color: #cbd5e1;">Modal</h5>
+                                ${equity.map(acc => `
+                                    <div style="display: flex; justify-content: space-between; padding: 5px 0;">
+                                        <span>${acc.name}</span>
+                                        <span>Rp ${acc.balance.toLocaleString()}</span>
+                                    </div>
+                                `).join('')}
+                                <div style="display: flex; justify-content: space-between; padding: 10px 0;">
+                                    <span style="font-weight: 600;">Total Modal</span>
+                                    <span style="font-weight: 600;">Rp ${totalEquity.toLocaleString()}</span>
+                                </div>
+                                
+                                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-top: 1px solid #475569; margin-top: 10px; font-weight: bold;">
+                                    <span>Total Kewajiban & Modal</span>
+                                    <span>Rp ${(totalLiabilities + totalEquity).toLocaleString()}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 30px; text-align: center;">
+                            <button class="btn btn-primary" onclick="window.print()">
+                                <span class="material-icons">print</span>
+                                Cetak
+                            </button>
+                            <button class="btn btn-success" onclick="exportToExcel('balance_sheet')">
+                                <span class="material-icons">download</span>
+                                Export Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
+        function generateIncomeStatement() {
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.style.display = 'flex';
+            
+            const revenues = chartOfAccounts.filter(acc => acc.category === 'revenue');
+            const expenses = chartOfAccounts.filter(acc => acc.category === 'expense');
+            
+            const totalRevenue = revenues.reduce((sum, acc) => sum + acc.balance, 0);
+            const totalExpense = expenses.reduce((sum, acc) => sum + acc.balance, 0);
+            const netIncome = totalRevenue - totalExpense;
+            
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 700px;">
+                    <div class="modal-header">
+                        <h3>Laporan Laba Rugi (Income Statement)</h3>
+                        <button class="close-btn" onclick="this.closest('.modal').remove()">&times;</button>
+                    </div>
+                    <div style="padding: 20px;">
+                        <h4 style="text-align: center; color: #4facfe;">VAUZA TAMMA MANAGEMENT</h4>
+                        <h5 style="text-align: center; color: #cbd5e1;">LAPORAN LABA RUGI</h5>
+                        <p style="text-align: center; color: #94a3b8;">Periode ${new Date().toLocaleDateString('id-ID')}</p>
+                        
+                        <div style="margin-top: 30px;">
+                            <h4 style="color: #4facfe; border-bottom: 2px solid #4facfe; padding-bottom: 10px;">PENDAPATAN</h4>
+                            ${revenues.map(acc => `
+                                <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                                    <span>${acc.name}</span>
+                                    <span>Rp ${acc.balance.toLocaleString()}</span>
+                                </div>
+                            `).join('')}
+                            <div style="display: flex; justify-content: space-between; padding: 10px 0; border-top: 1px solid #475569; margin-top: 10px; font-weight: bold;">
+                                <span>Total Pendapatan</span>
+                                <span>Rp ${totalRevenue.toLocaleString()}</span>
+                            </div>
+                            
+                            <h4 style="color: #4facfe; border-bottom: 2px solid #4facfe; padding-bottom: 10px; margin-top: 30px;">BEBAN</h4>
+                            ${expenses.map(acc => `
+                                <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                                    <span>${acc.name}</span>
+                                    <span>Rp ${acc.balance.toLocaleString()}</span>
+                                </div>
+                            `).join('')}
+                            <div style="display: flex; justify-content: space-between; padding: 10px 0; border-top: 1px solid #475569; margin-top: 10px; font-weight: bold;">
+                                <span>Total Beban</span>
+                                <span>Rp ${totalExpense.toLocaleString()}</span>
+                            </div>
+                            
+                            <div style="display: flex; justify-content: space-between; padding: 15px; background: ${netIncome >= 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'}; border-radius: 8px; margin-top: 20px; font-size: 18px; font-weight: bold;">
+                                <span>${netIncome >= 0 ? 'LABA BERSIH' : 'RUGI BERSIH'}</span>
+                                <span style="color: ${netIncome >= 0 ? '#10b981' : '#ef4444'};">Rp ${Math.abs(netIncome).toLocaleString()}</span>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 30px; text-align: center;">
+                            <button class="btn btn-primary" onclick="window.print()">
+                                <span class="material-icons">print</span>
+                                Cetak
+                            </button>
+                            <button class="btn btn-success" onclick="exportToExcel('income_statement')">
+                                <span class="material-icons">download</span>
+                                Export Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
+        function generateCashFlow() {
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.style.display = 'flex';
+            
+            // Filter cash-related entries
+            const cashAccounts = ['1-10001', '1-10002', '1-10003']; // Kas and Banks
+            const cashEntries = journalEntries.filter(entry => 
+                entry.lines.some(line => cashAccounts.includes(line.account))
+            );
+            
+            let operatingCashFlow = 0;
+            let investingCashFlow = 0;
+            let financingCashFlow = 0;
+            
+            cashEntries.forEach(entry => {
+                entry.lines.forEach(line => {
+                    if (cashAccounts.includes(line.account)) {
+                        const amount = line.debit - line.credit;
+                        
+                        // Categorize by type
+                        if (entry.type === 'receipt' || entry.type === 'expense') {
+                            operatingCashFlow += amount;
+                        } else if (entry.type === 'investment') {
+                            investingCashFlow += amount;
+                        } else if (entry.type === 'financing') {
+                            financingCashFlow += amount;
+                        } else {
+                            operatingCashFlow += amount; // Default to operating
+                        }
+                    }
+                });
+            });
+            
+            const netCashFlow = operatingCashFlow + investingCashFlow + financingCashFlow;
+            
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 700px;">
+                    <div class="modal-header">
+                        <h3>Laporan Arus Kas (Cash Flow Statement)</h3>
+                        <button class="close-btn" onclick="this.closest('.modal').remove()">&times;</button>
+                    </div>
+                    <div style="padding: 20px;">
+                        <h4 style="text-align: center; color: #4facfe;">VAUZA TAMMA MANAGEMENT</h4>
+                        <h5 style="text-align: center; color: #cbd5e1;">LAPORAN ARUS KAS</h5>
+                        <p style="text-align: center; color: #94a3b8;">Periode ${new Date().toLocaleDateString('id-ID')}</p>
+                        
+                        <div style="margin-top: 30px;">
+                            <h4 style="color: #4facfe; border-bottom: 2px solid #4facfe; padding-bottom: 10px;">AKTIVITAS OPERASI</h4>
+                            <div style="padding: 15px 0;">
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>Penerimaan dari Jamaah</span>
+                                    <span>Rp ${Math.max(0, operatingCashFlow).toLocaleString()}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>Pembayaran Operasional</span>
+                                    <span>(Rp ${Math.abs(Math.min(0, operatingCashFlow)).toLocaleString()})</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid #475569; font-weight: bold;">
+                                    <span>Arus Kas dari Aktivitas Operasi</span>
+                                    <span style="color: ${operatingCashFlow >= 0 ? '#10b981' : '#ef4444'};">Rp ${operatingCashFlow.toLocaleString()}</span>
+                                </div>
+                            </div>
+                            
+                            <h4 style="color: #4facfe; border-bottom: 2px solid #4facfe; padding-bottom: 10px; margin-top: 30px;">AKTIVITAS INVESTASI</h4>
+                            <div style="padding: 15px 0;">
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>Pembelian Aset</span>
+                                    <span>Rp ${investingCashFlow.toLocaleString()}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid #475569; font-weight: bold;">
+                                    <span>Arus Kas dari Aktivitas Investasi</span>
+                                    <span style="color: ${investingCashFlow >= 0 ? '#10b981' : '#ef4444'};">Rp ${investingCashFlow.toLocaleString()}</span>
+                                </div>
+                            </div>
+                            
+                            <h4 style="color: #4facfe; border-bottom: 2px solid #4facfe; padding-bottom: 10px; margin-top: 30px;">AKTIVITAS PENDANAAN</h4>
+                            <div style="padding: 15px 0;">
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>Modal/Pinjaman</span>
+                                    <span>Rp ${financingCashFlow.toLocaleString()}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid #475569; font-weight: bold;">
+                                    <span>Arus Kas dari Aktivitas Pendanaan</span>
+                                    <span style="color: ${financingCashFlow >= 0 ? '#10b981' : '#ef4444'};">Rp ${financingCashFlow.toLocaleString()}</span>
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; justify-content: space-between; padding: 15px; background: ${netCashFlow >= 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'}; border-radius: 8px; margin-top: 20px; font-size: 18px; font-weight: bold;">
+                                <span>PERUBAHAN KAS BERSIH</span>
+                                <span style="color: ${netCashFlow >= 0 ? '#10b981' : '#ef4444'};">Rp ${netCashFlow.toLocaleString()}</span>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 30px; text-align: center;">
+                            <button class="btn btn-primary" onclick="window.print()">
+                                <span class="material-icons">print</span>
+                                Cetak
+                            </button>
+                            <button class="btn btn-success" onclick="exportToExcel('cash_flow')">
+                                <span class="material-icons">download</span>
+                                Export Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
+        function generateGeneralJournal() {
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.style.display = 'flex';
+            
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 900px; max-height: 80vh; overflow-y: auto;">
+                    <div class="modal-header">
+                        <h3>Jurnal Umum (General Journal)</h3>
+                        <button class="close-btn" onclick="this.closest('.modal').remove()">&times;</button>
+                    </div>
+                    <div style="padding: 20px;">
+                        <h4 style="text-align: center; color: #4facfe;">VAUZA TAMMA MANAGEMENT</h4>
+                        <h5 style="text-align: center; color: #cbd5e1;">JURNAL UMUM</h5>
+                        <p style="text-align: center; color: #94a3b8;">Periode ${new Date().toLocaleDateString('id-ID')}</p>
+                        
+                        <table style="width: 100%; margin-top: 20px; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: rgba(79, 172, 254, 0.1);">
+                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #4facfe;">Tanggal</th>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #4facfe;">No. Jurnal</th>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #4facfe;">Keterangan</th>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #4facfe;">Akun</th>
+                                    <th style="padding: 12px; text-align: right; border-bottom: 2px solid #4facfe;">Debit</th>
+                                    <th style="padding: 12px; text-align: right; border-bottom: 2px solid #4facfe;">Kredit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${journalEntries.map(entry => {
+                                    const rows = [];
+                                    entry.lines.forEach((line, index) => {
+                                        const account = chartOfAccounts.find(acc => acc.code === line.account);
+                                        rows.push(`
+                                            <tr>
+                                                <td style="padding: 8px; border-bottom: 1px solid #475569;">${index === 0 ? formatDate(entry.date) : ''}</td>
+                                                <td style="padding: 8px; border-bottom: 1px solid #475569;">${index === 0 ? `JV-${entry.id}` : ''}</td>
+                                                <td style="padding: 8px; border-bottom: 1px solid #475569;">${index === 0 ? entry.description : ''}</td>
+                                                <td style="padding: 8px; border-bottom: 1px solid #475569;">${account ? account.name : line.account}</td>
+                                                <td style="padding: 8px; text-align: right; border-bottom: 1px solid #475569;">${line.debit > 0 ? `Rp ${line.debit.toLocaleString()}` : '-'}</td>
+                                                <td style="padding: 8px; text-align: right; border-bottom: 1px solid #475569;">${line.credit > 0 ? `Rp ${line.credit.toLocaleString()}` : '-'}</td>
+                                            </tr>
+                                        `);
+                                    });
+                                    return rows.join('');
+                                }).join('')}
+                            </tbody>
+                        </table>
+                        
+                        <div style="margin-top: 30px; text-align: center;">
+                            <button class="btn btn-primary" onclick="window.print()">
+                                <span class="material-icons">print</span>
+                                Cetak
+                            </button>
+                            <button class="btn btn-success" onclick="exportToExcel('general_journal')">
+                                <span class="material-icons">download</span>
+                                Export Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
+        function generateSpecialJournal() {
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.style.display = 'flex';
+            
+            // Categorize journals by type
+            const receiptJournals = journalEntries.filter(entry => entry.type === 'receipt');
+            const expenseJournals = journalEntries.filter(entry => entry.type === 'expense');
+            const generalJournals = journalEntries.filter(entry => !entry.type || (entry.type !== 'receipt' && entry.type !== 'expense'));
+            
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 900px; max-height: 80vh; overflow-y: auto;">
+                    <div class="modal-header">
+                        <h3>Jurnal Khusus (Special Journal)</h3>
+                        <button class="close-btn" onclick="this.closest('.modal').remove()">&times;</button>
+                    </div>
+                    <div style="padding: 20px;">
+                        <h4 style="text-align: center; color: #4facfe;">VAUZA TAMMA MANAGEMENT</h4>
+                        <h5 style="text-align: center; color: #cbd5e1;">JURNAL KHUSUS</h5>
+                        <p style="text-align: center; color: #94a3b8;">Periode ${new Date().toLocaleDateString('id-ID')}</p>
+                        
+                        <!-- Receipt Journal -->
+                        <h4 style="color: #10b981; margin-top: 30px; border-bottom: 2px solid #10b981; padding-bottom: 10px;">JURNAL PENERIMAAN KAS</h4>
+                        <table style="width: 100%; margin-top: 10px; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: rgba(16, 185, 129, 0.1);">
+                                    <th style="padding: 8px; text-align: left;">Tanggal</th>
+                                    <th style="padding: 8px; text-align: left;">No. Ref</th>
+                                    <th style="padding: 8px; text-align: left;">Keterangan</th>
+                                    <th style="padding: 8px; text-align: right;">Kas (D)</th>
+                                    <th style="padding: 8px; text-align: right;">Piutang (K)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${receiptJournals.map(entry => {
+                                    const cashLine = entry.lines.find(l => l.account.startsWith('1-1') && l.debit > 0);
+                                    const receivableLine = entry.lines.find(l => l.account === '1-20001' && l.credit > 0);
+                                    return `
+                                        <tr>
+                                            <td style="padding: 8px; border-bottom: 1px solid #475569;">${formatDate(entry.date)}</td>
+                                            <td style="padding: 8px; border-bottom: 1px solid #475569;">JV-${entry.id}</td>
+                                            <td style="padding: 8px; border-bottom: 1px solid #475569;">${entry.description}</td>
+                                            <td style="padding: 8px; text-align: right; border-bottom: 1px solid #475569;">Rp ${(cashLine?.debit || 0).toLocaleString()}</td>
+                                            <td style="padding: 8px; text-align: right; border-bottom: 1px solid #475569;">Rp ${(receivableLine?.credit || 0).toLocaleString()}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                        
+                        <!-- Expense Journal -->
+                        <h4 style="color: #ef4444; margin-top: 30px; border-bottom: 2px solid #ef4444; padding-bottom: 10px;">JURNAL PENGELUARAN KAS</h4>
+                        <table style="width: 100%; margin-top: 10px; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: rgba(239, 68, 68, 0.1);">
+                                    <th style="padding: 8px; text-align: left;">Tanggal</th>
+                                    <th style="padding: 8px; text-align: left;">No. Ref</th>
+                                    <th style="padding: 8px; text-align: left;">Keterangan</th>
+                                    <th style="padding: 8px; text-align: right;">Beban (D)</th>
+                                    <th style="padding: 8px; text-align: right;">Kas (K)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${expenseJournals.map(entry => {
+                                    const expenseLine = entry.lines.find(l => l.account.startsWith('5-') && l.debit > 0);
+                                    const cashLine = entry.lines.find(l => l.account.startsWith('1-1') && l.credit > 0);
+                                    return `
+                                        <tr>
+                                            <td style="padding: 8px; border-bottom: 1px solid #475569;">${formatDate(entry.date)}</td>
+                                            <td style="padding: 8px; border-bottom: 1px solid #475569;">JV-${entry.id}</td>
+                                            <td style="padding: 8px; border-bottom: 1px solid #475569;">${entry.description}</td>
+                                            <td style="padding: 8px; text-align: right; border-bottom: 1px solid #475569;">Rp ${(expenseLine?.debit || 0).toLocaleString()}</td>
+                                            <td style="padding: 8px; text-align: right; border-bottom: 1px solid #475569;">Rp ${(cashLine?.credit || 0).toLocaleString()}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                        
+                        <!-- General Journal Entries -->
+                        <h4 style="color: #4facfe; margin-top: 30px; border-bottom: 2px solid #4facfe; padding-bottom: 10px;">JURNAL UMUM LAINNYA</h4>
+                        <p style="color: rgba(255, 255, 255, 0.7);">Total ${generalJournals.length} entri jurnal umum</p>
+                        
+                        <div style="margin-top: 30px; text-align: center;">
+                            <button class="btn btn-primary" onclick="window.print()">
+                                <span class="material-icons">print</span>
+                                Cetak
+                            </button>
+                            <button class="btn btn-success" onclick="exportToExcel('special_journal')">
+                                <span class="material-icons">download</span>
+                                Export Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
+        function generateGeneralLedger() {
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.style.display = 'flex';
+            
+            // Select main accounts to show
+            const mainAccounts = ['1-10001', '1-10002', '1-20001', '4-10001', '5-10001', '5-10002'];
+            const selectedAccounts = chartOfAccounts.filter(acc => mainAccounts.includes(acc.code));
+            
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 900px; max-height: 80vh; overflow-y: auto;">
+                    <div class="modal-header">
+                        <h3>Buku Besar (General Ledger)</h3>
+                        <button class="close-btn" onclick="this.closest('.modal').remove()">&times;</button>
+                    </div>
+                    <div style="padding: 20px;">
+                        <h4 style="text-align: center; color: #4facfe;">VAUZA TAMMA MANAGEMENT</h4>
+                        <h5 style="text-align: center; color: #cbd5e1;">BUKU BESAR</h5>
+                        <p style="text-align: center; color: #94a3b8;">Periode ${new Date().toLocaleDateString('id-ID')}</p>
+                        
+                        ${selectedAccounts.map(account => {
+                            // Get all journal entries for this account
+                            const accountEntries = [];
+                            journalEntries.forEach(entry => {
+                                entry.lines.forEach(line => {
+                                    if (line.account === account.code) {
+                                        accountEntries.push({
+                                            date: entry.date,
+                                            ref: `JV-${entry.id}`,
+                                            description: entry.description,
+                                            debit: line.debit,
+                                            credit: line.credit
+                                        });
+                                    }
+                                });
+                            });
+                            
+                            // Calculate running balance
+                            let runningBalance = 0;
+                            const entriesWithBalance = accountEntries.map(entry => {
+                                if (account.normalBalance === 'debit') {
+                                    runningBalance += entry.debit - entry.credit;
+                                } else {
+                                    runningBalance += entry.credit - entry.debit;
+                                }
+                                return { ...entry, balance: runningBalance };
+                            });
+                            
+                            return `
+                                <div style="margin-top: 30px; border: 1px solid #475569; border-radius: 8px; padding: 15px;">
+                                    <h4 style="color: #4facfe; margin-bottom: 15px;">${account.name} (${account.code})</h4>
+                                    <table style="width: 100%; border-collapse: collapse;">
+                                        <thead>
+                                            <tr style="background: rgba(79, 172, 254, 0.1);">
+                                                <th style="padding: 8px; text-align: left;">Tanggal</th>
+                                                <th style="padding: 8px; text-align: left;">Ref</th>
+                                                <th style="padding: 8px; text-align: left;">Keterangan</th>
+                                                <th style="padding: 8px; text-align: right;">Debit</th>
+                                                <th style="padding: 8px; text-align: right;">Kredit</th>
+                                                <th style="padding: 8px; text-align: right;">Saldo</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${entriesWithBalance.map(entry => `
+                                                <tr>
+                                                    <td style="padding: 8px; border-bottom: 1px solid #475569;">${formatDate(entry.date)}</td>
+                                                    <td style="padding: 8px; border-bottom: 1px solid #475569;">${entry.ref}</td>
+                                                    <td style="padding: 8px; border-bottom: 1px solid #475569;">${entry.description}</td>
+                                                    <td style="padding: 8px; text-align: right; border-bottom: 1px solid #475569;">${entry.debit > 0 ? `Rp ${entry.debit.toLocaleString()}` : '-'}</td>
+                                                    <td style="padding: 8px; text-align: right; border-bottom: 1px solid #475569;">${entry.credit > 0 ? `Rp ${entry.credit.toLocaleString()}` : '-'}</td>
+                                                    <td style="padding: 8px; text-align: right; border-bottom: 1px solid #475569; font-weight: bold;">Rp ${entry.balance.toLocaleString()}</td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            `;
+                        }).join('')}
+                        
+                        <div style="margin-top: 30px; text-align: center;">
+                            <button class="btn btn-primary" onclick="window.print()">
+                                <span class="material-icons">print</span>
+                                Cetak
+                            </button>
+                            <button class="btn btn-success" onclick="exportToExcel('general_ledger')">
+                                <span class="material-icons">download</span>
+                                Export Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
+        // Show Financial Tutorial
+        function showFinanceTutorial() {
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.style.display = 'flex';
+            
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 900px; max-height: 80vh; overflow-y: auto;">
+                    <div class="modal-header">
+                        <h3>Tutorial Sistem Keuangan</h3>
+                        <button class="close-btn" onclick="this.closest('.modal').remove()">&times;</button>
+                    </div>
+                    <div style="padding: 20px;">
+                        <h4 style="color: #4facfe; margin-bottom: 20px;">📚 Panduan Penggunaan Modul Keuangan</h4>
+                        
+                        <div class="glass-card" style="margin-bottom: 20px;">
+                            <h5 style="color: #10b981;">1. Chart of Accounts (COA)</h5>
+                            <p>COA adalah daftar semua akun yang digunakan dalam pembukuan. Setiap akun memiliki:</p>
+                            <ul style="color: rgba(255, 255, 255, 0.8);">
+                                <li><strong>Kode Akun:</strong> Format X-XXXXX (1=Aset, 2=Kewajiban, 3=Modal, 4=Pendapatan, 5=Beban)</li>
+                                <li><strong>Nama Akun:</strong> Deskripsi akun</li>
+                                <li><strong>Kategori:</strong> Jenis akun (Asset, Liability, Equity, Revenue, Expense)</li>
+                                <li><strong>Saldo Normal:</strong> Debit atau Kredit</li>
+                            </ul>
+                            <p style="background: rgba(79, 172, 254, 0.1); padding: 10px; border-radius: 8px;">
+                                💡 <strong>Tips:</strong> Klik "Load Default COA" untuk memuat akun-akun standar umroh
+                            </p>
+                        </div>
+
+                        <div class="glass-card" style="margin-bottom: 20px;">
+                            <h5 style="color: #10b981;">2. Alur Otomatis Pembayaran Jamaah</h5>
+                            <p>Ketika pembayaran jamaah diverifikasi, sistem otomatis akan:</p>
+                            <ol style="color: rgba(255, 255, 255, 0.8);">
+                                <li>Debit: Kas/Bank (sesuai metode pembayaran)</li>
+                                <li>Kredit: Piutang Jamaah</li>
+                                <li>Saat jamaah mendaftar: Debit Piutang, Kredit Pendapatan Umroh</li>
+                            </ol>
+                        </div>
+
+                        <div class="glass-card" style="margin-bottom: 20px;">
+                            <h5 style="color: #10b981;">3. Input Pengeluaran</h5>
+                            <p>Untuk mencatat pengeluaran perusahaan:</p>
+                            <ol style="color: rgba(255, 255, 255, 0.8);">
+                                <li>Klik tombol "Pengeluaran"</li>
+                                <li>Pilih kategori (Hotel, Tiket, Visa, dll)</li>
+                                <li>Isi jumlah dan detail vendor</li>
+                                <li>Sistem akan otomatis membuat jurnal:
+                                    <ul>
+                                        <li>Debit: Beban (sesuai kategori)</li>
+                                        <li>Kredit: Kas/Bank</li>
+                                    </ul>
+                                </li>
+                            </ol>
+                        </div>
+
+                        <div class="glass-card" style="margin-bottom: 20px;">
+                            <h5 style="color: #10b981;">4. Jurnal Umum</h5>
+                            <p>Untuk transaksi yang tidak standar:</p>
+                            <ul style="color: rgba(255, 255, 255, 0.8);">
+                                <li>Minimal 2 baris jurnal (1 debit, 1 kredit)</li>
+                                <li>Total debit HARUS sama dengan total kredit</li>
+                                <li>Pilih akun dari COA yang sudah ada</li>
+                            </ul>
+                        </div>
+
+                        <div class="glass-card" style="margin-bottom: 20px;">
+                            <h5 style="color: #10b981;">5. Laporan Keuangan</h5>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div>
+                                    <h6 style="color: #4facfe;">Neraca</h6>
+                                    <p style="font-size: 13px;">Posisi keuangan: Aset = Kewajiban + Modal</p>
+                                </div>
+                                <div>
+                                    <h6 style="color: #4facfe;">Laba Rugi</h6>
+                                    <p style="font-size: 13px;">Pendapatan - Beban = Laba/Rugi</p>
+                                </div>
+                                <div>
+                                    <h6 style="color: #4facfe;">Arus Kas</h6>
+                                    <p style="font-size: 13px;">Aliran kas masuk dan keluar</p>
+                                </div>
+                                <div>
+                                    <h6 style="color: #4facfe;">Jurnal Umum</h6>
+                                    <p style="font-size: 13px;">Semua transaksi kronologis</p>
+                                </div>
+                                <div>
+                                    <h6 style="color: #4facfe;">Jurnal Khusus</h6>
+                                    <p style="font-size: 13px;">Jurnal per jenis transaksi</p>
+                                </div>
+                                <div>
+                                    <h6 style="color: #4facfe;">Buku Besar</h6>
+                                    <p style="font-size: 13px;">Mutasi per akun</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3);">
+                            <h5 style="color: #ef4444;">⚠️ Penting!</h5>
+                            <ul style="color: rgba(255, 255, 255, 0.8);">
+                                <li>Selalu backup data keuangan secara berkala</li>
+                                <li>Periksa balance jurnal sebelum posting</li>
+                                <li>Rekonsiliasi bank minimal sebulan sekali</li>
+                                <li>Jangan hapus jurnal yang sudah diposting</li>
+                            </ul>
+                        </div>
+
+                        <div style="margin-top: 30px; text-align: center;">
+                            <button class="btn btn-success" onclick="this.closest('.modal').remove()">
+                                <span class="material-icons">check</span>
+                                Saya Mengerti
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
         }
 
         // Initialize app
