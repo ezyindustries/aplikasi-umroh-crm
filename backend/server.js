@@ -6,7 +6,7 @@ const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
-const { setupDatabase } = require('./config/database');
+const { sequelize } = require('./models');
 const { setupLogging } = require('./config/logging');
 const securityConfig = require('./config/security');
 const performanceService = require('./services/performanceService');
@@ -47,6 +47,7 @@ const metricsRoutes = require('./routes/metrics');
 const docsRoutes = require('./routes/docs');
 const brosurRoutes = require('./routes/brosur');
 const notificationsRoutes = require('./routes/notifications');
+const crmRoutes = require('./routes/crm');
 
 const app = express();
 const server = http.createServer(app);
@@ -135,6 +136,7 @@ app.use('/api/metrics', metricsRoutes);
 app.use('/api/docs', docsRoutes);
 app.use('/api/brosur', brosurRoutes);
 app.use('/api/notifications', notificationsRoutes);
+app.use('/api/crm', crmRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
@@ -153,7 +155,7 @@ const PORT = process.env.PORT || 5000;
 
 async function startServer() {
   try {
-    await setupDatabase();
+    await sequelize.authenticate();
     logger.info('Database connection established');
     
     // Initialize performance service
@@ -163,6 +165,9 @@ async function startServer() {
     // Initialize WebSocket service
     websocketService.initialize(server);
     logger.info('WebSocket service initialized');
+    
+    // Make websocket accessible for CRM
+    app.locals.io = websocketService.io;
     
     // Cleanup expired notifications on startup
     await notificationService.cleanupExpiredNotifications();

@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test WhatsApp Bot dengan Ollama</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            color: #e2e8f0;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        h1 {
+            background: linear-gradient(135deg, #3b82f6, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .card {
+            background: rgba(30, 41, 59, 0.9);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        .card h2 {
+            color: #60a5fa;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #64748b;
+        }
+        .status-dot.online {
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+        .status-dot.offline {
+            background: #ef4444;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .btn {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin: 5px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(71, 85, 105, 0.4);
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(15, 23, 42, 0.7);
+            border-radius: 8px;
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid rgba(71, 85, 105, 0.3);
+        }
+        .result.success {
+            border-color: rgba(16, 185, 129, 0.5);
+            background: rgba(16, 185, 129, 0.1);
+        }
+        .result.error {
+            border-color: rgba(239, 68, 68, 0.5);
+            background: rgba(239, 68, 68, 0.1);
+        }
+        .chat-preview {
+            background: rgba(37, 99, 235, 0.1);
+            border: 1px solid rgba(37, 99, 235, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .message {
+            margin: 10px 0;
+            padding: 10px 15px;
+            border-radius: 12px;
+            max-width: 80%;
+        }
+        .message.user {
+            background: rgba(59, 130, 246, 0.2);
+            margin-left: auto;
+            text-align: right;
+        }
+        .message.bot {
+            background: rgba(16, 185, 129, 0.2);
+            margin-right: auto;
+        }
+        .config-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(71, 85, 105, 0.2);
+        }
+        .config-value {
+            color: #60a5fa;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 WhatsApp Bot + Ollama Testing</h1>
+            <p>Test integrasi WhatsApp Bot dengan Ollama LLM Lokal</p>
+        </div>
+
+        <div class="grid">
+            <!-- Status Check -->
+            <div class="card">
+                <h2>📊 System Status</h2>
+                
+                <div class="status">
+                    <span class="status-dot" id="ollama-status"></span>
+                    <span>Ollama LLM</span>
+                    <span id="ollama-model" style="margin-left: auto; color: #60a5fa;"></span>
+                </div>
+                
+                <div class="status">
+                    <span class="status-dot" id="waha-status"></span>
+                    <span>WAHA WhatsApp API</span>
+                </div>
+                
+                <div class="status">
+                    <span class="status-dot" id="backend-status"></span>
+                    <span>Backend API</span>
+                </div>
+                
+                <div class="status">
+                    <span class="status-dot" id="bot-status"></span>
+                    <span>Bot Service</span>
+                </div>
+                
+                <button class="btn" onclick="checkAllStatus()">
+                    <span>🔄</span> Refresh Status
+                </button>
+                
+                <div id="status-result" class="result"></div>
+            </div>
+
+            <!-- WhatsApp Session -->
+            <div class="card">
+                <h2>📱 WhatsApp Session</h2>
+                
+                <button class="btn btn-success" onclick="createSession()">
+                    <span>➕</span> Create Session
+                </button>
+                
+                <button class="btn" onclick="getQRCode()">
+                    <span>📷</span> Get QR Code
+                </button>
+                
+                <button class="btn btn-warning" onclick="checkSession()">
+                    <span>ℹ️</span> Check Status
+                </button>
+                
+                <div id="session-result" class="result"></div>
+            </div>
+        </div>
+
+        <!-- Test Bot Response -->
+        <div class="card">
+            <h2>💬 Test Bot Response</h2>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div>
+                    <h3>Quick Test Messages:</h3>
+                    <button class="btn btn-success" onclick="testMessage('Assalamualaikum')">
+                        Greeting
+                    </button>
+                    <button class="btn btn-success" onclick="testMessage('Info paket umroh dong')">
+                        Package Info
+                    </button>
+                    <button class="btn btn-success" onclick="testMessage('Jadwal keberangkatan bulan depan')">
+                        Schedule
+                    </button>
+                    <button class="btn btn-success" onclick="testMessage('Syarat pendaftaran apa aja?')">
+                        Requirements
+                    </button>
+                    <button class="btn btn-success" onclick="testMessage('Cara daftar gimana?')">
+                        Registration
+                    </button>
+                    <button class="btn btn-success" onclick="testMessage('Bisa cicilan gak?')">
+                        Pricing
+                    </button>
+                </div>
+                
+                <div>
+                    <h3>Custom Message:</h3>
+                    <textarea id="test-message" placeholder="Ketik pesan test...">Assalamualaikum, saya mau tanya tentang paket umroh</textarea>
+                    <button class="btn btn-warning" onclick="testCustomMessage()">
+                        <span>🚀</span> Send Test Message
+                    </button>
+                </div>
+            </div>
+            
+            <div id="chat-preview" class="chat-preview" style="margin-top: 20px; display: none;">
+                <h3>Chat Preview:</h3>
+                <div id="chat-messages"></div>
+            </div>
+            
+            <div id="bot-result" class="result"></div>
+        </div>
+
+        <!-- Ollama Direct Test -->
+        <div class="card" style="margin-top: 20px;">
+            <h2>🧪 Test Ollama Directly</h2>
+            
+            <textarea id="ollama-prompt" placeholder="Test prompt untuk Ollama...">Jelaskan paket umroh reguler dengan bahasa yang ramah</textarea>
+            
+            <button class="btn btn-warning" onclick="testOllama()">
+                <span>🔬</span> Test Ollama Response
+            </button>
+            
+            <div id="ollama-result" class="result"></div>
+        </div>
+
+        <!-- Configuration -->
+        <div class="card" style="margin-top: 20px;">
+            <h2>⚙️ Current Configuration</h2>
+            <div id="config-display"></div>
+            <button class="btn" onclick="loadConfig()">
+                <span>🔄</span> Reload Config
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const BACKEND_URL = 'http://localhost:3000';
+        const WAHA_URL = 'http://localhost:3001';
+        const OLLAMA_URL = 'http://localhost:11434';
+        const WAHA_API_KEY = 'your-secret-api-key';
+
+        // Check all system status
+        async function checkAllStatus() {
+            const resultDiv = document.getElementById('status-result');
+            resultDiv.innerHTML = 'Checking all services...';
+            
+            // Check Ollama
+            try {
+                const ollamaRes = await fetch(`${OLLAMA_URL}/api/tags`);
+                if (ollamaRes.ok) {
+                    const data = await ollamaRes.json();
+                    document.getElementById('ollama-status').classList.add('online');
+                    if (data.models && data.models.length > 0) {
+                        document.getElementById('ollama-model').textContent = data.models[0].name;
+                    }
+                } else {
+                    document.getElementById('ollama-status').classList.add('offline');
+                }
+            } catch (e) {
+                document.getElementById('ollama-status').classList.add('offline');
+            }
+            
+            // Check WAHA
+            try {
+                const wahaRes = await fetch(`${WAHA_URL}/health`);
+                document.getElementById('waha-status').classList.add(wahaRes.ok ? 'online' : 'offline');
+            } catch (e) {
+                document.getElementById('waha-status').classList.add('offline');
+            }
+            
+            // Check Backend
+            try {
+                const backendRes = await fetch(`${BACKEND_URL}/api/health`);
+                document.getElementById('backend-status').classList.add(backendRes.ok ? 'online' : 'offline');
+            } catch (e) {
+                document.getElementById('backend-status').classList.add('offline');
+            }
+            
+            // Check Bot Config
+            try {
+                const token = localStorage.getItem('token');
+                const configRes = await fetch(`${BACKEND_URL}/api/crm/bot/config`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                document.getElementById('bot-status').classList.add(configRes.ok ? 'online' : 'offline');
+            } catch (e) {
+                document.getElementById('bot-status').classList.add('offline');
+            }
+            
+            resultDiv.innerHTML = '✅ Status check completed';
+            resultDiv.className = 'result success';
+        }
+
+        // Create WhatsApp Session
+        async function createSession() {
+            const resultDiv = document.getElementById('session-result');
+            try {
+                const response = await fetch(`${WAHA_URL}/api/sessions`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Api-Key': WAHA_API_KEY,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: 'default',
+                        config: {
+                            webhooks: [{
+                                url: 'http://backend:3000/api/crm/webhook',
+                                events: ['message', 'message.ack', 'state.change']
+                            }]
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                resultDiv.innerHTML = '✅ Session created/exists\n\n' + JSON.stringify(data, null, 2);
+                resultDiv.className = 'result success';
+            } catch (error) {
+                resultDiv.innerHTML = '❌ Error: ' + error.message;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        // Get QR Code
+        async function getQRCode() {
+            const resultDiv = document.getElementById('session-result');
+            try {
+                const response = await fetch(`${WAHA_URL}/api/sessions/default/auth/qr?format=image`, {
+                    headers: { 'X-Api-Key': WAHA_API_KEY }
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const imgUrl = URL.createObjectURL(blob);
+                    resultDiv.innerHTML = '<img src="' + imgUrl + '" style="max-width: 300px;">';
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.innerHTML = '❌ No QR code (might be already connected)';
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '❌ Error: ' + error.message;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        // Check Session Status
+        async function checkSession() {
+            const resultDiv = document.getElementById('session-result');
+            try {
+                const response = await fetch(`${WAHA_URL}/api/sessions/default`, {
+                    headers: { 'X-Api-Key': WAHA_API_KEY }
+                });
+                
+                const data = await response.json();
+                resultDiv.innerHTML = JSON.stringify(data, null, 2);
+                resultDiv.className = 'result success';
+            } catch (error) {
+                resultDiv.innerHTML = '❌ Error: ' + error.message;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        // Test Bot Message
+        async function testMessage(message) {
+            document.getElementById('test-message').value = message;
+            testCustomMessage();
+        }
+
+        async function testCustomMessage() {
+            const message = document.getElementById('test-message').value;
+            const resultDiv = document.getElementById('bot-result');
+            const chatDiv = document.getElementById('chat-preview');
+            const messagesDiv = document.getElementById('chat-messages');
+            
+            // Show chat preview
+            chatDiv.style.display = 'block';
+            messagesDiv.innerHTML += `<div class="message user">${message}</div>`;
+            
+            resultDiv.innerHTML = '⏳ Processing with Ollama...';
+            
+            try {
+                // Simulate bot processing
+                const response = await fetch(`${BACKEND_URL}/api/crm/bot/test`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ message })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    messagesDiv.innerHTML += `<div class="message bot">${data.response || 'Bot response here'}</div>`;
+                    resultDiv.innerHTML = '✅ Bot Response:\n' + JSON.stringify(data, null, 2);
+                    resultDiv.className = 'result success';
+                } else {
+                    // Fallback: Test Ollama directly
+                    await testOllamaWithContext(message);
+                }
+            } catch (error) {
+                // Fallback: Test Ollama directly
+                await testOllamaWithContext(message);
+            }
+        }
+
+        // Test Ollama Directly
+        async function testOllama() {
+            const prompt = document.getElementById('ollama-prompt').value;
+            const resultDiv = document.getElementById('ollama-result');
+            
+            resultDiv.innerHTML = '⏳ Generating response...';
+            
+            try {
+                const response = await fetch(`${OLLAMA_URL}/api/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: 'mistral:7b-instruct',
+                        prompt: prompt,
+                        stream: false
+                    })
+                });
+                
+                const data = await response.json();
+                resultDiv.innerHTML = '✅ Ollama Response:\n\n' + data.response;
+                resultDiv.className = 'result success';
+            } catch (error) {
+                resultDiv.innerHTML = '❌ Error: ' + error.message;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        async function testOllamaWithContext(message) {
+            const resultDiv = document.getElementById('bot-result');
+            const messagesDiv = document.getElementById('chat-messages');
+            
+            const prompt = `Anda adalah customer service Vauza Tamma Travel untuk umroh. Jawab pertanyaan berikut dengan ramah dan informatif dalam bahasa Indonesia:\n\nPertanyaan: ${message}\n\nJawaban:`;
+            
+            try {
+                const response = await fetch(`${OLLAMA_URL}/api/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: 'mistral:7b-instruct',
+                        prompt: prompt,
+                        stream: false
+                    })
+                });
+                
+                const data = await response.json();
+                messagesDiv.innerHTML += `<div class="message bot">${data.response}</div>`;
+                resultDiv.innerHTML = '✅ Ollama Response (Direct):\n\n' + data.response;
+                resultDiv.className = 'result success';
+            } catch (error) {
+                resultDiv.innerHTML = '❌ Error: ' + error.message;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        // Load Configuration
+        async function loadConfig() {
+            const configDiv = document.getElementById('config-display');
+            
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${BACKEND_URL}/api/crm/bot/config`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    let html = '';
+                    Object.entries(data.data).forEach(([key, value]) => {
+                        html += `
+                            <div class="config-item">
+                                <span>${key}</span>
+                                <span class="config-value">${value}</span>
+                            </div>
+                        `;
+                    });
+                    configDiv.innerHTML = html;
+                } else {
+                    configDiv.innerHTML = 'Login required to view config';
+                }
+            } catch (error) {
+                configDiv.innerHTML = 'Error loading config: ' + error.message;
+            }
+        }
+
+        // Auto-check status on load
+        window.onload = () => {
+            checkAllStatus();
+            
+            // Auto-login for testing
+            if (!localStorage.getItem('token')) {
+                fetch(`${BACKEND_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: 'admin', password: 'admin123' })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        localStorage.setItem('token', data.data.token);
+                        loadConfig();
+                    }
+                });
+            } else {
+                loadConfig();
+            }
+        };
+    </script>
+</body>
+</html>

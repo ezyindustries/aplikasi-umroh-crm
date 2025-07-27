@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  # WAHA WhatsApp API Service
+  waha:
+    image: devlikeapro/waha:latest
+    container_name: vauza-tamma-waha
+    restart: unless-stopped
+    environment:
+      # WAHA Configuration
+      WHATSAPP_RESTART_ALL_SESSIONS: "False"
+      WHATSAPP_FILES_LIFETIME: "180"
+      WHATSAPP_SWAGGER_ENABLED: "True"
+      
+      # Webhook Configuration
+      WHATSAPP_HOOK_URL: "http://backend:3000/api/crm/webhook"
+      WHATSAPP_HOOK_EVENTS: "message,message.ack,state.change,group.join,group.leave"
+      
+      # API Configuration
+      WHATSAPP_API_KEY: "${WAHA_API_KEY:-your-secret-api-key}"
+      WHATSAPP_API_HOSTNAME: "0.0.0.0"
+      
+      # Session Configuration
+      WHATSAPP_DEFAULT_SESSION_NAME: "default"
+      WHATSAPP_SESSIONS_PATH: "/app/sessions"
+    ports:
+      - "${WAHA_PORT:-3001}:3000"
+    volumes:
+      - waha_sessions:/app/sessions
+      - waha_media:/app/media
+    networks:
+      - vauza-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/sessions"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+
+volumes:
+  waha_sessions:
+    driver: local
+  waha_media:
+    driver: local
+
+networks:
+  vauza-network:
+    external: true
+    name: aplikasiumroh_vauza-network

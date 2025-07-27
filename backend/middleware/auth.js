@@ -1,7 +1,9 @@
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const User = require('../models/User');
+const { User } = require('../models');
 const { auditLog } = require('../services/auditService');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 // Token blacklist for logged out tokens (in production, use Redis)
 const tokenBlacklist = new Set();
@@ -61,10 +63,10 @@ async function authenticate(req, res, next) {
       });
     }
 
-    const decoded = User.verifyToken(token);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
     // Get fresh user data
-    const user = await User.findById(decoded.id);
+    const user = await User.findByPk(decoded.id);
     if (!user) {
       await auditLog({
         action: 'auth_failed',
@@ -219,8 +221,8 @@ async function optionalAuth(req, res, next) {
     if (authHeader) {
       const token = authHeader.replace('Bearer ', '');
       if (token) {
-        const decoded = User.verifyToken(token);
-        const user = await User.findById(decoded.id);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findByPk(decoded.id);
         if (user && user.is_active) {
           req.user = user;
         }

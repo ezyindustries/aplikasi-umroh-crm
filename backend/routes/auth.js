@@ -1,5 +1,7 @@
 const express = require('express');
-const User = require('../models/User');
+const { User } = require('../models');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const { authenticate } = require('../middleware/auth');
 const router = express.Router();
 
@@ -15,7 +17,50 @@ router.post('/login', async (req, res, next) => {
       });
     }
 
-    const result = await User.authenticate(username, password);
+    // Find user by username
+    const user = await User.findOne({ where: { username } });
+    
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        error: 'Username atau password salah'
+      });
+    }
+
+    // Check password
+    const validPassword = await bcrypt.compare(password, user.password_hash);
+    if (!validPassword) {
+      return res.status(401).json({
+        success: false,
+        error: 'Username atau password salah'
+      });
+    }
+
+    // Check if user is active
+    if (!user.is_active) {
+      return res.status(401).json({
+        success: false,
+        error: 'Akun tidak aktif'
+      });
+    }
+
+    // Generate token
+    const token = jwt.sign(
+      { id: user.id, username: user.username },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    const result = {
+      user: {
+        id: user.id,
+        username: user.username,
+        full_name: user.full_name,
+        email: user.email,
+        role_id: user.role_id
+      },
+      token
+    };
 
     res.json({
       success: true,
@@ -30,7 +75,7 @@ router.post('/login', async (req, res, next) => {
 // Get current user profile
 router.get('/profile', authenticate, async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findByPk(req.user.id);
     
     // Remove password hash
     delete user.password_hash;

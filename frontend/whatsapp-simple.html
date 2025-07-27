@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Monitor - Vauza Tamma</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #60a5fa;
+            text-align: center;
+        }
+        .status-card {
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .btn {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 16px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+        }
+        .message-box {
+            background: rgba(71, 85, 105, 0.2);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .success {
+            color: #34d399;
+        }
+        .error {
+            color: #f87171;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background: rgba(71, 85, 105, 0.3);
+            border: 1px solid rgba(71, 85, 105, 0.5);
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-size: 16px;
+        }
+        #messages {
+            max-height: 400px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .msg {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .msg.inbound {
+            background: rgba(71, 85, 105, 0.3);
+            margin-right: 20%;
+        }
+        .msg.outbound {
+            background: rgba(59, 130, 246, 0.3);
+            margin-left: 20%;
+            text-align: right;
+        }
+        .timestamp {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 WhatsApp Monitor</h1>
+        
+        <div class="status-card">
+            <h2>WAHA Status</h2>
+            <div id="wahaStatus">Checking...</div>
+            <button class="btn" onclick="checkWAHAStatus()">🔄 Refresh Status</button>
+            <button class="btn" onclick="window.open('http://localhost:3001/', '_blank')">🔧 WAHA Swagger</button>
+        </div>
+
+        <div class="status-card">
+            <h2>Send Test Message</h2>
+            <input type="text" id="phoneNumber" placeholder="Phone number (e.g., 6281234567890)">
+            <textarea id="messageText" rows="3" placeholder="Type your message here..."></textarea>
+            <button class="btn" onclick="sendMessage()">📤 Send Message</button>
+            <div id="sendResult"></div>
+        </div>
+
+        <div class="status-card">
+            <h2>Recent Messages</h2>
+            <button class="btn" onclick="loadMessages()">🔄 Refresh Messages</button>
+            <div id="messages"></div>
+        </div>
+
+        <div class="status-card">
+            <h2>Quick Links</h2>
+            <button class="btn" onclick="window.open('/crm-dashboard.html', '_blank')">📊 CRM Dashboard</button>
+            <button class="btn" onclick="window.open('http://localhost:8081/waha-qr-final.html', '_blank')">📷 QR Scanner</button>
+            <button class="btn" onclick="testBot()">🤖 Test Bot Response</button>
+        </div>
+    </div>
+
+    <script>
+        const WAHA_URL = 'http://localhost:3001';
+        const WAHA_API_KEY = 'your-secret-api-key';
+        const BACKEND_URL = 'http://localhost:3000';
+        let messages = [];
+
+        // Check WAHA Status
+        async function checkWAHAStatus() {
+            const statusDiv = document.getElementById('wahaStatus');
+            try {
+                const response = await fetch(`${WAHA_URL}/api/sessions/default`, {
+                    headers: { 'X-Api-Key': WAHA_API_KEY }
+                });
+                const data = await response.json();
+                
+                if (data.status === 'WORKING') {
+                    statusDiv.innerHTML = `<span class="success">✅ Connected - ${data.me?.pushName || 'Unknown'}</span>`;
+                } else if (data.status === 'SCAN_QR_CODE') {
+                    statusDiv.innerHTML = `<span class="error">📷 Need to scan QR Code</span>`;
+                } else {
+                    statusDiv.innerHTML = `<span class="error">Status: ${data.status}</span>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+            }
+        }
+
+        // Send Message
+        async function sendMessage() {
+            const phone = document.getElementById('phoneNumber').value;
+            const text = document.getElementById('messageText').value;
+            const resultDiv = document.getElementById('sendResult');
+            
+            if (!phone || !text) {
+                resultDiv.innerHTML = '<span class="error">Please enter phone and message</span>';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${WAHA_URL}/api/sendText`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Api-Key': WAHA_API_KEY,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session: 'default',
+                        chatId: phone.includes('@') ? phone : `${phone}@c.us`,
+                        text: text
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = '<span class="success">✅ Message sent successfully!</span>';
+                    document.getElementById('messageText').value = '';
+                    
+                    // Add to messages display
+                    addMessage({
+                        direction: 'outbound',
+                        content: text,
+                        timestamp: new Date().toISOString()
+                    });
+                } else {
+                    resultDiv.innerHTML = '<span class="error">❌ Failed to send message</span>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+            }
+        }
+
+        // Load Messages (Mock for now)
+        function loadMessages() {
+            const messagesDiv = document.getElementById('messages');
+            
+            // In a real implementation, this would fetch from backend
+            // For now, just display sent messages
+            if (messages.length === 0) {
+                messagesDiv.innerHTML = '<p>No messages yet. Send a test message!</p>';
+                return;
+            }
+            
+            messagesDiv.innerHTML = messages.map(msg => `
+                <div class="msg ${msg.direction}">
+                    <div>${msg.content}</div>
+                    <div class="timestamp">${new Date(msg.timestamp).toLocaleString()}</div>
+                </div>
+            `).join('');
+        }
+
+        // Add message to display
+        function addMessage(msg) {
+            messages.push(msg);
+            if (messages.length > 20) messages.shift();
+            loadMessages();
+        }
+
+        // Test Bot
+        async function testBot() {
+            try {
+                // First login
+                const loginResponse = await fetch(`${BACKEND_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: 'admin123'
+                    })
+                });
+                
+                const loginData = await loginResponse.json();
+                
+                if (!loginData.success) {
+                    alert('Login failed');
+                    return;
+                }
+                
+                // Test bot
+                const botResponse = await fetch(`${BACKEND_URL}/api/bot/test`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${loginData.data.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: 'Assalamualaikum, saya mau tanya info paket umroh'
+                    })
+                });
+                
+                const botData = await botResponse.json();
+                
+                if (botData.success) {
+                    alert('Bot Response:\n\n' + botData.response);
+                } else {
+                    alert('Bot test failed: ' + (botData.error || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Error testing bot: ' + error.message);
+            }
+        }
+
+        // Auto-check status on load
+        window.onload = () => {
+            checkWAHAStatus();
+            loadMessages();
+            
+            // Auto-refresh status every 10 seconds
+            setInterval(checkWAHAStatus, 10000);
+        };
+    </script>
+</body>
+</html>

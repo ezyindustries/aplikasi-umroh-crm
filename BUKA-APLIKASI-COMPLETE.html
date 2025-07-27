@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Umroh Complete - Vauza Tamma</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #f8fafc;
+        }
+        
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #3b82f6, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            color: #94a3b8;
+            font-size: 20px;
+        }
+        
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+        
+        .app-card {
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 16px;
+            padding: 30px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .app-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .app-card:hover::before {
+            opacity: 1;
+        }
+        
+        .app-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+        
+        .app-card.primary {
+            --gradient-start: #3b82f6;
+            --gradient-end: #2563eb;
+        }
+        
+        .app-card.crm {
+            --gradient-start: #10b981;
+            --gradient-end: #059669;
+        }
+        
+        .app-card.whatsapp {
+            --gradient-start: #25d366;
+            --gradient-end: #128c7e;
+        }
+        
+        .app-card.api {
+            --gradient-start: #8b5cf6;
+            --gradient-end: #7c3aed;
+        }
+        
+        .app-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        .app-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #e2e8f0;
+        }
+        
+        .app-description {
+            color: #94a3b8;
+            margin-bottom: 20px;
+            flex-grow: 1;
+            line-height: 1.6;
+        }
+        
+        .app-url {
+            font-size: 13px;
+            color: #64748b;
+            font-family: monospace;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 8px 12px;
+            border-radius: 6px;
+            word-break: break-all;
+        }
+        
+        .info-section {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 30px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+        
+        .info-card {
+            background: rgba(15, 23, 42, 0.5);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid rgba(71, 85, 105, 0.2);
+        }
+        
+        .info-card h3 {
+            color: #60a5fa;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .credential {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            margin: 5px 0;
+            display: inline-block;
+            color: #60a5fa;
+        }
+        
+        .user-list {
+            margin-top: 10px;
+        }
+        
+        .user-list p {
+            color: #cbd5e1;
+            padding: 5px 0;
+            font-size: 14px;
+        }
+        
+        .status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(15, 23, 42, 0.95);
+            border-top: 1px solid rgba(71, 85, 105, 0.3);
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+        
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #64748b;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-indicator.online {
+            background: #10b981;
+        }
+        
+        .status-indicator.offline {
+            background: #ef4444;
+            animation: none;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .quick-actions {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .quick-actions h3 {
+            color: #60a5fa;
+            margin-bottom: 15px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            padding: 10px 20px;
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            border-radius: 8px;
+            color: #60a5fa;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .action-btn:hover {
+            background: rgba(59, 130, 246, 0.3);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h1>Aplikasi Manajemen Umroh</h1>
+            <p class="subtitle">Vauza Tamma Travel - Complete System Access</p>
+        </div>
+        
+        <div class="quick-actions">
+            <h3>🚀 Quick Actions</h3>
+            <div class="action-buttons">
+                <a href="PANDUAN-NETWORK-SETUP.md" class="action-btn">📖 Network Setup Guide</a>
+                <a href="WAHA-SETUP-GUIDE.md" class="action-btn">💬 WhatsApp Setup</a>
+                <a href="COMPREHENSIVE_TEST_REPORT.md" class="action-btn">📊 Test Report</a>
+                <a href="PORT-ALLOCATION.md" class="action-btn">🔌 Port Registry</a>
+            </div>
+        </div>
+        
+        <div class="apps-grid">
+            <a href="http://localhost:8081" target="_blank" class="app-card primary">
+                <div class="app-icon">🌐</div>
+                <h2 class="app-title">Aplikasi Utama</h2>
+                <p class="app-description">Frontend aplikasi manajemen umroh dengan fitur lengkap untuk pengelolaan jamaah, paket, pembayaran, dan laporan.</p>
+                <div class="app-url">http://localhost:8081</div>
+            </a>
+            
+            <a href="http://localhost:8081/crm-dashboard.html" target="_blank" class="app-card crm">
+                <div class="app-icon">📊</div>
+                <h2 class="app-title">CRM Dashboard</h2>
+                <p class="app-description">Marketing dashboard dengan lead management, WhatsApp bot AI, dan analytics untuk meningkatkan konversi.</p>
+                <div class="app-url">http://localhost:8081/crm-dashboard.html</div>
+            </a>
+            
+            <a href="http://localhost:3001/api" target="_blank" class="app-card whatsapp">
+                <div class="app-icon">💬</div>
+                <h2 class="app-title">WhatsApp API</h2>
+                <p class="app-description">WAHA interface untuk setup WhatsApp integration, scan QR code, dan manage bot sessions.</p>
+                <div class="app-url">http://localhost:3001/api</div>
+            </a>
+            
+            <a href="http://localhost:3000/api" target="_blank" class="app-card api">
+                <div class="app-icon">⚙️</div>
+                <h2 class="app-title">Backend API</h2>
+                <p class="app-description">REST API documentation dan health check untuk semua services backend aplikasi.</p>
+                <div class="app-url">http://localhost:3000/api</div>
+            </a>
+        </div>
+        
+        <div class="info-section">
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3><span>👤</span> Admin Login</h3>
+                    <div>
+                        <span class="credential">Username: admin</span><br>
+                        <span class="credential">Password: admin123</span>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h3><span>👥</span> User Accounts</h3>
+                    <div class="user-list">
+                        <p>📈 Marketing: marketing / marketing123</p>
+                        <p>💰 Finance: finance / finance123</p>
+                        <p>✈️ Operator: operator / operator123</p>
+                        <p>📋 Visa: visa / visa123</p>
+                        <p>🏨 Hotel: hotel / hotel123</p>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h3><span>🔑</span> API Keys</h3>
+                    <div>
+                        <span class="credential">WAHA: your-secret-api-key</span><br>
+                        <span class="credential">OpenAI: Configure in CRM</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="status-bar">
+        <div class="status-item">
+            <span class="status-indicator" id="frontend-status"></span>
+            <span>Frontend</span>
+        </div>
+        <div class="status-item">
+            <span class="status-indicator" id="backend-status"></span>
+            <span>Backend API</span>
+        </div>
+        <div class="status-item">
+            <span class="status-indicator" id="waha-status"></span>
+            <span>WhatsApp API</span>
+        </div>
+        <div class="status-item">
+            <span class="status-indicator" id="db-status"></span>
+            <span>Database</span>
+        </div>
+    </div>
+    
+    <script>
+        // Check service status
+        async function checkServices() {
+            // Check Backend
+            try {
+                const backendRes = await fetch('http://localhost:3000/api/health');
+                if (backendRes.ok) {
+                    document.getElementById('backend-status').classList.add('online');
+                    // If backend is up, DB is likely up too
+                    document.getElementById('db-status').classList.add('online');
+                }
+            } catch (e) {
+                document.getElementById('backend-status').classList.add('offline');
+            }
+            
+            // Check Frontend
+            try {
+                const frontendRes = await fetch('http://localhost:8081', { mode: 'no-cors' });
+                document.getElementById('frontend-status').classList.add('online');
+            } catch (e) {
+                document.getElementById('frontend-status').classList.add('offline');
+            }
+            
+            // Check WAHA
+            try {
+                const wahaRes = await fetch('http://localhost:3001/api', { mode: 'no-cors' });
+                document.getElementById('waha-status').classList.add('online');
+            } catch (e) {
+                document.getElementById('waha-status').classList.add('offline');
+            }
+        }
+        
+        // Check on load
+        checkServices();
+        
+        // Check every 5 seconds
+        setInterval(checkServices, 5000);
+    </script>
+</body>
+</html>

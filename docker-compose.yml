@@ -50,7 +50,7 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: ${NODE_ENV:-production}
-      PORT: ${PORT:-3000}
+      PORT: 3000
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: ${DB_NAME:-vauza_tamma_db}
@@ -59,9 +59,9 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key}
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:8080}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:8081}
     ports:
-      - "${PORT:-3000}:3000"
+      - "3000:3000"
     volumes:
       - ./uploads:/app/uploads
       - ./logs:/app/logs

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Connection Guide - Vauza Tamma</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            color: #e2e8f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background: rgba(30, 41, 59, 0.9);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+            border: 1px solid rgba(71, 85, 105, 0.3);
+        }
+        h1 {
+            color: #60a5fa;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .status-box {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .status-box.success {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+        .step {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border: 1px solid rgba(71, 85, 105, 0.3);
+        }
+        .step h2 {
+            color: #60a5fa;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .step-number {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .btn {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border: none;
+            padding: 15px 35px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        }
+        .btn.secondary {
+            background: rgba(71, 85, 105, 0.5);
+            font-size: 16px;
+            padding: 12px 25px;
+        }
+        .code {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            font-size: 14px;
+            line-height: 1.5;
+            overflow-x: auto;
+        }
+        .warning {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #fca5a5;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .info-card {
+            background: rgba(59, 130, 246, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        .info-card h3 {
+            color: #60a5fa;
+            margin-top: 0;
+        }
+        iframe {
+            width: 100%;
+            height: 700px;
+            border: 2px solid rgba(71, 85, 105, 0.3);
+            border-radius: 10px;
+            margin: 20px 0;
+            background: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 Panduan Koneksi WhatsApp</h1>
+        
+        <div id="status-box" class="status-box">
+            <div id="status-text">Checking connection status...</div>
+        </div>
+
+        <div class="step">
+            <h2><span class="step-number">1</span> Buka WAHA Swagger UI</h2>
+            <p>WAHA menyediakan interface built-in untuk mendapatkan QR code:</p>
+            <div style="text-align: center;">
+                <a href="http://localhost:3001/" target="_blank" class="btn">
+                    🚀 Buka WAHA Swagger UI
+                </a>
+            </div>
+            <p style="margin-top: 20px; text-align: center; color: #94a3b8;">
+                Atau akses langsung di browser: <code>http://localhost:3001/</code>
+            </p>
+        </div>
+
+        <div class="step">
+            <h2><span class="step-number">2</span> Cara Mendapatkan QR Code di Swagger</h2>
+            <p>Setelah Swagger UI terbuka:</p>
+            <ol>
+                <li>Cari section <strong>"Sessions"</strong> atau <strong>"Auth"</strong></li>
+                <li>Cari endpoint yang berkaitan dengan <strong>QR</strong> atau <strong>screenshot</strong></li>
+                <li>Klik endpoint tersebut untuk expand</li>
+                <li>Klik tombol <strong>"Try it out"</strong></li>
+                <li>Masukkan session name: <code>default</code></li>
+                <li>Klik <strong>"Execute"</strong></li>
+                <li>QR code akan muncul di response (bisa sebagai image atau base64)</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h2><span class="step-number">3</span> Scan QR Code</h2>
+            <p>Setelah mendapat QR code:</p>
+            <ol>
+                <li>Buka <strong>WhatsApp</strong> di HP Anda</li>
+                <li>Tap <strong>⋮</strong> (3 titik) → <strong>Linked Devices</strong></li>
+                <li>Tap <strong>"Link a Device"</strong></li>
+                <li>Scan QR code yang muncul</li>
+                <li>Tunggu sampai terhubung</li>
+            </ol>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-card">
+                <h3>✅ Setelah Terhubung</h3>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>Status berubah ke "WORKING"</li>
+                    <li>Bot WhatsApp aktif</li>
+                    <li>Siap menerima pesan</li>
+                    <li>Auto-reply dengan AI</li>
+                </ul>
+            </div>
+            <div class="info-card">
+                <h3>🧪 Test Bot</h3>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>Kirim pesan ke nomor WhatsApp</li>
+                    <li>Bot akan auto-reply</li>
+                    <li>Cek CRM Dashboard</li>
+                    <li>Monitor conversation</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="step">
+            <h2>🛠️ Alternative: Manual Commands</h2>
+            <div class="code">
+# Check session status
+curl http://localhost:3001/api/sessions/default \
+  -H "X-Api-Key: your-secret-api-key"
+
+# Monitor backend logs
+docker logs vauza-tamma-backend -f
+
+# Monitor WAHA logs  
+docker logs vauza-tamma-waha -f
+            </div>
+            <button class="btn secondary" onclick="checkStatus()">🔄 Check Status</button>
+        </div>
+
+        <div class="warning">
+            <strong>⚠️ Important:</strong> WAHA tidak menyediakan endpoint QR langsung di API. 
+            Gunakan Swagger UI untuk mendapatkan QR code dengan mudah.
+        </div>
+
+        <!-- Embedded Swagger UI -->
+        <div class="step">
+            <h2>Preview WAHA Swagger UI</h2>
+            <iframe src="http://localhost:3001/" title="WAHA Swagger UI"></iframe>
+        </div>
+    </div>
+
+    <script>
+        async function checkStatus() {
+            const statusBox = document.getElementById('status-box');
+            const statusText = document.getElementById('status-text');
+            
+            try {
+                const response = await fetch('http://localhost:3001/api/sessions/default', {
+                    headers: { 'X-Api-Key': 'your-secret-api-key' }
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'WORKING') {
+                    statusBox.className = 'status-box success';
+                    statusText.innerHTML = `
+                        ✅ <strong>WhatsApp Connected!</strong><br>
+                        Status: ${data.status}<br>
+                        ${data.me ? `Number: ${data.me.pushName || 'Connected'}` : ''}
+                    `;
+                } else if (data.status === 'SCAN_QR_CODE') {
+                    statusBox.className = 'status-box';
+                    statusText.innerHTML = `
+                        📷 <strong>Waiting for QR Scan</strong><br>
+                        Status: ${data.status}<br>
+                        Please follow the steps below to connect
+                    `;
+                } else {
+                    statusBox.className = 'status-box';
+                    statusText.innerHTML = `
+                        Status: ${data.status}<br>
+                        Session: ${data.name}
+                    `;
+                }
+            } catch (error) {
+                statusText.innerHTML = `❌ Error checking status: ${error.message}`;
+            }
+        }
+
+        // Check status on load and every 5 seconds
+        checkStatus();
+        setInterval(checkStatus, 5000);
+    </script>
+</body>
+</html>

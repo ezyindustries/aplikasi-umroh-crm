@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Aplikasi Manajemen Umroh - Complete Version</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5a67d8;
+            --secondary: #764ba2;
+            --success: #48bb78;
+            --warning: #ed8936;
+            --danger: #f56565;
+            --info: #4299e1;
+            --dark: #2d3748;
+            --gray: #718096;
+            --light: #f7fafc;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            min-height: 100vh;
+            color: var(--dark);
+        }
+
+        /* Login Screen */
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            color: var(--dark);
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            color: var(--gray);
+        }
+
+        /* Main Application */
+        .app-container {
+            display: none;
+            min-height: 100vh;
+            background: #f0f2f5;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            height: 100vh;
+            background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 20px 0;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-header p {
+            font-size: 0.875rem;
+            opacity: 0.8;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 5px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-icon {
+            font-size: 1.25rem;
+            margin-right: 12px;
+            width: 24px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--dark);
+        }
+
+        .search-bar {
+            position: relative;
+            width: 300px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px 40px 10px 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.875rem;
+        }
+
+        .search-bar button {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .notification-btn {
+            position: relative;
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--danger);
+            color: white;
+            font-size: 0.625rem;
+            padding: 2px 5px;
+            border-radius: 10px;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: background 0.3s ease;
+        }
+
+        .user-menu:hover {
+            background: var(--light);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        /* Content Area */
+        .content {
+            padding: 30px;
+        }
+
+        .page-title {
+            font-size: 1.875rem;
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+
+        .breadcrumb {
+            display: flex;
+            gap: 10px;
+            color: var(--gray);
+            font-size: 0.875rem;
+            margin-bottom: 30px;
+        }
+
+        .breadcrumb a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        /* Dashboard Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .stat-icon.primary {
+            background: rgba(102, 126, 234, 0.1);
+            color: var(--primary);
+        }
+
+        .stat-icon.success {
+            background: rgba(72, 187, 120, 0.1);
+            color: var(--success);
+        }
+
+        .stat-icon.warning {
+            background: rgba(237, 137, 54, 0.1);
+            color: var(--warning);
+        }
+
+        .stat-icon.info {
+            background: rgba(66, 153, 225, 0.1);
+            color: var(--info);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.875rem;
+        }
+
+        /* Charts */
+        .chart-container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        /* Tables */
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: var(--light);
+            padding: 12px 20px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 15px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.875rem;
+        }
+
+        tr:hover {
+            background: var(--light);
+        }
+
+        /* Forms */
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--dark);
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: var(--dark);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.75rem;
+        }
+
+        .btn-lg {
+            padding: 14px 28px;
+            font-size: 1rem;
+        }
+
+        /* Status Badges */
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-success {
+            background: rgba(72, 187, 120, 0.1);
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background: rgba(237, 137, 54, 0.1);
+            color: var(--warning);
+        }
+
+        .badge-danger {
+            background: rgba(245, 101, 101, 0.1);
+            color: var(--danger);
+        }
+
+        .badge-info {
+            background: rgba(66, 153, 225, 0.1);
+            color: var(--info);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .modal-footer {
+            padding: 20px 25px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            animation: toastSlideIn 0.3s ease;
+            z-index: 2000;
+        }
+
+        @keyframes toastSlideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast-icon {
+            font-size: 1.25rem;
+        }
+
+        .toast.success .toast-icon {
+            color: var(--success);
+        }
+
+        .toast.error .toast-icon {
+            color: var(--danger);
+        }
+
+        .toast.warning .toast-icon {
+            color: var(--warning);
+        }
+
+        .toast.info .toast-icon {
+            color: var(--info);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .search-bar {
+                display: none;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div class="login-container" id="loginScreen">
+        <div class="login-card">
+            <div class="login-header">
+                <h1>🕌 Sistem Manajemen Umroh</h1>
+                <p>Silakan login untuk melanjutkan</p>
+            </div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="username" value="admin" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="password" value="admin123" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
+                    Login
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div class="app-container" id="appContainer">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>🕌 Umroh System</h2>
+                <p>Management Dashboard</p>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link active" data-page="dashboard">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="jamaah">
+                        <span class="nav-icon">👥</span>
+                        Data Jamaah
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="packages">
+                        <span class="nav-icon">📦</span>
+                        Paket Umroh
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="payments">
+                        <span class="nav-icon">💰</span>
+                        Pembayaran
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="documents">
+                        <span class="nav-icon">📄</span>
+                        Dokumen
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="groups">
+                        <span class="nav-icon">👨‍👩‍👧‍👦</span>
+                        Kelompok
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="reports">
+                        <span class="nav-icon">📈</span>
+                        Laporan
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="settings">
+                        <span class="nav-icon">⚙️</span>
+                        Pengaturan
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+                    <div class="search-bar">
+                        <input type="text" placeholder="Cari data...">
+                        <button>🔍</button>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <button class="notification-btn">
+                        🔔
+                        <span class="notification-badge">3</span>
+                    </button>
+                    <div class="user-menu" onclick="toggleUserMenu()">
+                        <div class="user-avatar">A</div>
+                        <div>
+                            <div style="font-weight: 600;">Admin</div>
+                            <div style="font-size: 0.75rem; color: var(--gray);">Administrator</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="content" id="content">
+                <!-- Dashboard Page -->
+                <div class="page" id="dashboardPage">
+                    <h1 class="page-title">Dashboard</h1>
+                    <div class="breadcrumb">
+                        <a href="#">Home</a> / Dashboard
+                    </div>
+
+                    <!-- Stats Grid -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon primary">👥</div>
+                            <div class="stat-value">1,245</div>
+                            <div class="stat-label">Total Jamaah</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon success">📦</div>
+                            <div class="stat-value">12</div>
+                            <div class="stat-label">Paket Aktif</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon warning">⏳</div>
+                            <div class="stat-value">324</div>
+                            <div class="stat-label">Pending Payment</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon info">💵</div>
+                            <div class="stat-value">Rp 2.4M</div>
+                            <div class="stat-label">Total Revenue</div>
+                        </div>
+                    </div>
+
+                    <!-- Charts -->
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3 class="chart-title">📊 Statistik Pendaftaran</h3>
+                            <select class="btn btn-secondary btn-sm">
+                                <option>7 Hari Terakhir</option>
+                                <option>30 Hari Terakhir</option>
+                                <option>3 Bulan Terakhir</option>
+                            </select>
+                        </div>
+                        <div style="height: 300px; display: flex; align-items: center; justify-content: center; color: var(--gray);">
+                            [Chart akan ditampilkan di sini]
+                        </div>
+                    </div>
+
+                    <!-- Recent Activities -->
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h3 class="table-title">🕐 Aktivitas Terbaru</h3>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Waktu</th>
+                                    <th>User</th>
+                                    <th>Aktivitas</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>10:30</td>
+                                    <td>Admin</td>
+                                    <td>Menambah jamaah baru: Ahmad Fauzi</td>
+                                    <td><span class="badge badge-success">Success</span></td>
+                                </tr>
+                                <tr>
+                                    <td>09:45</td>
+                                    <td>Keuangan</td>
+                                    <td>Verifikasi pembayaran: INV-2024-001</td>
+                                    <td><span class="badge badge-info">Verified</span></td>
+                                </tr>
+                                <tr>
+                                    <td>09:15</td>
+                                    <td>Marketing</td>
+                                    <td>Update paket umroh: Ramadhan Special</td>
+                                    <td><span class="badge badge-warning">Updated</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Jamaah Page -->
+                <div class="page" id="jamaahPage" style="display: none;">
+                    <h1 class="page-title">Data Jamaah</h1>
+                    <div class="breadcrumb">
+                        <a href="#">Home</a> / Data Jamaah
+                    </div>
+
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h3 class="table-title">📋 Daftar Jamaah</h3>
+                            <div class="table-actions">
+                                <button class="btn btn-secondary btn-sm">
+                                    📥 Import Excel
+                                </button>
+                                <button class="btn btn-secondary btn-sm">
+                                    📤 Export Excel
+                                </button>
+                                <button class="btn btn-primary btn-sm" onclick="showAddJamaahModal()">
+                                    ➕ Tambah Jamaah
+                                </button>
+                            </div>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>No. Registrasi</th>
+                                    <th>Nama Lengkap</th>
+                                    <th>NIK</th>
+                                    <th>No. HP</th>
+                                    <th>Paket</th>
+                                    <th>Status</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>JMH2024001</td>
+                                    <td>Ahmad Fauzi</td>
+                                    <td>3201234567890123</td>
+                                    <td>081234567890</td>
+                                    <td>Ramadhan Special</td>
+                                    <td><span class="badge badge-success">Active</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary">👁️</button>
+                                        <button class="btn btn-sm btn-warning">✏️</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>JMH2024002</td>
+                                    <td>Siti Aminah</td>
+                                    <td>3201234567890124</td>
+                                    <td>081234567891</td>
+                                    <td>Premium Plus</td>
+                                    <td><span class="badge badge-warning">Pending</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary">👁️</button>
+                                        <button class="btn btn-sm btn-warning">✏️</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Packages Page -->
+                <div class="page" id="packagesPage" style="display: none;">
+                    <h1 class="page-title">Paket Umroh</h1>
+                    <div class="breadcrumb">
+                        <a href="#">Home</a> / Paket Umroh
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                        <!-- Package Card 1 -->
+                        <div class="stat-card" style="position: relative; overflow: hidden;">
+                            <div style="position: absolute; top: 10px; right: 10px;">
+                                <span class="badge badge-info">Platinum</span>
+                            </div>
+                            <h3 style="margin-bottom: 15px;">Ramadhan Special</h3>
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary); margin-bottom: 15px;">
+                                Rp 35.000.000
+                            </div>
+                            <div style="color: var(--gray); font-size: 0.875rem; margin-bottom: 20px;">
+                                <div>📅 Keberangkatan: 15 Maret 2024</div>
+                                <div>⏱️ Durasi: 9 Hari</div>
+                                <div>🏨 Hotel: Bintang 5</div>
+                                <div>✈️ Garuda Indonesia</div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-size: 0.75rem; color: var(--gray);">Kuota</div>
+                                    <div style="font-weight: 600;">25/45</div>
+                                </div>
+                                <button class="btn btn-primary btn-sm">Detail</button>
+                            </div>
+                        </div>
+
+                        <!-- Package Card 2 -->
+                        <div class="stat-card" style="position: relative; overflow: hidden;">
+                            <div style="position: absolute; top: 10px; right: 10px;">
+                                <span class="badge badge-warning">Gold</span>
+                            </div>
+                            <h3 style="margin-bottom: 15px;">Premium Plus</h3>
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary); margin-bottom: 15px;">
+                                Rp 28.000.000
+                            </div>
+                            <div style="color: var(--gray); font-size: 0.875rem; margin-bottom: 20px;">
+                                <div>📅 Keberangkatan: 20 April 2024</div>
+                                <div>⏱️ Durasi: 9 Hari</div>
+                                <div>🏨 Hotel: Bintang 4</div>
+                                <div>✈️ Saudi Airlines</div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-size: 0.75rem; color: var(--gray);">Kuota</div>
+                                    <div style="font-weight: 600;">38/45</div>
+                                </div>
+                                <button class="btn btn-primary btn-sm">Detail</button>
+                            </div>
+                        </div>
+
+                        <!-- Package Card 3 -->
+                        <div class="stat-card" style="position: relative; overflow: hidden;">
+                            <div style="position: absolute; top: 10px; right: 10px;">
+                                <span class="badge badge-success">Silver</span>
+                            </div>
+                            <h3 style="margin-bottom: 15px;">Ekonomis</h3>
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary); margin-bottom: 15px;">
+                                Rp 22.000.000
+                            </div>
+                            <div style="color: var(--gray); font-size: 0.875rem; margin-bottom: 20px;">
+                                <div>📅 Keberangkatan: 10 Mei 2024</div>
+                                <div>⏱️ Durasi: 9 Hari</div>
+                                <div>🏨 Hotel: Bintang 3</div>
+                                <div>✈️ Lion Air</div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-size: 0.75rem; color: var(--gray);">Kuota</div>
+                                    <div style="font-weight: 600;">12/50</div>
+                                </div>
+                                <button class="btn btn-primary btn-sm">Detail</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Other pages would go here -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Jamaah Modal -->
+    <div class="modal" id="addJamaahModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Tambah Jamaah Baru</h3>
+                <button class="modal-close" onclick="closeModal('addJamaahModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="addJamaahForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Nama Lengkap *</label>
+                            <input type="text" name="fullName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>NIK *</label>
+                            <input type="text" name="nik" maxlength="16" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Tempat Lahir</label>
+                            <input type="text" name="birthPlace">
+                        </div>
+                        <div class="form-group">
+                            <label>Tanggal Lahir *</label>
+                            <input type="date" name="birthDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Jenis Kelamin *</label>
+                            <select name="gender" required>
+                                <option value="">-- Pilih --</option>
+                                <option value="L">Laki-laki</option>
+                                <option value="P">Perempuan</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>No. HP *</label>
+                            <input type="tel" name="phone" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" name="email">
+                        </div>
+                        <div class="form-group">
+                            <label>Paket Umroh *</label>
+                            <select name="packageId" required>
+                                <option value="">-- Pilih Paket --</option>
+                                <option value="1">Ramadhan Special</option>
+                                <option value="2">Premium Plus</option>
+                                <option value="3">Ekonomis</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Alamat Lengkap *</label>
+                        <textarea name="address" rows="3" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('addJamaahModal')">Batal</button>
+                <button class="btn btn-primary" onclick="saveJamaah()">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // App State
+        let currentPage = 'dashboard';
+        let isLoggedIn = false;
+
+        // Login Handler
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Simple validation
+            if (username === 'admin' && password === 'admin123') {
+                isLoggedIn = true;
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('appContainer').style.display = 'block';
+                showToast('success', 'Login berhasil! Selamat datang.');
+            } else {
+                showToast('error', 'Username atau password salah!');
+            }
+        });
+
+        // Navigation Handler
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const page = link.getAttribute('data-page');
+                navigateToPage(page);
+            });
+        });
+
+        function navigateToPage(page) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+            
+            // Show selected page
+            const pageElement = document.getElementById(page + 'Page');
+            if (pageElement) {
+                pageElement.style.display = 'block';
+            }
+            
+            // Update active nav
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('data-page') === page) {
+                    link.classList.add('active');
+                }
+            });
+            
+            currentPage = page;
+        }
+
+        // Sidebar Toggle
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        // Modal Functions
+        function showAddJamaahModal() {
+            document.getElementById('addJamaahModal').classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function saveJamaah() {
+            const form = document.getElementById('addJamaahForm');
+            const formData = new FormData(form);
+            
+            // Here you would normally send data to backend
+            showToast('success', 'Data jamaah berhasil disimpan!');
+            closeModal('addJamaahModal');
+            form.reset();
+        }
+
+        // Toast Notification
+        function showToast(type, message) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = {
+                success: '✅',
+                error: '❌',
+                warning: '⚠️',
+                info: 'ℹ️'
+            };
+            
+            toast.innerHTML = `
+                <span class="toast-icon">${icons[type]}</span>
+                <span>${message}</span>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'toastSlideIn 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // User Menu Toggle
+        function toggleUserMenu() {
+            if (confirm('Apakah Anda yakin ingin logout?')) {
+                isLoggedIn = false;
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('appContainer').style.display = 'none';
+                showToast('info', 'Anda telah logout.');
+            }
+        }
+
+        // Initialize Charts (placeholder)
+        function initCharts() {
+            // In real app, initialize Chart.js or similar
+            console.log('Charts initialized');
+        }
+
+        // Load Dashboard Data
+        function loadDashboardData() {
+            // Simulate loading data
+            setTimeout(() => {
+                // Update stats
+                document.querySelector('.stat-value').textContent = Math.floor(Math.random() * 2000);
+            }, 1000);
+        }
+
+        // Window Load
+        window.onload = () => {
+            // Check if already logged in (from session)
+            if (localStorage.getItem('isLoggedIn') === 'true') {
+                isLoggedIn = true;
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('appContainer').style.display = 'block';
+            }
+            
+            initCharts();
+            loadDashboardData();
+        };
+
+        // Close modal on outside click
+        window.onclick = (event) => {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+const { DataTypes } = require('sequelize');
+
+module.exports = (sequelize) => {
+  const WaMessage = sequelize.define('WaMessage', {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true
+    },
+    conversation_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: 'wa_conversations',
+        key: 'id'
+      }
+    },
+    wa_message_id: {
+      type: DataTypes.STRING(255),
+      unique: true
+    },
+    direction: {
+      type: DataTypes.ENUM('inbound', 'outbound'),
+      allowNull: false
+    },
+    type: {
+      type: DataTypes.ENUM('text', 'image', 'document', 'audio', 'video', 'location'),
+      defaultValue: 'text'
+    },
+    content: {
+      type: DataTypes.TEXT
+    },
+    media_url: {
+      type: DataTypes.TEXT
+    },
+    status: {
+      type: DataTypes.STRING(50) // sent, delivered, read, failed
+    },
+    is_from_bot: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
+    bot_confidence: {
+      type: DataTypes.DECIMAL(3, 2),
+      validate: {
+        min: 0,
+        max: 1
+      }
+    },
+    intent_detected: {
+      type: DataTypes.STRING(100)
+    },
+    handled_by: {
+      type: DataTypes.UUID,
+      references: {
+        model: 'users',
+        key: 'id'
+      }
+    },
+    delivered_at: {
+      type: DataTypes.DATE
+    },
+    read_at: {
+      type: DataTypes.DATE
+    }
+  }, {
+    tableName: 'wa_messages',
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: false,
+    underscored: true
+  });
+
+  WaMessage.associate = (models) => {
+    WaMessage.belongsTo(models.WaConversation, { foreignKey: 'conversation_id', as: 'conversation' });
+    WaMessage.belongsTo(models.User, { foreignKey: 'handled_by', as: 'handler' });
+    WaMessage.hasOne(models.BotLearning, { foreignKey: 'message_id', as: 'learning' });
+  };
+
+  // Class methods
+  WaMessage.createFromWhatsApp = async function(waData, conversationId) {
+    const messageData = {
+      conversation_id: conversationId,
+      wa_message_id: waData.id,
+      direction: waData.fromMe ? 'outbound' : 'inbound',
+      type: waData.type || 'text',
+      content: waData.body || waData.caption,
+      media_url: waData.mediaUrl,
+      status: waData.ack ? this.mapAckToStatus(waData.ack) : 'sent'
+    };
+    
+    // For media messages
+    if (waData.hasMedia && waData.media) {
+      messageData.media_url = waData.media.url;
+    }
+    
+    return await this.create(messageData);
+  };
+
+  WaMessage.mapAckToStatus = function(ack) {
+    const ackMap = {
+      0: 'error',
+      1: 'sent',
+      2: 'delivered',
+      3: 'read',
+      4: 'played'
+    };
+    return ackMap[ack] || 'sent';
+  };
+
+  // Instance methods
+  WaMessage.prototype.markAsDelivered = async function() {
+    this.status = 'delivered';
+    this.delivered_at = new Date();
+    await this.save();
+  };
+
+  WaMessage.prototype.markAsRead = async function() {
+    this.status = 'read';
+    this.read_at = new Date();
+    await this.save();
+  };
+
+  return WaMessage;
+};

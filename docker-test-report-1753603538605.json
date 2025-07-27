@@ -1,0 +1,60 @@
+{
+  "docker": {
+    "status": "pass",
+    "details": [
+      "Docker is installed and running"
+    ]
+  },
+  "containers": {
+    "status": "pass",
+    "details": [
+      "vauza-tamma-db: Running ✅",
+      "vauza-tamma-backend: Running ✅",
+      "vauza-tamma-frontend: Running ✅",
+      "vauza-tamma-redis: Running ✅"
+    ]
+  },
+  "services": {
+    "status": "pass",
+    "details": [
+      "Frontend: Accessible ✅"
+    ]
+  },
+  "database": {
+    "status": "fail",
+    "details": [
+      "Table users: Missing ❌",
+      "Table packages: Missing ❌",
+      "Table jamaah: Missing ❌",
+      "Table payments: Missing ❌",
+      "Table documents: Missing ❌",
+      "Table groups: Missing ❌",
+      "Table notifications: Missing ❌"
+    ]
+  },
+  "api": {
+    "status": "fail",
+    "details": [
+      "Authentication: Failed to get token ❌",
+      "GET /api/health: OK ✅",
+      "POST /api/auth/login: Error ❌",
+      "GET /api/packages: OK ✅",
+      "GET /api/jamaah: OK ✅",
+      "GET /api/payments: OK ✅",
+      "GET /api/documents: OK ✅",
+      "GET /api/reports/summary: OK ✅"
+    ]
+  },
+  "frontend": {
+    "status": "pass",
+    "details": [
+      "Page /: Accessible ✅",
+      "Page /dashboard: Accessible ✅",
+      "Page /jamaah: Accessible ✅",
+      "Page /packages: Accessible ✅",
+      "Page /payments: Accessible ✅",
+      "Page /documents: Accessible ✅",
+      "Page /reports: Accessible ✅"
+    ]
+  }
+}

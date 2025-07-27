@@ -1,5 +1,6 @@
 const express = require('express');
-const User = require('../models/User');
+const { User } = require('../models');
+const bcrypt = require('bcryptjs');
 const { authenticate, checkPermission } = require('../middleware/auth');
 const router = express.Router();
 
@@ -12,7 +13,24 @@ router.get('/', checkPermission('users', 'read'), async (req, res, next) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 50;
     
-    const result = await User.findAll(page, limit);
+    const offset = (page - 1) * limit;
+    
+    const { count, rows } = await User.findAndCountAll({
+      limit,
+      offset,
+      order: [['created_at', 'DESC']],
+      attributes: { exclude: ['password_hash'] }
+    });
+    
+    const result = {
+      data: rows,
+      pagination: {
+        page,
+        limit,
+        total: count,
+        totalPages: Math.ceil(count / limit)
+      }
+    };
     
     res.json({
       success: true,
@@ -27,7 +45,9 @@ router.get('/', checkPermission('users', 'read'), async (req, res, next) => {
 // Get user by ID
 router.get('/:id', checkPermission('users', 'read'), async (req, res, next) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findByPk(req.params.id, {
+      attributes: { exclude: ['password_hash'] }
+    });
     
     if (!user) {
       return res.status(404).json({

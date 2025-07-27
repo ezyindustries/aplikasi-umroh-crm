@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Backend Connection - Aplikasi Umroh</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #4a5568;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2.5rem;
+        }
+
+        .test-section {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .test-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .test-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .test-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: #e2e8f0;
+            color: #64748b;
+        }
+
+        .status-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .test-content {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .config-section {
+            background: #f7fafc;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .config-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .config-item label {
+            font-weight: 500;
+            color: #4a5568;
+            margin-bottom: 5px;
+        }
+
+        .config-item input {
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .summary-box {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .summary-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .summary-label {
+            color: #718096;
+            font-size: 0.875rem;
+        }
+
+        .success { color: #48bb78; }
+        .error { color: #f56565; }
+        .pending { color: #ed8936; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Backend Connection Tester</h1>
+        
+        <!-- Configuration Section -->
+        <div class="config-section">
+            <h3 style="margin-bottom: 15px;">⚙️ Configuration</h3>
+            <div class="config-grid">
+                <div class="config-item">
+                    <label>Backend URL</label>
+                    <input type="text" id="backendUrl" value="http://localhost:5000">
+                </div>
+                <div class="config-item">
+                    <label>Frontend URL</label>
+                    <input type="text" id="frontendUrl" value="http://localhost:8081">
+                </div>
+                <div class="config-item">
+                    <label>Test Username</label>
+                    <input type="text" id="testUsername" value="admin">
+                </div>
+                <div class="config-item">
+                    <label>Test Password</label>
+                    <input type="password" id="testPassword" value="admin123">
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Section -->
+        <div class="test-grid" style="margin-bottom: 30px;">
+            <div class="summary-box">
+                <div class="summary-number success" id="successCount">0</div>
+                <div class="summary-label">Tests Passed</div>
+            </div>
+            <div class="summary-box">
+                <div class="summary-number error" id="errorCount">0</div>
+                <div class="summary-label">Tests Failed</div>
+            </div>
+            <div class="summary-box">
+                <div class="summary-number pending" id="pendingCount">0</div>
+                <div class="summary-label">Tests Pending</div>
+            </div>
+        </div>
+
+        <!-- Control Buttons -->
+        <div class="button-group" style="justify-content: center; margin-bottom: 30px;">
+            <button class="btn-primary" onclick="runAllTests()">
+                🚀 Run All Tests
+            </button>
+            <button class="btn-secondary" onclick="clearResults()">
+                🔄 Clear Results
+            </button>
+            <button class="btn-success" onclick="exportResults()">
+                📥 Export Results
+            </button>
+        </div>
+
+        <!-- Test Sections -->
+        <div id="testContainer"></div>
+    </div>
+
+    <script>
+        // Test Configuration
+        const tests = [
+            {
+                id: 'health',
+                title: '🏥 Health Check',
+                endpoint: '/health',
+                method: 'GET',
+                requiresAuth: false
+            },
+            {
+                id: 'database',
+                title: '🗄️ Database Connection',
+                endpoint: '/api/health',
+                method: 'GET',
+                requiresAuth: false
+            },
+            {
+                id: 'auth-login',
+                title: '🔐 Authentication - Login',
+                endpoint: '/api/auth/login',
+                method: 'POST',
+                requiresAuth: false,
+                body: () => ({
+                    username: document.getElementById('testUsername').value,
+                    password: document.getElementById('testPassword').value
+                })
+            },
+            {
+                id: 'auth-verify',
+                title: '🔑 Authentication - Verify Token',
+                endpoint: '/api/auth/verify',
+                method: 'GET',
+                requiresAuth: true
+            },
+            {
+                id: 'packages-list',
+                title: '📦 Packages - List',
+                endpoint: '/api/packages',
+                method: 'GET',
+                requiresAuth: true
+            },
+            {
+                id: 'packages-create',
+                title: '📦 Packages - Create',
+                endpoint: '/api/packages',
+                method: 'POST',
+                requiresAuth: true,
+                body: () => ({
+                    name: 'Test Package ' + Date.now(),
+                    description: 'Test package for backend testing',
+                    price: 25000000,
+                    duration: 9,
+                    quota: 45,
+                    available_quota: 45,
+                    departure_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                    tier: 'gold',
+                    features: ['Visa', 'Hotel Bintang 5', 'Makan 3x']
+                })
+            },
+            {
+                id: 'jamaah-list',
+                title: '👥 Jamaah - List',
+                endpoint: '/api/jamaah',
+                method: 'GET',
+                requiresAuth: true
+            },
+            {
+                id: 'jamaah-create',
+                title: '👤 Jamaah - Create',
+                endpoint: '/api/jamaah',
+                method: 'POST',
+                requiresAuth: true,
+                body: () => ({
+                    full_name: 'Test Jamaah ' + Date.now(),
+                    nik: '320123456789' + Math.floor(Math.random() * 10000),
+                    birth_date: '1980-01-01',
+                    gender: 'L',
+                    address: 'Jl. Test No. 123',
+                    phone: '081234567890',
+                    email: `test_${Date.now()}@example.com`,
+                    package_id: window.testPackageId || null
+                })
+            },
+            {
+                id: 'payments-list',
+                title: '💰 Payments - List',
+                endpoint: '/api/payments',
+                method: 'GET',
+                requiresAuth: true
+            },
+            {
+                id: 'documents-list',
+                title: '📄 Documents - List',
+                endpoint: '/api/documents',
+                method: 'GET',
+                requiresAuth: true
+            },
+            {
+                id: 'reports-summary',
+                title: '📊 Reports - Summary',
+                endpoint: '/api/reports/summary',
+                method: 'GET',
+                requiresAuth: true
+            },
+            {
+                id: 'users-list',
+                title: '👨‍💼 Users - List',
+                endpoint: '/api/users',
+                method: 'GET',
+                requiresAuth: true
+            },
+            {
+                id: 'groups-list',
+                title: '👥 Groups - List',
+                endpoint: '/api/groups',
+                method: 'GET',
+                requiresAuth: true
+            },
+            {
+                id: 'notifications-list',
+                title: '🔔 Notifications - List',
+                endpoint: '/api/notifications',
+                method: 'GET',
+                requiresAuth: true
+            }
+        ];
+
+        let authToken = '';
+        let testResults = {};
+
+        // Initialize test UI
+        function initializeTests() {
+            const container = document.getElementById('testContainer');
+            container.innerHTML = tests.map(test => `
+                <div class="test-section" id="test-${test.id}">
+                    <div class="test-header">
+                        <div class="test-title">${test.title}</div>
+                        <div class="test-status status-pending" id="status-${test.id}">
+                            Pending
+                        </div>
+                    </div>
+                    <div class="test-content" id="result-${test.id}" style="display: none;">
+                        Waiting to run...
+                    </div>
+                    <div class="button-group">
+                        <button class="btn-primary" onclick="runSingleTest('${test.id}')">
+                            Run Test
+                        </button>
+                        <button class="btn-secondary" onclick="toggleResult('${test.id}')">
+                            Toggle Details
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            
+            updateSummary();
+        }
+
+        // Run single test
+        async function runSingleTest(testId) {
+            const test = tests.find(t => t.id === testId);
+            if (!test) return;
+
+            const statusEl = document.getElementById(`status-${testId}`);
+            const resultEl = document.getElementById(`result-${testId}`);
+            
+            statusEl.innerHTML = '<div class="loading"></div> Running...';
+            statusEl.className = 'test-status status-pending';
+            resultEl.style.display = 'block';
+            resultEl.textContent = 'Running test...';
+
+            try {
+                const baseUrl = document.getElementById('backendUrl').value;
+                const url = `${baseUrl}${test.endpoint}`;
+                
+                const options = {
+                    method: test.method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                };
+
+                if (test.requiresAuth && authToken) {
+                    options.headers['Authorization'] = `Bearer ${authToken}`;
+                }
+
+                if (test.body) {
+                    options.body = JSON.stringify(test.body());
+                }
+
+                const startTime = Date.now();
+                const response = await fetch(url, options);
+                const responseTime = Date.now() - startTime;
+                
+                const data = await response.json();
+
+                // Save auth token if login successful
+                if (test.id === 'auth-login' && response.ok && data.token) {
+                    authToken = data.token;
+                    localStorage.setItem('testAuthToken', authToken);
+                }
+
+                // Save package ID for jamaah test
+                if (test.id === 'packages-create' && response.ok && data.package) {
+                    window.testPackageId = data.package.id;
+                }
+
+                // Save jamaah ID for payment test
+                if (test.id === 'jamaah-create' && response.ok && data.jamaah) {
+                    window.testJamaahId = data.jamaah.id;
+                }
+
+                const result = {
+                    success: response.ok,
+                    status: response.status,
+                    statusText: response.statusText,
+                    responseTime,
+                    data,
+                    timestamp: new Date().toISOString()
+                };
+
+                testResults[testId] = result;
+
+                if (response.ok) {
+                    statusEl.innerHTML = `✅ Success (${responseTime}ms)`;
+                    statusEl.className = 'test-status status-success';
+                    resultEl.innerHTML = `
+<strong>Status:</strong> ${response.status} ${response.statusText}
+<strong>Response Time:</strong> ${responseTime}ms
+<strong>Response:</strong>
+${JSON.stringify(data, null, 2)}
+                    `;
+                } else {
+                    statusEl.innerHTML = `❌ Failed (${response.status})`;
+                    statusEl.className = 'test-status status-error';
+                    resultEl.innerHTML = `
+<strong>Status:</strong> ${response.status} ${response.statusText}
+<strong>Response Time:</strong> ${responseTime}ms
+<strong>Error:</strong>
+${JSON.stringify(data, null, 2)}
+                    `;
+                }
+            } catch (error) {
+                testResults[testId] = {
+                    success: false,
+                    error: error.message,
+                    timestamp: new Date().toISOString()
+                };
+
+                statusEl.innerHTML = '❌ Error';
+                statusEl.className = 'test-status status-error';
+                resultEl.innerHTML = `
+<strong>Error:</strong> ${error.message}
+<strong>Details:</strong>
+- Check if backend is running
+- Verify the URL is correct
+- Check CORS configuration
+                `;
+            }
+
+            updateSummary();
+        }
+
+        // Run all tests
+        async function runAllTests() {
+            clearResults();
+            
+            // Run tests in sequence
+            for (const test of tests) {
+                await runSingleTest(test.id);
+                // Wait a bit between tests
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+        }
+
+        // Toggle result visibility
+        function toggleResult(testId) {
+            const resultEl = document.getElementById(`result-${testId}`);
+            resultEl.style.display = resultEl.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Clear all results
+        function clearResults() {
+            testResults = {};
+            authToken = localStorage.getItem('testAuthToken') || '';
+            
+            tests.forEach(test => {
+                const statusEl = document.getElementById(`status-${test.id}`);
+                const resultEl = document.getElementById(`result-${test.id}`);
+                
+                statusEl.innerHTML = 'Pending';
+                statusEl.className = 'test-status status-pending';
+                resultEl.style.display = 'none';
+                resultEl.textContent = 'Waiting to run...';
+            });
+            
+            updateSummary();
+        }
+
+        // Update summary counts
+        function updateSummary() {
+            let successCount = 0;
+            let errorCount = 0;
+            let pendingCount = 0;
+
+            tests.forEach(test => {
+                const result = testResults[test.id];
+                if (!result) {
+                    pendingCount++;
+                } else if (result.success) {
+                    successCount++;
+                } else {
+                    errorCount++;
+                }
+            });
+
+            document.getElementById('successCount').textContent = successCount;
+            document.getElementById('errorCount').textContent = errorCount;
+            document.getElementById('pendingCount').textContent = pendingCount;
+        }
+
+        // Export test results
+        function exportResults() {
+            const exportData = {
+                timestamp: new Date().toISOString(),
+                configuration: {
+                    backendUrl: document.getElementById('backendUrl').value,
+                    frontendUrl: document.getElementById('frontendUrl').value
+                },
+                summary: {
+                    total: tests.length,
+                    success: parseInt(document.getElementById('successCount').textContent),
+                    error: parseInt(document.getElementById('errorCount').textContent),
+                    pending: parseInt(document.getElementById('pendingCount').textContent)
+                },
+                results: testResults
+            };
+
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+                type: 'application/json'
+            });
+            
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `backend-test-results-${Date.now()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Initialize on load
+        window.onload = () => {
+            initializeTests();
+            
+            // Load saved auth token
+            const savedToken = localStorage.getItem('testAuthToken');
+            if (savedToken) {
+                authToken = savedToken;
+            }
+        };
+    </script>
+</body>
+</html>
