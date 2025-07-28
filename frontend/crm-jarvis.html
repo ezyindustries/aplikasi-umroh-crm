@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JARVIS CRM - AI Assistant</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Orbitron Font for futuristic look -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/jarvis-style.css">
+</head>
+<body>
+    <!-- JARVIS Boot Screen -->
+    <div class="jarvis-boot" id="bootScreen">
+        <div class="boot-content">
+            <div class="arc-reactor">
+                <div class="core"></div>
+                <div class="ring ring1"></div>
+                <div class="ring ring2"></div>
+                <div class="ring ring3"></div>
+            </div>
+            <h1 class="boot-text">JARVIS CRM SYSTEM</h1>
+            <div class="boot-status">INITIALIZING...</div>
+            <div class="boot-progress">
+                <div class="progress-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Interface -->
+    <div class="jarvis-interface" id="mainInterface" style="display: none;">
+        <!-- Top HUD -->
+        <div class="top-hud">
+            <div class="hud-left">
+                <div class="system-status">
+                    <span class="status-indicator active"></span>
+                    <span class="status-text">SYSTEM ONLINE</span>
+                </div>
+                <div class="date-time" id="dateTime"></div>
+            </div>
+            
+            <div class="hud-center">
+                <div class="jarvis-logo">
+                    <svg viewBox="0 0 100 100" class="logo-svg">
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="#00d4ff" stroke-width="2" opacity="0.5"/>
+                        <circle cx="50" cy="50" r="35" fill="none" stroke="#00d4ff" stroke-width="1" opacity="0.7"/>
+                        <text x="50" y="55" text-anchor="middle" fill="#00d4ff" font-size="20" font-weight="bold">JARVIS</text>
+                    </svg>
+                </div>
+            </div>
+            
+            <div class="hud-right">
+                <div class="ai-status">
+                    <span class="ai-indicator"></span>
+                    <span>AI ASSISTANT ACTIVE</span>
+                </div>
+                <div class="user-info">
+                    <span class="user-icon">⚡</span>
+                    <span>OPERATOR</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Left Panel - Quick Stats -->
+            <div class="left-panel">
+                <div class="panel-header">
+                    <h3>SYSTEM METRICS</h3>
+                    <div class="panel-line"></div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-icon">
+                        <div class="icon-bg">
+                            <span class="material-icons">chat</span>
+                        </div>
+                    </div>
+                    <div class="metric-data">
+                        <div class="metric-value" data-target="2847">0</div>
+                        <div class="metric-label">Active Conversations</div>
+                        <div class="metric-trend positive">+12.5%</div>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-icon">
+                        <div class="icon-bg">
+                            <span class="material-icons">people</span>
+                        </div>
+                    </div>
+                    <div class="metric-data">
+                        <div class="metric-value" data-target="15234">0</div>
+                        <div class="metric-label">Total Leads</div>
+                        <div class="metric-trend positive">+8.3%</div>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-icon">
+                        <div class="icon-bg">
+                            <span class="material-icons">smart_toy</span>
+                        </div>
+                    </div>
+                    <div class="metric-data">
+                        <div class="metric-value" data-target="98.7">0</div>
+                        <div class="metric-label">AI Response Rate %</div>
+                        <div class="metric-trend">OPTIMAL</div>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-icon">
+                        <div class="icon-bg">
+                            <span class="material-icons">trending_up</span>
+                        </div>
+                    </div>
+                    <div class="metric-data">
+                        <div class="metric-value" data-target="342">0</div>
+                        <div class="metric-label">Conversions Today</div>
+                        <div class="metric-trend positive">+24.7%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center Panel - Main Display -->
+            <div class="center-panel">
+                <!-- Holographic Display -->
+                <div class="holo-display">
+                    <div class="holo-container">
+                        <div class="holo-globe">
+                            <div class="globe-ring ring-1"></div>
+                            <div class="globe-ring ring-2"></div>
+                            <div class="globe-ring ring-3"></div>
+                            <div class="globe-core">
+                                <span class="material-icons">language</span>
+                            </div>
+                        </div>
+                        <div class="holo-stats">
+                            <div class="stat-item">
+                                <span class="stat-value">24/7</span>
+                                <span class="stat-label">UPTIME</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value">0.02s</span>
+                                <span class="stat-label">RESPONSE TIME</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value">∞</span>
+                                <span class="stat-label">CAPACITY</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <button class="action-btn primary" onclick="openConversations()">
+                        <div class="btn-inner">
+                            <span class="material-icons">chat_bubble</span>
+                            <span>CONVERSATIONS</span>
+                        </div>
+                        <div class="btn-glow"></div>
+                    </button>
+                    <button class="action-btn">
+                        <div class="btn-inner">
+                            <span class="material-icons">analytics</span>
+                            <span>ANALYTICS</span>
+                        </div>
+                        <div class="btn-glow"></div>
+                    </button>
+                    <button class="action-btn">
+                        <div class="btn-inner">
+                            <span class="material-icons">settings</span>
+                            <span>CONFIGURE</span>
+                        </div>
+                        <div class="btn-glow"></div>
+                    </button>
+                    <button class="action-btn">
+                        <div class="btn-inner">
+                            <span class="material-icons">memory</span>
+                            <span>AI TRAINING</span>
+                        </div>
+                        <div class="btn-glow"></div>
+                    </button>
+                </div>
+
+                <!-- Real-time Activity Monitor -->
+                <div class="activity-monitor">
+                    <div class="monitor-header">
+                        <h3>REAL-TIME ACTIVITY</h3>
+                        <div class="pulse-indicator"></div>
+                    </div>
+                    <div class="activity-stream" id="activityStream">
+                        <!-- Activity items will be added here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - AI Assistant -->
+            <div class="right-panel">
+                <div class="ai-assistant">
+                    <div class="ai-header">
+                        <div class="ai-avatar">
+                            <div class="avatar-ring"></div>
+                            <div class="avatar-core">AI</div>
+                        </div>
+                        <div class="ai-info">
+                            <h3>JARVIS ASSISTANT</h3>
+                            <span class="ai-status-text">Ready to assist</span>
+                        </div>
+                    </div>
+                    
+                    <div class="ai-chat">
+                        <div class="chat-messages" id="aiChat">
+                            <div class="ai-message">
+                                <div class="message-content">
+                                    Good evening, Sir. All systems are operational. How may I assist you today?
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chat-input">
+                            <input type="text" placeholder="Ask JARVIS..." id="aiInput" />
+                            <button class="send-btn" onclick="sendToAI()">
+                                <span class="material-icons">send</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Performance -->
+                <div class="performance-monitor">
+                    <h3>SYSTEM PERFORMANCE</h3>
+                    <div class="performance-grid">
+                        <div class="perf-item">
+                            <div class="perf-label">CPU</div>
+                            <div class="perf-bar">
+                                <div class="perf-fill" style="width: 45%"></div>
+                            </div>
+                            <div class="perf-value">45%</div>
+                        </div>
+                        <div class="perf-item">
+                            <div class="perf-label">RAM</div>
+                            <div class="perf-bar">
+                                <div class="perf-fill" style="width: 62%"></div>
+                            </div>
+                            <div class="perf-value">62%</div>
+                        </div>
+                        <div class="perf-item">
+                            <div class="perf-label">AI</div>
+                            <div class="perf-bar">
+                                <div class="perf-fill optimal" style="width: 98%"></div>
+                            </div>
+                            <div class="perf-value">98%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Status Bar -->
+        <div class="bottom-status">
+            <div class="status-item">
+                <span class="status-icon">🛡️</span>
+                <span>SECURITY: MAXIMUM</span>
+            </div>
+            <div class="status-item">
+                <span class="status-icon">🌐</span>
+                <span>NETWORK: STABLE</span>
+            </div>
+            <div class="status-item">
+                <span class="status-icon">💾</span>
+                <span>DATABASE: SQLITE ACTIVE</span>
+            </div>
+            <div class="status-item">
+                <span class="status-icon">🤖</span>
+                <span>OLLAMA: CONNECTED</span>
+            </div>
+            <div class="status-item">
+                <span class="status-icon">📱</span>
+                <span>WAHA: ONLINE</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Particle Background -->
+    <div class="particles" id="particles"></div>
+
+    <script src="js/jarvis-app.js"></script>
+</body>
+</html>

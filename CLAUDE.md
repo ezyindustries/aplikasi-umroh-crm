@@ -22,12 +22,6 @@ Aktor & Flow:
 ### Aktor:
 - Admin
 - Marketing
-- Keuangan
-- Operator Keberangkatan
-- Tim Visa
-- Tim Ticketing
-- Tim Hotel
-
 ### Alur Utama: *Pendaftaran dan Manajemen Jamaah*
 
 #### Input:
