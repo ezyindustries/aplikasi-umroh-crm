@@ -31,12 +31,8 @@ class WAHAComplianceService {
         return checks;
       }
 
-      // 2. Check active hours
-      if (!this.isWithinActiveHours()) {
-        checks.passed = false;
-        checks.reasons.push('Outside active hours (8AM-9PM)');
-        return checks;
-      }
+      // 2. Check active hours (disabled for 24/7 operation)
+      // Active hours check removed for 24/7 operation
 
       // 3. Check rate limits
       const rateCheck = await this.checkRateLimits(phoneNumber);
@@ -79,11 +75,8 @@ class WAHAComplianceService {
 
   // Check if within active hours
   isWithinActiveHours() {
-    const rules = wahaCompliance.antiBanRules.humanBehavior.activeHours;
-    const now = new Date();
-    const hour = now.getHours();
-    
-    return hour >= rules.start && hour <= rules.end;
+    // Always return true for 24/7 operation
+    return true;
   }
 
   // Check session health
@@ -97,11 +90,8 @@ class WAHAComplianceService {
         return { healthy: false, reason: 'Session not connected' };
       }
 
-      // Check session duration
-      const sessionHours = (Date.now() - new Date(session.connectedAt)) / (1000 * 60 * 60);
-      if (sessionHours > wahaCompliance.antiBanRules.humanBehavior.maxSessionHours) {
-        return { healthy: false, reason: 'Session active too long, needs rest' };
-      }
+      // Check session duration (disabled for 24/7 operation)
+      // Session duration check removed for 24/7 operation
 
       // Check metrics
       const metrics = await this.getSessionMetrics(sessionName);

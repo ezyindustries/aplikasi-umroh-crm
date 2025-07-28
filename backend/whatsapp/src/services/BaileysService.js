@@ -3,7 +3,8 @@ const { DisconnectReason, useMultiFileAuthState, downloadMediaMessage } = requir
 const qrcodeTerminal = require('qrcode-terminal');
 const QRCode = require('qrcode');
 const path = require('path');
-const fs = require('fs').promises;
+const fs = require('fs');
+const fsPromises = require('fs').promises;
 const { WhatsAppSession, Contact, Message } = require('../models');
 const logger = require('../utils/logger');
 const pino = require('pino');
@@ -18,7 +19,7 @@ class BaileysService {
 
   async initializeSessionDirectory() {
     try {
-      await fs.mkdir(this.sessionPath, { recursive: true });
+      await fsPromises.mkdir(this.sessionPath, { recursive: true });
     } catch (error) {
       logger.error('Failed to create session directory:', error);
     }
@@ -27,32 +28,93 @@ class BaileysService {
   // Start WhatsApp session
   async startSession(sessionName = 'default') {
     try {
+      // Check if session already exists in memory
       if (this.sessions.has(sessionName)) {
-        return {
-          success: true,
-          message: 'Session already active',
-          status: 'connected'
-        };
+        const existingSession = this.sessions.get(sessionName);
+        
+        // If already connected, return success
+        if (existingSession.status === 'connected') {
+          logger.info('Session already connected');
+          return {
+            success: true,
+            message: 'Session already active',
+            status: 'connected',
+            phoneNumber: existingSession.phoneNumber
+          };
+        } 
+        
+        // If connecting (QR stage), return current QR
+        else if (existingSession.status === 'connecting' && existingSession.qrImage) {
+          logger.info('Session is showing QR code');
+          return {
+            success: true,
+            message: 'QR code already displayed',
+            status: 'qr',
+            qr: existingSession.qrImage
+          };
+        }
+        
+        // Otherwise restart the session
+        else {
+          logger.info('Session exists but not connected, cleaning up...');
+          this.sessions.delete(sessionName);
+          this.qrCodes.delete(sessionName);
+          
+          // Delete stored credentials to force new QR
+          const sessionDir = path.join(this.sessionPath, sessionName);
+          if (fs.existsSync(sessionDir)) {
+            logger.info('Deleting old session files...');
+            try {
+              fs.rmSync(sessionDir, { recursive: true, force: true });
+            } catch (error) {
+              logger.error('Error deleting old session:', error);
+              // Try alternative method
+              const files = fs.readdirSync(sessionDir);
+              for (const file of files) {
+                fs.unlinkSync(path.join(sessionDir, file));
+              }
+            }
+          }
+        }
       }
 
       logger.info(`Starting Baileys session: ${sessionName}`);
+      
+      // Ensure clean session by deleting any existing files
+      const sessionDir = path.join(this.sessionPath, sessionName);
+      if (fs.existsSync(sessionDir)) {
+        logger.info('Found existing session files, cleaning up...');
+        try {
+          const files = fs.readdirSync(sessionDir);
+          for (const file of files) {
+            fs.unlinkSync(path.join(sessionDir, file));
+          }
+        } catch (error) {
+          logger.error('Error cleaning session files:', error);
+        }
+      }
 
       // Auth state
       const authPath = path.join(this.sessionPath, sessionName);
       const { state, saveCreds } = await useMultiFileAuthState(authPath);
 
-      // Create socket
+      // Create socket with unique browser ID to force new QR
+      const browserId = `Vauza Tamma CRM ${Date.now()}`;
       const sock = makeWASocket({
         auth: state,
         printQRInTerminal: true,
         logger: pino({ level: 'error' }),
-        browser: ['Vauza Tamma CRM', 'Chrome', '120.0.0']
+        browser: [browserId, 'Chrome', '120.0.0'],
+        // Force new connection
+        connectTimeoutMs: 60000,
+        qrTimeout: 60000
       });
 
-      // Store session
+      // Store session with cleared QR
       this.sessions.set(sessionName, {
         sock,
         qr: null,
+        qrImage: null,
         status: 'connecting',
         phoneNumber: null
       });
@@ -66,10 +128,17 @@ class BaileysService {
       // Setup event handlers
       this.setupEventHandlers(sessionName, sock, saveCreds);
 
+      // Wait a bit for QR to be generated
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Check if QR is already available
+      const sessionData = this.sessions.get(sessionName);
+      
       return {
         success: true,
         message: 'Session starting. Please check for QR code.',
-        status: 'connecting'
+        status: 'connecting',
+        qr: sessionData?.qrImage || null
       };
     } catch (error) {
       logger.error('Error starting Baileys session:', error);
@@ -84,9 +153,12 @@ class BaileysService {
     // Connection update
     sock.ev.on('connection.update', async (update) => {
       const { connection, lastDisconnect, qr } = update;
+      
+      logger.info('Connection update:', { connection, qr: !!qr });
 
       if (qr) {
         // New QR code
+        logger.info('QR Code received - generating image...');
         session.qr = qr;
         
         try {
@@ -113,14 +185,19 @@ class BaileysService {
           );
 
           // Print QR in terminal too
+          console.log('\n=== SCAN THIS QR CODE WITH WHATSAPP ===\n');
           qrcodeTerminal.generate(qr, { small: true });
+          console.log('\n=====================================\n');
           
           // Emit to frontend with base64 image
           if (global.io) {
+            logger.info('Emitting QR to frontend via Socket.IO');
             global.io.emit('session:qr', { 
               sessionName, 
               qr: qrImage 
             });
+          } else {
+            logger.warn('Socket.IO not available - cannot emit QR to frontend');
           }
         } catch (error) {
           logger.error('Error generating QR image:', error);
@@ -170,6 +247,12 @@ class BaileysService {
             status: 'connected' 
           });
         }
+        
+        // Load existing chats after connection
+        logger.info('Loading existing chats...');
+        setTimeout(async () => {
+          await this.loadExistingChats(sessionName, sock);
+        }, 2000);
       }
     });
 
@@ -208,24 +291,105 @@ class BaileysService {
   // Stop session
   async stopSession(sessionName = 'default') {
     try {
+      logger.info(`Stopping session: ${sessionName}`);
+      
       const session = this.sessions.get(sessionName);
-      if (!session) {
-        throw new Error('Session not found');
+      if (session && session.sock) {
+        try {
+          // Force end connection
+          session.sock.end();
+          await session.sock.logout();
+        } catch (error) {
+          logger.warn('Error during logout:', error.message);
+          // Force close the socket
+          try {
+            if (session.sock.ws) {
+              session.sock.ws.close();
+            }
+          } catch (e) {
+            logger.warn('Error closing socket:', e.message);
+          }
+        }
       }
-
-      await session.sock.logout();
+      
+      // Always clean up regardless of session state
       this.sessions.delete(sessionName);
       this.qrCodes.delete(sessionName);
+      
+      // Delete session files to force new QR on next connect
+      const sessionDir = path.join(this.sessionPath, sessionName);
+      if (fs.existsSync(sessionDir)) {
+        logger.info(`Deleting session files for ${sessionName} at: ${sessionDir}`);
+        try {
+          fs.rmSync(sessionDir, { recursive: true, force: true });
+          logger.info('Session files deleted successfully');
+        } catch (error) {
+          logger.error('Error deleting session files:', error);
+          // Try alternative method
+          const files = fs.readdirSync(sessionDir);
+          for (const file of files) {
+            fs.unlinkSync(path.join(sessionDir, file));
+          }
+          fs.rmdirSync(sessionDir);
+        }
+      }
 
       await WhatsAppSession.update(
-        { status: 'disconnected' },
+        { 
+          status: 'disconnected',
+          qrCode: null,
+          phoneNumber: null,
+          disconnectedAt: new Date()
+        },
         { where: { sessionName } }
       );
+      
+      // Force delete from database to ensure clean state
+      await WhatsAppSession.destroy({
+        where: { sessionName }
+      });
 
-      return { success: true, message: 'Session stopped' };
+      return { success: true, message: 'Session stopped and cleared' };
     } catch (error) {
       logger.error('Error stopping session:', error);
       throw error;
+    }
+  }
+
+  // Get QR code
+  async getQRCode(sessionName = 'default') {
+    try {
+      logger.info('Getting QR code for session:', sessionName);
+      
+      // Check memory first
+      const session = this.sessions.get(sessionName);
+      if (session && session.qrImage) {
+        logger.info('QR found in session memory');
+        return session.qrImage;
+      }
+      
+      // Check stored QR codes
+      const storedQR = this.qrCodes.get(sessionName);
+      if (storedQR) {
+        logger.info('QR found in QR storage');
+        return storedQR;
+      }
+      
+      // Check database
+      const dbSession = await WhatsAppSession.findOne({
+        where: { sessionName }
+      });
+      
+      if (dbSession && dbSession.qrCode) {
+        logger.info('QR found in database');
+        return dbSession.qrCode;
+      }
+      
+      logger.info('No QR code found');
+      return null;
+    } catch (error) {
+      logger.error('Error getting QR code:', error);
+      return null;
     }
   }
 
@@ -237,7 +401,33 @@ class BaileysService {
         where: { sessionName }
       });
 
+      // If no active session in memory
       if (!session) {
+        // Check if there's a stored session in database
+        if (dbSession && dbSession.status === 'connected') {
+          // Session exists in DB but not in memory - likely server restart
+          // Try to reconnect
+          logger.info('Found disconnected session in DB, attempting to reconnect...');
+          
+          // Check if credentials exist
+          const sessionDir = path.join(this.sessionPath, sessionName);
+          const credsPath = path.join(sessionDir, 'creds.json');
+          
+          if (fs.existsSync(credsPath)) {
+            // Start session to reconnect
+            await this.startSession(sessionName);
+            
+            // Return current status
+            const newSession = this.sessions.get(sessionName);
+            return {
+              status: newSession?.status || 'connecting',
+              qr: newSession?.qrImage || null,
+              phoneNumber: dbSession.phoneNumber
+            };
+          }
+        }
+        
+        // No session at all
         return {
           status: 'disconnected',
           qr: null,
@@ -311,6 +501,29 @@ class BaileysService {
     } catch (error) {
       logger.error('Error sending media:', error);
       throw error;
+    }
+  }
+
+  // Load existing chats after connection
+  async loadExistingChats(sessionName, sock) {
+    try {
+      logger.info('Loading existing chats and contacts...');
+      
+      // Unfortunately Baileys doesn't provide a direct API to get all chats
+      // We'll need to wait for incoming messages to build the contact list
+      // For now, emit an empty update to clear the loading state
+      
+      if (global.io) {
+        global.io.emit('chats:loaded', {
+          sessionName,
+          message: 'Connected. Contacts will appear as messages are received.'
+        });
+      }
+      
+      return true;
+    } catch (error) {
+      logger.error('Error loading chats:', error);
+      return false;
     }
   }
 

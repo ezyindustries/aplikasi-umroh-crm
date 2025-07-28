@@ -153,6 +153,60 @@ class SessionController {
       });
     }
   }
+
+  // Refresh QR code
+  async refreshQR(req, res) {
+    try {
+      const { sessionId } = req.params;
+      
+      logger.api.info('Refreshing QR code for session:', sessionId);
+      
+      // Stop and restart session to get new QR
+      await whatsappService.stopSession(sessionId);
+      
+      // Wait a bit before restarting
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const result = await whatsappService.startSession(sessionId);
+      
+      res.json({
+        success: true,
+        message: 'QR refresh initiated',
+        data: result
+      });
+    } catch (error) {
+      logger.api.error('Error refreshing QR:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+
+  // Get QR code directly
+  async getQR(req, res) {
+    try {
+      const { sessionId } = req.params;
+      
+      logger.api.info('Getting QR for session:', sessionId);
+      
+      const qr = await whatsappService.getQRCode(sessionId);
+      
+      res.json({
+        success: true,
+        data: {
+          qr: qr,
+          hasQR: !!qr
+        }
+      });
+    } catch (error) {
+      logger.api.error('Error getting QR:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
 }
 
 module.exports = new SessionController();

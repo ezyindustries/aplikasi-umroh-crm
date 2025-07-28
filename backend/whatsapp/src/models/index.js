@@ -21,12 +21,14 @@ const initDatabase = async () => {
   try {
     // In production, use migrations instead of sync
     if (process.env.NODE_ENV !== 'production') {
-      await sequelize.sync({ alter: true });
+      // Use force: false to avoid dropping tables
+      await sequelize.sync({ force: false });
       console.log('Database models synchronized successfully.');
     }
   } catch (error) {
     console.error('Error synchronizing database:', error);
-    throw error;
+    // If sync fails, try to continue anyway
+    console.log('Continuing despite sync error...');
   }
 };
 

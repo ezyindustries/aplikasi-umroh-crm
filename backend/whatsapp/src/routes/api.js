@@ -23,6 +23,8 @@ router.get('/sessions/:sessionId/status', sessionController.getStatus);
 router.get('/sessions', sessionController.getAllSessions);
 router.post('/sessions/:sessionId/webhook', sessionController.setWebhook);
 router.post('/sessions/:sessionId/reconnect', sessionController.reconnect);
+router.post('/sessions/:sessionId/refresh-qr', sessionController.refreshQR);
+router.get('/sessions/:sessionId/qr', sessionController.getQR);
 
 // Message routes
 router.post('/messages/send', createRateLimitMiddleware('messageSending'), messageController.sendMessage);

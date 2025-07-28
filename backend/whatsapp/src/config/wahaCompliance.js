@@ -38,14 +38,14 @@ module.exports = {
     // Activity Patterns (Mimic Human Behavior)
     humanBehavior: {
       activeHours: {
-        start: 8, // 8 AM
-        end: 21, // 9 PM
+        start: 0, // 24/7 operation
+        end: 24, // 24/7 operation
         timezone: 'Asia/Jakarta'
       },
       typingDelay: true, // Simulate typing
       readDelay: [1000, 3000], // Read message 1-3 detik
       onlinePresence: true, // Show online status
-      maxSessionHours: 8, // Max 8 jam per hari
+      maxSessionHours: 24, // 24 jam per hari
     },
 
     // Content Rules

@@ -1910,7 +1910,7 @@
     </div>
 
     <!-- Connection Info Panel -->
-    <div class="connection-info" id="connectionInfo">
+    <div class="connection-info" id="connectionInfo" style="display: none;">
         <button class="info-close" onclick="hideConnectionInfo()">
             <span class="material-icons">close</span>
         </button>
@@ -1952,10 +1952,6 @@
             <span class="info-value" id="complianceMessages">0 sent</span>
         </div>
         
-        <div class="info-item">
-            <span class="info-label">Active Hours</span>
-            <span class="info-value" id="complianceHours">08:00 - 21:00 WIB</span>
-        </div>
         
         <div class="info-item">
             <span class="info-label">Compliance Score</span>
@@ -2013,6 +2009,7 @@
         let healthCheckTimer = null;
         let qrTimer = null;
         let qrCountdown = 60;
+        let checkQRInterval = null;
 
         // Initialize on load
         document.addEventListener('DOMContentLoaded', function() {
@@ -2160,34 +2157,82 @@
         
         // Check for QR code
         async function checkForQRCode() {
+            console.log('checkForQRCode called');
+            
+            // Clear any existing interval first
+            if (checkQRInterval) {
+                clearInterval(checkQRInterval);
+            }
+            
+            // Check immediately first
             try {
+                console.log('Checking QR status immediately...');
+                
+                // First try direct QR endpoint
+                const qrResponse = await fetch(`${API_CONFIG.baseUrl}/sessions/${API_CONFIG.sessionId}/qr`);
+                if (qrResponse.ok) {
+                    const qrResult = await qrResponse.json();
+                    console.log('Direct QR check:', qrResult);
+                    if (qrResult.success && qrResult.data.qr) {
+                        console.log('QR found via direct endpoint');
+                        showQRModal(qrResult.data.qr);
+                        // Continue with interval checking
+                    }
+                }
+                
+                // Also check status
                 const response = await fetch(`${API_CONFIG.baseUrl}/sessions/${API_CONFIG.sessionId}/status`);
+                
+                if (!response.ok) {
+                    console.error('Failed to check QR status:', response.status);
+                    return;
+                }
+                
                 const result = await response.json();
+                console.log('QR check result:', result);
                 
                 if (result.success && result.data) {
                     if (result.data.qr) {
-                        // Show QR code
+                        console.log('QR code received, showing modal');
                         showQRModal(result.data.qr);
-                        
-                        // Keep checking status
-                        setTimeout(checkForQRCode, 2000);
-                    } else if (result.data.status === 'authenticated' || result.data.status === 'connected') {
-                        // Connected successfully
-                        closeQRModal();
-                        updateConnectionStatus(result.data.status, result.data);
-                    } else if (result.data.status === 'disconnected') {
-                        // Failed to connect
-                        closeQRModal();
-                        updateConnectionStatus('disconnected');
-                    } else {
-                        // Keep checking
-                        setTimeout(checkForQRCode, 2000);
                     }
                 }
             } catch (error) {
-                console.error('Error checking QR:', error);
-                setTimeout(checkForQRCode, 5000);
+                console.error('Error checking QR immediately:', error);
             }
+            
+            // Set up interval to check for QR
+            checkQRInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`${API_CONFIG.baseUrl}/sessions/${API_CONFIG.sessionId}/status`);
+                    
+                    if (!response.ok) {
+                        console.error('Failed to check QR status');
+                        return;
+                    }
+                    
+                    const result = await response.json();
+                    console.log('QR interval check:', result.data?.status, 'QR:', !!result.data?.qr);
+                    
+                    if (result.success && result.data) {
+                        if (result.data.qr) {
+                            // Show QR code
+                            showQRModal(result.data.qr);
+                        } else if (result.data.status === 'authenticated' || result.data.status === 'connected') {
+                            // Connected successfully
+                            closeQRModal();
+                            updateConnectionStatus(result.data.status, result.data);
+                            clearInterval(checkQRInterval);
+                            checkQRInterval = null;
+                        } else if (result.data.status === 'disconnected') {
+                            // Not connected, but no QR
+                            console.log('Session disconnected, no QR available');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error checking QR:', error);
+                }
+            }, 2000); // Check every 2 seconds
         }
 
         // Disconnect WhatsApp
@@ -2218,11 +2263,27 @@
             const modal = document.getElementById('qrModal');
             const container = document.getElementById('qrCodeContainer');
             
+            console.log('Showing QR modal with code:', qrCode ? 'Present' : 'Missing');
+            console.log('QR preview:', qrCode ? qrCode.substring(0, 50) + '...' : 'N/A');
+            
+            // Clear any existing QR first
+            container.innerHTML = '';
+            
             // Display QR code - Baileys returns base64 image
             if (qrCode && (qrCode.startsWith('data:') || qrCode.startsWith('http'))) {
-                container.innerHTML = `
-                    <img src="${qrCode}" alt="WhatsApp QR Code">
-                `;
+                // Add timestamp to prevent caching
+                const img = document.createElement('img');
+                img.src = qrCode;
+                img.alt = 'WhatsApp QR Code';
+                img.style.maxWidth = '100%';
+                img.style.height = 'auto';
+                img.onload = () => {
+                    console.log('QR image loaded successfully');
+                };
+                img.onerror = () => {
+                    console.error('Failed to load QR image');
+                };
+                container.appendChild(img);
             } else {
                 // Fallback if no image
                 container.innerHTML = `
@@ -2245,6 +2306,12 @@
             const modal = document.getElementById('qrModal');
             modal.classList.remove('show');
             stopQRTimer();
+            
+            // Clear QR check interval
+            if (checkQRInterval) {
+                clearInterval(checkQRInterval);
+                checkQRInterval = null;
+            }
         }
 
         // Refresh QR Code
@@ -2253,18 +2320,66 @@
             container.innerHTML = `
                 <div class="qr-loading">
                     <span class="material-icons">qr_code_scanner</span>
-                    <p>Loading QR Code...</p>
+                    <p>Loading new QR Code...</p>
                 </div>
             `;
             
-            // Simulate getting new QR
-            setTimeout(() => {
-                connectWhatsApp();
-            }, 1000);
+            // Stop current timer
+            stopQRTimer();
+            
+            try {
+                // First disconnect current session
+                console.log('Disconnecting current session...');
+                await fetch(`${API_CONFIG.baseUrl}/sessions/${API_CONFIG.sessionId}/stop`, {
+                    method: 'POST'
+                });
+                
+                // Wait a bit
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Start new session
+                console.log('Starting new session...');
+                const response = await fetch(`${API_CONFIG.baseUrl}/sessions/start`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        sessionId: API_CONFIG.sessionId
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to start new session');
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    console.log('New session started, checking for QR...');
+                    // Start checking for new QR
+                    checkForQRCode();
+                    // Restart timer
+                    startQRTimer();
+                } else {
+                    throw new Error(result.error || 'Failed to start session');
+                }
+            } catch (error) {
+                console.error('Error refreshing QR:', error);
+                container.innerHTML = `
+                    <div class="qr-loading">
+                        <span class="material-icons">error</span>
+                        <p>Failed to refresh QR. Please try connecting again.</p>
+                    </div>
+                `;
+            }
         }
 
         // QR Timer
         function startQRTimer() {
+            // Stop any existing timer first
+            stopQRTimer();
+            
             qrCountdown = 60;
             updateQRTimer();
             
@@ -2273,6 +2388,8 @@
                 updateQRTimer();
                 
                 if (qrCountdown <= 0) {
+                    stopQRTimer();
+                    // Auto refresh QR when expired
                     refreshQR();
                 }
             }, 1000);
@@ -2292,12 +2409,18 @@
 
         // Connection Info Panel
         function showConnectionInfo() {
-            document.getElementById('connectionInfo').classList.add('show');
+            const infoPanel = document.getElementById('connectionInfo');
+            infoPanel.style.display = 'block';
+            infoPanel.classList.add('show');
             updateConnectionInfo();
         }
 
         function hideConnectionInfo() {
-            document.getElementById('connectionInfo').classList.remove('show');
+            const infoPanel = document.getElementById('connectionInfo');
+            infoPanel.classList.remove('show');
+            setTimeout(() => {
+                infoPanel.style.display = 'none';
+            }, 300);
         }
 
         function updateConnectionInfo() {
@@ -2388,6 +2511,44 @@
             element.appendChild(ripple);
             
             setTimeout(() => ripple.remove(), 600);
+        }
+        
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notificationHtml = `
+                <div class="notification notification-${type}" style="
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: linear-gradient(145deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.9));
+                    backdrop-filter: blur(20px);
+                    border: 1px solid rgba(71, 85, 105, 0.4);
+                    border-radius: 12px;
+                    padding: 16px 24px;
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    color: #e2e8f0;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+                    z-index: 10000;
+                    transition: opacity 0.3s;
+                ">
+                    <span class="material-icons">${type === 'error' ? 'error' : 'info'}</span>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = notificationHtml;
+            document.body.appendChild(tempDiv.firstElementChild);
+            
+            setTimeout(() => {
+                const notification = document.querySelector('.notification');
+                if (notification) {
+                    notification.style.opacity = '0';
+                    setTimeout(() => notification.remove(), 300);
+                }
+            }, 5000);
         }
 
         function filterContacts(filter) {
@@ -2698,6 +2859,15 @@
                 loadContacts();
             });
             
+            // Listen for chats loaded event
+            socket.on('chats:loaded', (data) => {
+                console.log('Chats loaded:', data);
+                if (data.message) {
+                    // Show a temporary message to user
+                    showNotification(data.message, 'info');
+                }
+            });
+            
             // Listen for new messages
             socket.on('message:new', (message) => {
                 if (currentConversation && message.conversationId === currentConversation.id) {
@@ -2907,8 +3077,10 @@
                     const report = result.data;
                     
                     // Update UI
+                    const uniqueContacts = typeof report.metrics === 'object' ? 
+                        (report.metrics.uniqueContacts || 0) : 0;
                     document.getElementById('complianceDaily').textContent = 
-                        `${report.metrics.uniqueContacts || 0}/50 contacts`;
+                        `${uniqueContacts}/50 contacts`;
                     document.getElementById('complianceMessages').textContent = 
                         `${report.metrics.messagesSent || 0} sent`;
                     
