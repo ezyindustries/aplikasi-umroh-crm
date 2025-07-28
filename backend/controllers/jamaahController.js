@@ -1,4 +1,4 @@
-const Jamaah = require('../models/Jamaah');
+const { Jamaah } = require('../models');
 
 class JamaahController {
   

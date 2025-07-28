@@ -114,10 +114,22 @@ const WhatsAppConnection = {
         qrContainer.innerHTML = '<div class="loading"></div><p>Loading QR code...</p>';
         
         try {
-            // Get QR code
-            const response = await fetch(`${this.WAHA_URL}/api/sessions/${this.SESSION_NAME}/auth/qr`, {
+            // Get QR code - try different endpoints
+            let response = await fetch(`${this.WAHA_URL}/api/${this.SESSION_NAME}/auth/qr`, {
                 headers: { 'X-Api-Key': this.WAHA_API_KEY }
             });
+            
+            // If first endpoint fails, try alternative
+            if (!response.ok) {
+                response = await fetch(`${this.WAHA_URL}/api/screenshot`, {
+                    method: 'POST',
+                    headers: { 
+                        'X-Api-Key': this.WAHA_API_KEY,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ session: this.SESSION_NAME })
+                });
+            }
             
             if (response.ok) {
                 const blob = await response.blob();

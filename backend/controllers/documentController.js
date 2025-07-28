@@ -1,4 +1,4 @@
-const Document = require('../models/Document');
+const { Document } = require('../models');
 const path = require('path');
 const fs = require('fs');
 

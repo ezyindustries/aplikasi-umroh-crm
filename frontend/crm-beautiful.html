@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp CRM - Vauza Tamma</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Additional Glass Morphism Enhancements */
+        .page-header {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.7));
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .page-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6, #10b981, #8b5cf6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 16px;
+            background: rgba(71, 85, 105, 0.3);
+            border: 1px solid rgba(71, 85, 105, 0.4);
+            border-radius: 12px;
+        }
+        
+        .status-indicator.connected .pulse {
+            background: #10b981;
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+            animation: pulse 2s infinite;
+        }
+        
+        .status-indicator.disconnected .pulse {
+            background: #ef4444;
+        }
+        
+        .pulse {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #fbbf24;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+            }
+        }
+        
+        /* Enhanced Card Style */
+        .card-enhanced {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.6));
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            margin-bottom: 30px;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card-enhanced::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.05));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .card-enhanced:hover::before {
+            opacity: 1;
+        }
+        
+        /* Beautiful Button Style */
+        .btn-beautiful {
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-beautiful:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+        
+        /* Conversations Container */
+        .conversations-container {
+            display: flex;
+            gap: 24px;
+            height: calc(100vh - 200px);
+        }
+        
+        .conversations-list {
+            flex: 0 0 400px;
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.6));
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            overflow-y: auto;
+        }
+        
+        .conversation-card {
+            background: rgba(71, 85, 105, 0.2);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .conversation-card:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.4);
+            transform: translateX(5px);
+        }
+        
+        .conversation-card.active {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(16, 185, 129, 0.2));
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+        
+        /* Chat Container */
+        .chat-container {
+            flex: 1;
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.6));
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .chat-header {
+            padding: 20px;
+            background: rgba(30, 41, 59, 0.5);
+            border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .chat-header-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .chat-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #3b82f6, #10b981);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: white;
+            font-size: 20px;
+        }
+        
+        .messages-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        /* Activity Log */
+        .activity-log-card {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 400px;
+            max-height: 400px;
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.9));
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .activity-log-card.minimized {
+            transform: translateY(calc(100% - 60px));
+        }
+        
+        .activity-log-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .activity-log-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+        
+        .activity-log-content {
+            flex: 1;
+            padding: 12px;
+            overflow-y: auto;
+        }
+        
+        .activity-item {
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            font-size: 13px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .activity-item.success {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 3px solid #10b981;
+        }
+        
+        .activity-item.error {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 3px solid #ef4444;
+        }
+        
+        .activity-item.info {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 3px solid #3b82f6;
+        }
+        
+        .activity-item.warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 3px solid #f59e0b;
+        }
+        
+        .activity-time {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+        
+        .activity-message {
+            color: #e2e8f0;
+        }
+        
+        /* FAB Button */
+        .fab {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border: none;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+            transition: all 0.3s;
+            z-index: 1001;
+        }
+        
+        .fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 30px rgba(59, 130, 246, 0.5);
+        }
+        
+        /* Search Input */
+        .search-input {
+            padding: 12px 20px;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(71, 85, 105, 0.4);
+            border-radius: 12px;
+            color: #e2e8f0;
+            font-size: 14px;
+            width: 300px;
+            transition: all 0.3s;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            background: rgba(15, 23, 42, 0.7);
+        }
+        
+        /* Chat Action Buttons */
+        .chat-action-btn {
+            background: rgba(71, 85, 105, 0.3);
+            border: 1px solid rgba(71, 85, 105, 0.4);
+            border-radius: 8px;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #e2e8f0;
+        }
+        
+        .chat-action-btn:hover {
+            background: rgba(59, 130, 246, 0.3);
+            border-color: rgba(59, 130, 246, 0.5);
+            color: #60a5fa;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .conversations-container {
+                flex-direction: column;
+            }
+            
+            .conversations-list {
+                flex: none;
+                height: 200px;
+            }
+            
+            .activity-log-card {
+                width: 320px;
+                max-height: 300px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .page-header {
+                flex-direction: column;
+                gap: 16px;
+            }
+            
+            .header-actions {
+                flex-direction: column;
+                width: 100%;
+                gap: 12px;
+            }
+            
+            .search-input {
+                width: 100%;
+            }
+            
+            .activity-log-card {
+                width: calc(100% - 48px);
+                right: 24px;
+                left: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">CRM WhatsApp</div>
+            
+            <nav>
+                <a href="#" class="nav-item active" onclick="switchPage('dashboard')">
+                    <span class="material-icons">dashboard</span>
+                    Dashboard
+                </a>
+                <a href="#" class="nav-item" onclick="switchPage('conversations')">
+                    <span class="material-icons">chat</span>
+                    Conversations
+                    <span class="badge" id="unread-count">0</span>
+                </a>
+                <a href="#" class="nav-item" onclick="switchPage('leads')">
+                    <span class="material-icons">people</span>
+                    Leads
+                </a>
+                <a href="#" class="nav-item" onclick="switchPage('campaigns')">
+                    <span class="material-icons">campaign</span>
+                    Campaigns
+                </a>
+                <a href="#" class="nav-item" onclick="switchPage('settings')">
+                    <span class="material-icons">settings</span>
+                    Settings
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Dashboard Page -->
+            <div class="page active" id="dashboard-page">
+                <div class="page-header">
+                    <h1>WhatsApp CRM Dashboard</h1>
+                    <div class="header-actions">
+                        <div class="status-indicator" id="wa-status">
+                            <span class="pulse"></span>
+                            <span id="wa-status-text">Checking...</span>
+                        </div>
+                        <button class="btn-beautiful" onclick="connectWhatsApp()">
+                            <span class="material-icons">qr_code</span>
+                            Connect WhatsApp
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Enhanced Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon blue">
+                            <span class="material-icons">chat</span>
+                        </div>
+                        <div class="stat-value" id="total-conversations">0</div>
+                        <div class="stat-label">Total Conversations</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon green">
+                            <span class="material-icons">people</span>
+                        </div>
+                        <div class="stat-value" id="active-leads">0</div>
+                        <div class="stat-label">Active Leads</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon orange">
+                            <span class="material-icons">pending</span>
+                        </div>
+                        <div class="stat-value" id="pending-messages">0</div>
+                        <div class="stat-label">Pending Messages</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon purple">
+                            <span class="material-icons">smart_toy</span>
+                        </div>
+                        <div class="stat-value" id="bot-responses">0</div>
+                        <div class="stat-label">Bot Responses Today</div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="card-enhanced">
+                    <h3 style="margin-bottom: 20px; color: #f1f5f9;">Recent Conversations</h3>
+                    <div id="recent-conversations">
+                        <!-- Conversations will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conversations Page -->
+            <div class="page" id="conversations-page">
+                <div class="page-header">
+                    <h1>Conversations</h1>
+                    <div class="header-actions">
+                        <input type="text" class="search-input" placeholder="Search conversations..." id="search-conversations">
+                        <button class="btn-beautiful" onclick="refreshConversations()">
+                            <span class="material-icons">refresh</span>
+                            Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <div class="conversations-container" style="display: flex; gap: 20px;">
+                    <!-- Conversations List -->
+                    <div class="conversations-list" style="flex: 0 0 400px;">
+                        <div id="conversations-list">
+                            <!-- Conversation cards will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Chat Area -->
+                    <div class="chat-container" style="flex: 1;">
+                        <div class="chat-header">
+                            <div class="chat-header-info">
+                                <div class="chat-avatar" id="chat-avatar">?</div>
+                                <div class="chat-header-details">
+                                    <h3 id="chat-name">Select a conversation</h3>
+                                    <p id="chat-phone">No conversation selected</p>
+                                </div>
+                            </div>
+                            <div class="chat-header-actions">
+                                <button class="chat-action-btn" onclick="toggleChatInfo()">
+                                    <span class="material-icons">info</span>
+                                </button>
+                                <button class="chat-action-btn" onclick="archiveChat()">
+                                    <span class="material-icons">archive</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="messages-container" id="messages-container">
+                            <!-- Messages will be loaded here -->
+                        </div>
+
+                        <div class="chat-input-container">
+                            <button class="chat-action-btn" onclick="showMediaUpload()">
+                                <span class="material-icons">attach_file</span>
+                            </button>
+                            <input type="text" class="chat-input" id="message-input" placeholder="Type a message..." onkeypress="handleMessageKeypress(event)">
+                            <button class="send-btn" onclick="sendMessage()">
+                                <span class="material-icons">send</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leads Page -->
+            <div class="page" id="leads-page">
+                <div class="page-header">
+                    <h1>Leads Management</h1>
+                    <div class="header-actions">
+                        <button class="btn-beautiful" onclick="refreshLeads()">
+                            <span class="material-icons">refresh</span>
+                            Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="card-enhanced">
+                    <p>Leads management coming soon...</p>
+                </div>
+            </div>
+
+            <!-- Campaigns Page -->
+            <div class="page" id="campaigns-page">
+                <div class="page-header">
+                    <h1>WhatsApp Campaigns</h1>
+                    <div class="header-actions">
+                        <button class="btn-beautiful" onclick="createCampaign()">
+                            <span class="material-icons">add</span>
+                            New Campaign
+                        </button>
+                    </div>
+                </div>
+                <div class="card-enhanced">
+                    <p>Campaign management coming soon...</p>
+                </div>
+            </div>
+
+            <!-- Settings Page -->
+            <div class="page" id="settings-page">
+                <div class="page-header">
+                    <h1>Settings</h1>
+                </div>
+                <div class="card-enhanced">
+                    <p>Settings coming soon...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Log -->
+    <div class="activity-log-card" id="activity-log">
+        <div class="activity-log-header">
+            <div class="activity-log-title">
+                <span class="material-icons">history</span>
+                Activity Log
+            </div>
+            <button class="chat-action-btn" onclick="toggleActivityLog()">
+                <span class="material-icons">minimize</span>
+            </button>
+        </div>
+        <div class="activity-log-content" id="activity-log-content">
+            <!-- Log items will be added here -->
+        </div>
+    </div>
+
+    <!-- Log Toggle Button (when minimized) -->
+    <button class="fab" id="log-toggle" style="display: none;" onclick="toggleActivityLog()">
+        <span class="material-icons">history</span>
+    </button>
+
+    <!-- QR Modal -->
+    <div class="modal" id="qr-modal" style="display: none;">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>Connect WhatsApp</h3>
+                <button class="modal-close" onclick="closeQRModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="text-align: center;">
+                <div id="qr-container">
+                    <div class="loading-spinner"></div>
+                    <p>Loading QR Code...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE = 'http://localhost:5000/api';
+        const WAHA_URL = 'http://localhost:3001';
+        const WAHA_API_KEY = 'your-secret-api-key'; // Add your WAHA API key here
+        
+        // Activity Log System
+        const ActivityLog = {
+            logs: [],
+            maxLogs: 50,
+            
+            add(type, message) {
+                const log = {
+                    id: Date.now(),
+                    type: type, // success, error, info, warning
+                    message: message,
+                    timestamp: new Date()
+                };
+                
+                this.logs.unshift(log);
+                if (this.logs.length > this.maxLogs) {
+                    this.logs.pop();
+                }
+                
+                this.render();
+            },
+            
+            render() {
+                const container = document.getElementById('activity-log-content');
+                container.innerHTML = this.logs.map(log => `
+                    <div class="activity-item ${log.type}">
+                        <div class="activity-time">${this.formatTime(log.timestamp)}</div>
+                        <div class="activity-message">${log.message}</div>
+                    </div>
+                `).join('');
+            },
+            
+            formatTime(date) {
+                return date.toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+            }
+        };
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            ActivityLog.add('info', 'CRM Dashboard initialized');
+            checkServices();
+            loadDashboardData();
+        });
+        
+        // Service Check
+        async function checkServices() {
+            // Check Backend
+            try {
+                const response = await fetch(`${API_BASE.replace('/api', '')}/health`);
+                if (response.ok) {
+                    ActivityLog.add('success', 'Backend API connected');
+                } else {
+                    ActivityLog.add('error', 'Backend API not responding');
+                }
+            } catch (error) {
+                ActivityLog.add('error', 'Backend connection failed: ' + error.message);
+            }
+            
+            // Check WAHA
+            try {
+                const response = await fetch(`${WAHA_URL}/api/version`, {
+                    headers: {
+                        'X-Api-Key': WAHA_API_KEY
+                    }
+                });
+                if (response.ok) {
+                    ActivityLog.add('success', 'WAHA WhatsApp API connected');
+                    checkWhatsAppStatus();
+                } else {
+                    ActivityLog.add('error', 'WAHA API not responding: ' + response.status);
+                }
+            } catch (error) {
+                ActivityLog.add('error', 'WAHA connection failed: ' + error.message);
+            }
+        }
+        
+        // WhatsApp Connection
+        async function connectWhatsApp() {
+            ActivityLog.add('info', 'Initiating WhatsApp connection...');
+            
+            try {
+                // Show QR modal
+                document.getElementById('qr-modal').style.display = 'flex';
+                
+                // Your existing connection logic here
+                // For now, just simulate
+                setTimeout(() => {
+                    ActivityLog.add('success', 'WhatsApp QR code displayed');
+                }, 1000);
+                
+            } catch (error) {
+                ActivityLog.add('error', 'Failed to connect: ' + error.message);
+            }
+        }
+        
+        // Check WhatsApp Status
+        async function checkWhatsAppStatus() {
+            try {
+                const response = await fetch(`${WAHA_URL}/api/sessions/default`, {
+                    headers: {
+                        'X-Api-Key': WAHA_API_KEY
+                    }
+                });
+                const data = await response.json();
+                
+                const statusElement = document.getElementById('wa-status');
+                const statusText = document.getElementById('wa-status-text');
+                
+                if (data.status === 'WORKING') {
+                    statusElement.className = 'status-indicator connected';
+                    statusText.textContent = 'Connected';
+                    ActivityLog.add('success', 'WhatsApp is connected');
+                } else if (data.status === 'SCAN_QR_CODE') {
+                    statusElement.className = 'status-indicator connecting';
+                    statusText.textContent = 'Scan QR Code';
+                    ActivityLog.add('warning', 'WhatsApp needs QR scan');
+                } else {
+                    statusElement.className = 'status-indicator disconnected';
+                    statusText.textContent = 'Disconnected';
+                    ActivityLog.add('error', 'WhatsApp disconnected: ' + data.status);
+                }
+            } catch (error) {
+                ActivityLog.add('error', 'Failed to check WhatsApp status');
+            }
+        }
+        
+        // Load Dashboard Data
+        async function loadDashboardData() {
+            ActivityLog.add('info', 'Loading dashboard data...');
+            
+            // Simulate data loading
+            setTimeout(() => {
+                document.getElementById('total-conversations').textContent = '127';
+                document.getElementById('active-leads').textContent = '45';
+                document.getElementById('pending-messages').textContent = '8';
+                document.getElementById('bot-responses').textContent = '234';
+                
+                ActivityLog.add('success', 'Dashboard data loaded');
+            }, 1000);
+        }
+        
+        // Page Switching
+        function switchPage(pageName) {
+            // Check if page exists
+            const targetPage = document.getElementById(`${pageName}-page`);
+            if (!targetPage) {
+                ActivityLog.add('error', `Page '${pageName}' not found`);
+                return;
+            }
+            
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Remove active from all nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Show selected page
+            targetPage.classList.add('active');
+            
+            // Add active to clicked nav item
+            if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            }
+            
+            ActivityLog.add('info', `Switched to ${pageName} page`);
+            
+            // Load page-specific data
+            if (pageName === 'conversations') {
+                loadConversations();
+            }
+        }
+        
+        // Toggle Activity Log
+        function toggleActivityLog() {
+            const log = document.getElementById('activity-log');
+            const toggle = document.getElementById('log-toggle');
+            
+            if (log.classList.contains('minimized')) {
+                log.classList.remove('minimized');
+                toggle.style.display = 'none';
+            } else {
+                log.classList.add('minimized');
+                setTimeout(() => {
+                    toggle.style.display = 'flex';
+                }, 300);
+            }
+        }
+        
+        // Load Conversations
+        async function loadConversations() {
+            ActivityLog.add('info', 'Loading conversations...');
+            
+            try {
+                const response = await fetch(`${API_BASE}/crm/conversations`);
+                const conversations = await response.json();
+                
+                const container = document.getElementById('conversations-list');
+                container.innerHTML = conversations.map(conv => `
+                    <div class="conversation-card" onclick="selectConversation('${conv.id}', '${conv.phone_number}')">
+                        <div class="conversation-header">
+                            <div class="conversation-name">${conv.name || conv.phone_number}</div>
+                            <div class="conversation-badges">
+                                ${conv.unread_count > 0 ? `<span class="conversation-badge badge-unread">${conv.unread_count}</span>` : ''}
+                                ${conv.labels?.map(label => `<span class="conversation-badge badge-label">${label}</span>`).join('') || ''}
+                            </div>
+                        </div>
+                        <div class="conversation-preview">${conv.last_message_preview || 'No messages yet'}</div>
+                        <div class="conversation-time">${formatTime(conv.last_message_at)}</div>
+                    </div>
+                `).join('');
+                
+                ActivityLog.add('success', `Loaded ${conversations.length} conversations`);
+            } catch (error) {
+                ActivityLog.add('error', 'Failed to load conversations: ' + error.message);
+            }
+        }
+        
+        // Helper Functions
+        function formatTime(timestamp) {
+            if (!timestamp) return '';
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+            
+            if (diff < 60000) return 'Just now';
+            if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+            if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+            return date.toLocaleDateString();
+        }
+        
+        function closeQRModal() {
+            document.getElementById('qr-modal').style.display = 'none';
+        }
+        
+        // Auto-refresh
+        setInterval(() => {
+            checkWhatsAppStatus();
+        }, 30000);
+    </script>
+</body>
+</html>

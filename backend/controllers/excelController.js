@@ -1,7 +1,7 @@
 const XLSX = require('xlsx');
 const path = require('path');
 const fs = require('fs');
-const Jamaah = require('../models/Jamaah');
+const { Jamaah } = require('../models');
 const { query } = require('../config/database');
 
 class ExcelController {

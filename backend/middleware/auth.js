@@ -3,7 +3,6 @@ const crypto = require('crypto');
 const { User } = require('../models');
 const { auditLog } = require('../services/auditService');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 
 // Token blacklist for logged out tokens (in production, use Redis)
 const tokenBlacklist = new Set();

@@ -1,4 +1,4 @@
-const Group = require('../models/Group');
+const { Group } = require('../models');
 const { query } = require('../config/database');
 const { logActivity } = require('../utils/activityLogger');
 

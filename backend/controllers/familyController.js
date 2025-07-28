@@ -1,4 +1,4 @@
-const FamilyRelation = require('../models/FamilyRelation');
+const { FamilyRelation } = require('../models');
 
 class FamilyController {
 

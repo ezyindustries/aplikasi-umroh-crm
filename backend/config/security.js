@@ -204,12 +204,17 @@ class SecurityConfig {
   getCorsConfig() {
     const allowedOrigins = process.env.ALLOWED_ORIGINS 
       ? process.env.ALLOWED_ORIGINS.split(',')
-      : ['http://localhost:3000'];
+      : ['http://localhost:3000', 'http://localhost:8080', 'http://127.0.0.1:8080'];
 
     return {
       origin: (origin, callback) => {
         // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
+        
+        // In development, allow all localhost origins
+        if (!this.isProduction && (origin.includes('localhost') || origin.includes('127.0.0.1'))) {
+          return callback(null, true);
+        }
         
         if (allowedOrigins.includes(origin)) {
           callback(null, true);
@@ -226,7 +231,8 @@ class SecurityConfig {
         'Accept',
         'Authorization',
         'Cache-Control',
-        'Pragma'
+        'Pragma',
+        'X-API-Key'
       ],
       maxAge: 86400 // 24 hours
     };

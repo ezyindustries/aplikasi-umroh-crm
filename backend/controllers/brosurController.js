@@ -1,5 +1,4 @@
-const PackageBrosur = require('../models/PackageBrosur');
-const Package = require('../models/Package');
+const { PackageBrosur, Package } = require('../models');
 const { upload } = require('../middleware/upload');
 const path = require('path');
 const fs = require('fs').promises;
