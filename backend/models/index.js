@@ -61,6 +61,10 @@ db.User = sequelize.define('User', {
   is_active: {
     type: DataTypes.BOOLEAN,
     defaultValue: true
+  },
+  tier: {
+    type: DataTypes.ENUM('basic', 'premium', 'enterprise'),
+    defaultValue: 'basic'
   }
 }, {
   tableName: 'users',
@@ -101,7 +105,12 @@ db.Lead = sequelize.define('Lead', {
   notes: DataTypes.TEXT,
   converted_to_jamaah_id: DataTypes.UUID,
   converted_at: DataTypes.DATE,
-  assigned_to: DataTypes.UUID
+  assigned_to: DataTypes.UUID,
+  opted_out: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
+  opted_out_at: DataTypes.DATE
 }, {
   tableName: 'leads',
   timestamps: true,
@@ -170,9 +179,11 @@ db.WaMessage = sequelize.define('WaMessage', {
   handled_by: DataTypes.UUID,
   wa_message_id: DataTypes.STRING,
   status: {
-    type: DataTypes.STRING,
+    type: DataTypes.ENUM('queued', 'sending', 'sent', 'failed'),
     defaultValue: 'sent'
   },
+  queue_id: DataTypes.STRING,
+  sent_at: DataTypes.DATE,
   error_message: DataTypes.TEXT
 }, {
   tableName: 'wa_messages',
@@ -440,6 +451,124 @@ db.MessageTemplate = sequelize.define('MessageTemplate', {
   underscored: true
 });
 
+// MessageLog model (for tracking all message attempts)
+db.MessageLog = sequelize.define('MessageLog', {
+  id: {
+    type: DataTypes.UUID,
+    primaryKey: true,
+    defaultValue: DataTypes.UUIDV4
+  },
+  phone_number: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  message_content: {
+    type: DataTypes.TEXT,
+    allowNull: false
+  },
+  status: {
+    type: DataTypes.ENUM('sent', 'failed', 'blocked'),
+    allowNull: false
+  },
+  error_message: DataTypes.TEXT,
+  queue_id: DataTypes.STRING,
+  attempts: {
+    type: DataTypes.INTEGER,
+    defaultValue: 1
+  },
+  sent_at: DataTypes.DATE
+}, {
+  tableName: 'message_logs',
+  timestamps: true,
+  underscored: true
+});
+
+// ConsentRecord model (for WhatsApp compliance)
+db.ConsentRecord = sequelize.define('ConsentRecord', {
+  id: {
+    type: DataTypes.UUID,
+    primaryKey: true,
+    defaultValue: DataTypes.UUIDV4
+  },
+  phone_number: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true
+  },
+  lead_id: DataTypes.UUID,
+  opt_in_date: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
+  },
+  opt_in_method: DataTypes.STRING(50),
+  opt_out_date: DataTypes.DATE,
+  status: {
+    type: DataTypes.ENUM('active', 'opted_out', 'blocked'),
+    defaultValue: 'active'
+  },
+  consent_text: DataTypes.TEXT,
+  ip_address: DataTypes.STRING(45)
+}, {
+  tableName: 'consent_records',
+  timestamps: true,
+  underscored: true
+});
+
+// ConversationLabel model
+db.ConversationLabel = sequelize.define('ConversationLabel', {
+  id: {
+    type: DataTypes.UUID,
+    primaryKey: true,
+    defaultValue: DataTypes.UUIDV4
+  },
+  name: {
+    type: DataTypes.STRING(50),
+    allowNull: false,
+    unique: true
+  },
+  color: {
+    type: DataTypes.STRING(7),
+    allowNull: false,
+    defaultValue: '#3b82f6'
+  },
+  icon: DataTypes.STRING(50),
+  description: DataTypes.TEXT,
+  is_active: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true
+  },
+  created_by: DataTypes.UUID
+}, {
+  tableName: 'conversation_labels',
+  timestamps: true,
+  underscored: true
+});
+
+// ConversationLabelMapping model (junction table)
+db.ConversationLabelMapping = sequelize.define('ConversationLabelMapping', {
+  id: {
+    type: DataTypes.UUID,
+    primaryKey: true,
+    defaultValue: DataTypes.UUIDV4
+  },
+  conversation_id: {
+    type: DataTypes.UUID,
+    allowNull: false
+  },
+  label_id: {
+    type: DataTypes.UUID,
+    allowNull: false
+  },
+  assigned_by: DataTypes.UUID,
+  assigned_at: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
+  }
+}, {
+  tableName: 'conversation_label_mappings',
+  timestamps: false
+});
+
 // Define associations
 db.Lead.belongsTo(db.User, { as: 'assignedUser', foreignKey: 'assigned_to' });
 db.Lead.belongsTo(db.Package, { as: 'interestedPackage', foreignKey: 'interested_package_id' });
@@ -456,6 +585,26 @@ db.WaMessage.belongsTo(db.User, { as: 'handler', foreignKey: 'handled_by' });
 
 db.Campaign.belongsTo(db.MessageTemplate, { as: 'template', foreignKey: 'message_template_id' });
 db.Campaign.belongsTo(db.User, { as: 'creator', foreignKey: 'created_by' });
+
+db.ConsentRecord.belongsTo(db.Lead, { as: 'lead', foreignKey: 'lead_id' });
+
+// Conversation Label associations
+db.WaConversation.belongsToMany(db.ConversationLabel, {
+  through: db.ConversationLabelMapping,
+  as: 'labels',
+  foreignKey: 'conversation_id',
+  otherKey: 'label_id'
+});
+
+db.ConversationLabel.belongsToMany(db.WaConversation, {
+  through: db.ConversationLabelMapping,
+  as: 'conversations',
+  foreignKey: 'label_id',
+  otherKey: 'conversation_id'
+});
+
+db.ConversationLabel.belongsTo(db.User, { as: 'creator', foreignKey: 'created_by' });
+db.ConversationLabelMapping.belongsTo(db.User, { as: 'assignedByUser', foreignKey: 'assigned_by' });
 
 // Add instance methods
 db.Lead.prototype.addActivity = async function(type, description, userId, metadata = {}) {

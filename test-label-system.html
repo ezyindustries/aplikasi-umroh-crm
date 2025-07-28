@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Label System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .label {
+            display: inline-block;
+            padding: 4px 12px;
+            margin: 4px;
+            border-radius: 12px;
+            color: white;
+            font-size: 14px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            background: #3b82f6;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f8f8;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>WhatsApp CRM Label System Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Get All Labels</h2>
+        <button onclick="getLabels()">Get Labels</button>
+        <div id="labels-result" class="result"></div>
+        <div id="labels-display"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Get Conversations</h2>
+        <button onclick="getConversations()">Get All Conversations</button>
+        <button onclick="getConversationsByLabel('Hot Lead')">Get Hot Lead Conversations</button>
+        <div id="conversations-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Assign Labels to Conversation</h2>
+        <input type="text" id="conversation-id" placeholder="Conversation ID">
+        <button onclick="assignLabels()">Assign Random Labels</button>
+        <div id="assign-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Create New Label</h2>
+        <input type="text" id="label-name" placeholder="Label Name">
+        <input type="color" id="label-color" value="#ff6b6b">
+        <button onclick="createLabel()">Create Label</button>
+        <div id="create-result" class="result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        const authToken = localStorage.getItem('token');
+        
+        if (!authToken) {
+            alert('Please login first from the main CRM dashboard');
+        }
+        
+        async function getLabels() {
+            try {
+                const response = await fetch(`${API_BASE}/crm/labels`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                document.getElementById('labels-result').innerHTML = JSON.stringify(data, null, 2);
+                
+                if (data.success && data.data) {
+                    const display = document.getElementById('labels-display');
+                    display.innerHTML = data.data.map(label => 
+                        `<span class="label" style="background: ${label.color}">${label.name}</span>`
+                    ).join('');
+                }
+            } catch (error) {
+                document.getElementById('labels-result').innerHTML = `<span class="error">Error: ${error.message}</span>`;
+            }
+        }
+        
+        async function getConversations() {
+            try {
+                const response = await fetch(`${API_BASE}/crm/conversations`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                document.getElementById('conversations-result').innerHTML = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('conversations-result').innerHTML = `<span class="error">Error: ${error.message}</span>`;
+            }
+        }
+        
+        async function getConversationsByLabel(labelName) {
+            try {
+                // First get labels to find the ID
+                const labelsResponse = await fetch(`${API_BASE}/crm/labels`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                const labelsData = await labelsResponse.json();
+                const label = labelsData.data.find(l => l.name === labelName);
+                
+                if (!label) {
+                    throw new Error('Label not found');
+                }
+                
+                // Get conversations with this label
+                const response = await fetch(`${API_BASE}/crm/conversations?labelId=${label.id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                document.getElementById('conversations-result').innerHTML = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('conversations-result').innerHTML = `<span class="error">Error: ${error.message}</span>`;
+            }
+        }
+        
+        async function assignLabels() {
+            try {
+                const conversationId = document.getElementById('conversation-id').value;
+                if (!conversationId) {
+                    throw new Error('Please enter a conversation ID');
+                }
+                
+                // Get all labels
+                const labelsResponse = await fetch(`${API_BASE}/crm/labels`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                const labelsData = await labelsResponse.json();
+                
+                // Select random labels
+                const randomLabels = labelsData.data
+                    .sort(() => Math.random() - 0.5)
+                    .slice(0, 2)
+                    .map(l => l.id);
+                
+                // Assign labels
+                const response = await fetch(`${API_BASE}/crm/conversations/${conversationId}/labels`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ labelIds: randomLabels })
+                });
+                
+                const data = await response.json();
+                document.getElementById('assign-result').innerHTML = `<span class="success">Labels assigned successfully!</span>\n${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                document.getElementById('assign-result').innerHTML = `<span class="error">Error: ${error.message}</span>`;
+            }
+        }
+        
+        async function createLabel() {
+            try {
+                const name = document.getElementById('label-name').value;
+                const color = document.getElementById('label-color').value;
+                
+                if (!name) {
+                    throw new Error('Please enter a label name');
+                }
+                
+                const response = await fetch(`${API_BASE}/crm/labels`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        color: color,
+                        icon: 'label',
+                        description: 'Custom label created from test'
+                    })
+                });
+                
+                const data = await response.json();
+                document.getElementById('create-result').innerHTML = `<span class="success">Label created successfully!</span>\n${JSON.stringify(data, null, 2)}`;
+                
+                // Refresh labels
+                getLabels();
+            } catch (error) {
+                document.getElementById('create-result').innerHTML = `<span class="error">Error: ${error.message}</span>`;
+            }
+        }
+        
+        // Load labels on page load
+        window.onload = () => {
+            if (authToken) {
+                getLabels();
+            }
+        };
+    </script>
+</body>
+</html>

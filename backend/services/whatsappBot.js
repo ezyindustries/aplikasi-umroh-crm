@@ -43,18 +43,24 @@ class WhatsAppBotService {
     });
   }
 
-  async processMessage(phoneNumber, message, waMessageId = null) {
+  async processMessage(phoneNumber, message, waMessageId = null, mediaInfo = null) {
     try {
       // Get or create conversation
       const conversation = await WaConversation.getOrCreateForPhone(phoneNumber);
       
-      // Save incoming message
-      const incomingMessage = await conversation.addMessage({
+      // Save incoming message with media info if provided
+      const messageData = {
         wa_message_id: waMessageId,
         direction: 'inbound',
-        type: 'text',
+        type: mediaInfo?.type || 'text',
         content: message
-      });
+      };
+      
+      if (mediaInfo && mediaInfo.mediaUrl) {
+        messageData.media_url = mediaInfo.mediaUrl;
+      }
+      
+      const incomingMessage = await conversation.addMessage(messageData);
       
       // Check if it's office hours
       if (!this.isOfficeHours() && this.config.after_hours_mode === 'bot_only') {
@@ -325,6 +331,73 @@ class WhatsAppBotService {
     } catch (error) {
       console.error('Error sending WhatsApp message:', error);
       throw error;
+    }
+  }
+
+  async sendMedia(phoneNumber, filePath, mimeType, caption = '', fileName = '') {
+    try {
+      const wahaEndpoint = this.config.waha_endpoint || 'http://localhost:3001';
+      const sessionId = this.config.waha_session || 'default';
+      const fs = require('fs');
+      
+      // Determine the right endpoint based on file type
+      let endpoint = '/api/sendFile'; // Default for documents
+      
+      if (mimeType.startsWith('image/')) {
+        endpoint = '/api/sendImage';
+      } else if (mimeType.startsWith('video/')) {
+        endpoint = '/api/sendVideo';
+      } else if (mimeType.startsWith('audio/')) {
+        endpoint = '/api/sendVoice';
+      }
+      
+      // For WAHA, we need to send as base64 or file URL
+      const fileBuffer = await fs.promises.readFile(filePath);
+      const base64Data = fileBuffer.toString('base64');
+      const dataUri = `data:${mimeType};base64,${base64Data}`;
+      
+      const payload = {
+        session: sessionId,
+        phone: phoneNumber,
+        caption: caption
+      };
+      
+      // Different payload structure based on endpoint
+      if (endpoint === '/api/sendImage') {
+        payload.image = dataUri;
+      } else if (endpoint === '/api/sendVideo') {
+        payload.video = dataUri;
+      } else if (endpoint === '/api/sendVoice') {
+        payload.audio = dataUri;
+      } else {
+        // For documents
+        payload.document = dataUri;
+        payload.filename = fileName || 'document';
+      }
+      
+      const response = await fetch(`${wahaEndpoint}${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Api-Key': process.env.WAHA_API_KEY || 'your-secret-api-key'
+        },
+        body: JSON.stringify(payload)
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to send media');
+      }
+      
+      return { 
+        success: true, 
+        messageId: result.messageId || result.id,
+        ...result 
+      };
+    } catch (error) {
+      console.error('Send media error:', error);
+      return { error: error.message };
     }
   }
 }
