@@ -7,14 +7,33 @@ let db;
 
 async function setupDatabase() {
   try {
-    // PostgreSQL configuration for Docker environment
-    const dbConfig = {
-      dialect: 'postgres',
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT) || 5432,
-      database: process.env.DB_NAME || 'vauza_tamma_db',
-      username: process.env.DB_USER || 'postgres',
-      password: process.env.DB_PASSWORD || 'password',
+    // Check if we should use SQLite instead of PostgreSQL
+    const useSQLite = process.env.DB_TYPE === 'sqlite';
+    
+    let dbConfig;
+    
+    if (useSQLite) {
+      console.log('🗄️  Using SQLite database...');
+      dbConfig = {
+        dialect: 'sqlite',
+        storage: process.env.DB_STORAGE || './database.db',
+        logging: process.env.NODE_ENV === 'development' ? console.log : false,
+        pool: {
+          max: 5,
+          min: 0,
+          acquire: 30000,
+          idle: 10000
+        }
+      };
+    } else {
+      // PostgreSQL configuration for Docker environment
+      dbConfig = {
+        dialect: 'postgres',
+        host: process.env.DB_HOST || 'localhost',
+        port: parseInt(process.env.DB_PORT) || 5432,
+        database: process.env.DB_NAME || 'vauza_tamma_db',
+        username: process.env.DB_USER || 'postgres',
+        password: process.env.DB_PASSWORD || 'password',
       logging: process.env.NODE_ENV === 'development' ? console.log : false,
       pool: {
         max: 20,

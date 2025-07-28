@@ -6,7 +6,7 @@
 // API Configuration
 const API_CONFIG = {
     BASE_URL: window.location.hostname === 'localhost' 
-        ? 'http://localhost:3000/api' 
+        ? (window.getAPIBaseURL ? window.getAPIBaseURL() : 'http://localhost:3001/api')
         : '/api',
     TIMEOUT: 30000,
     RETRY_ATTEMPTS: 3,

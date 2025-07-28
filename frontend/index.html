@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -72,7 +72,7 @@
     <div class="app-container" id="appContainer" style="display: none;">
         <!-- Sidebar -->
         <div class="sidebar" id="sidebar">
-            <div class="logo">Vauza Tamma</div>
+            <div class="logo">Vauza Tamma AI Manager</div>
             
             <nav>
                 <div class="nav-item active" onclick="switchPage('dashboard')">
@@ -154,32 +154,40 @@
                         <div class="stat-icon blue">
                             <span class="material-icons">people</span>
                         </div>
-                        <div class="stat-value" id="total-jamaah">0</div>
-                        <div class="stat-label">Total Jamaah</div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="total-jamaah">0</div>
+                            <div class="stat-label">Total Jamaah</div>
+                        </div>
                     </div>
                     
                     <div class="stat-card">
                         <div class="stat-icon green">
                             <span class="material-icons">luggage</span>
                         </div>
-                        <div class="stat-value" id="active-packages">0</div>
-                        <div class="stat-label">Paket Aktif</div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="active-packages">0</div>
+                            <div class="stat-label">Paket Aktif</div>
+                        </div>
                     </div>
                     
                     <div class="stat-card">
                         <div class="stat-icon purple">
                             <span class="material-icons">account_balance_wallet</span>
                         </div>
-                        <div class="stat-value" id="monthly-revenue">Rp 0</div>
-                        <div class="stat-label">Pendapatan Bulan Ini</div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="monthly-revenue">Rp 0</div>
+                            <div class="stat-label">Pendapatan Bulan Ini</div>
+                        </div>
                     </div>
                     
                     <div class="stat-card">
                         <div class="stat-icon orange">
                             <span class="material-icons">pending_actions</span>
                         </div>
-                        <div class="stat-value" id="pending-payments">0</div>
-                        <div class="stat-label">Pembayaran Pending</div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="pending-payments">0</div>
+                            <div class="stat-label">Pembayaran Pending</div>
+                        </div>
                     </div>
                 </div>
 
@@ -189,6 +197,25 @@
                         <h3 class="chart-title">Grafik Pendaftaran Jamaah</h3>
                     </div>
                     <canvas id="registrationChart"></canvas>
+                </div>
+
+                <!-- WhatsApp Conversations -->
+                <div class="whatsapp-section">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <span class="material-icons">chat</span>
+                            WhatsApp Conversations
+                        </h3>
+                        <div class="section-actions">
+                            <button class="btn-filter active" data-filter="all">All</button>
+                            <button class="btn-filter" data-filter="active">Active</button>
+                            <button class="btn-filter" data-filter="pending">Pending</button>
+                            <button class="btn-filter" data-filter="resolved">Resolved</button>
+                        </div>
+                    </div>
+                    <div class="chat-cards-grid" id="chat-cards-container">
+                        <!-- Chat cards will be loaded here -->
+                    </div>
                 </div>
 
                 <!-- Recent Activities -->
@@ -346,11 +373,17 @@
     <!-- Toast Container -->
     <div id="toastContainer"></div>
 
+    <!-- API Configuration -->
+    <script src="js/api-config.js"></script>
+    
     <!-- API Service -->
     <script src="js/api.js"></script>
     
     <!-- App Integration -->
     <script src="js/app-integration.js"></script>
+    
+    <!-- Demo Mode Fallback -->
+    <script src="js/demo-mode.js"></script>
     
     <!-- Core App Functions -->
     <script>
@@ -475,6 +508,114 @@
             });
         }
         
+        // Sample chat data for demonstration
+        const sampleChats = [
+            {
+                id: 1,
+                phone: '+62 812-3456-7890',
+                name: 'Ahmad Fauzi',
+                status: 'active',
+                messages: [
+                    { type: 'incoming', text: 'Assalamualaikum, saya mau tanya paket umroh' },
+                    { type: 'outgoing ai-response', text: 'Waalaikumsalam, terima kasih telah menghubungi kami. Ada beberapa paket umroh yang tersedia...' }
+                ],
+                lastTime: '2 menit yang lalu',
+                label: 'Paket Inquiry'
+            },
+            {
+                id: 2,
+                phone: '+62 813-9876-5432',
+                name: 'Siti Aminah',
+                status: 'pending',
+                messages: [
+                    { type: 'incoming', text: 'Berapa biaya paket VIP?' },
+                    { type: 'outgoing ai-response', text: 'Paket VIP kami mulai dari Rp 45 juta...' }
+                ],
+                lastTime: '5 menit yang lalu',
+                label: 'Price Check'
+            },
+            {
+                id: 3,
+                phone: '+62 815-1122-3344',
+                name: null,
+                status: 'resolved',
+                messages: [
+                    { type: 'incoming', text: 'Terima kasih infonya' },
+                    { type: 'outgoing ai-response', text: 'Sama-sama, jika ada yang ingin ditanyakan silakan hubungi kami kembali' }
+                ],
+                lastTime: '10 menit yang lalu',
+                label: 'Closed'
+            },
+            {
+                id: 4,
+                phone: '+62 811-2233-4455',
+                name: 'Budi Santoso',
+                status: 'active',
+                messages: [
+                    { type: 'incoming', text: 'Apakah ada jadwal keberangkatan bulan depan?' },
+                    { type: 'outgoing ai-response', text: 'Ya, kami memiliki jadwal keberangkatan pada tanggal...' }
+                ],
+                lastTime: 'Baru saja',
+                label: 'Schedule'
+            }
+        ];
+
+        // Function to render chat cards
+        function renderChatCards(filter = 'all') {
+            const container = document.getElementById('chat-cards-container');
+            const filteredChats = filter === 'all' 
+                ? sampleChats 
+                : sampleChats.filter(chat => chat.status === filter);
+            
+            container.innerHTML = filteredChats.map(chat => `
+                <div class="chat-card ${chat.status}" data-id="${chat.id}">
+                    <div class="chat-header">
+                        <div class="chat-contact">
+                            <div class="chat-phone">${chat.phone}</div>
+                            ${chat.name ? `<div class="chat-name">${chat.name}</div>` : '<div class="chat-name">Unknown</div>'}
+                        </div>
+                        <div class="chat-status ${chat.status}"></div>
+                    </div>
+                    <div class="chat-body">
+                        <div class="chat-messages">
+                            ${chat.messages.map(msg => `
+                                <div class="chat-message ${msg.type}">${msg.text}</div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="chat-footer">
+                        <div class="chat-time">
+                            <span class="material-icons">access_time</span>
+                            ${chat.lastTime}
+                        </div>
+                        <div class="chat-label">${chat.label}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Filter button functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Render initial chat cards
+            renderChatCards();
+
+            // Filter buttons
+            document.querySelectorAll('.btn-filter').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    renderChatCards(this.dataset.filter);
+                });
+            });
+
+            // Simulate new chat coming in
+            setInterval(() => {
+                const randomChat = sampleChats[Math.floor(Math.random() * sampleChats.length)];
+                randomChat.lastTime = 'Baru saja';
+                renderChatCards(document.querySelector('.btn-filter.active').dataset.filter);
+            }, 30000); // Every 30 seconds
+        });
+
         // Initialize app
         console.log('App initialized with backend integration');
     </script>
