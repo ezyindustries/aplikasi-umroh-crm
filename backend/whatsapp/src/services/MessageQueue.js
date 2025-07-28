@@ -1,10 +1,7 @@
 const Bull = require('bull');
 const { Message, ConversationSession, Contact } = require('../models');
-// Use Baileys by default, fallback to WAHA
-const USE_BAILEYS = process.env.USE_BAILEYS !== 'false';
-const whatsappService = USE_BAILEYS 
-  ? require('./BaileysService')
-  : require('./WAHAService');
+// Use WhatsAppWebService (WAHA-compatible implementation)
+const whatsappService = require('./WhatsAppWebService');
 const logger = require('../utils/logger');
 
 class MessageQueueService {

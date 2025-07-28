@@ -11,8 +11,7 @@ const logger = require('./src/utils/logger');
 const apiRoutes = require('./src/routes/api');
 const { errorHandler, notFound } = require('./src/middleware/errorHandler');
 
-// Check if using Baileys or WAHA
-const USE_BAILEYS = process.env.USE_BAILEYS !== 'false'; // Default to Baileys
+// Using WhatsAppWebService (WAHA-compatible implementation)
 
 // Create Express app
 const app = express();

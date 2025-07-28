@@ -1657,26 +1657,6 @@
             font-size: 20px;
         }
         
-        .chat-input-warning {
-            position: absolute;
-            bottom: 100%;
-            left: 0;
-            right: 0;
-            background: rgba(251, 146, 60, 0.1);
-            border: 1px solid rgba(251, 146, 60, 0.3);
-            border-radius: 8px 8px 0 0;
-            padding: 8px 12px;
-            margin-bottom: -1px;
-            display: none;
-            color: #fbbf24;
-            font-size: 13px;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .chat-input-warning.show {
-            display: flex;
-        }
         
         .compliance-indicator {
             position: absolute;
@@ -1821,10 +1801,6 @@
                         <span class="material-icons">attach_file</span>
                     </button>
                     <div class="chat-input-wrapper">
-                        <div class="chat-input-warning" id="chatWarning">
-                            <span class="material-icons">warning</span>
-                            <span id="chatWarningText">Outside active hours (08:00-21:00)</span>
-                        </div>
                         <textarea class="chat-input" id="messageInput" placeholder="Type a message..." rows="1"></textarea>
                         <button class="emoji-btn" onclick="showEmoji()">
                             <span class="material-icons">mood</span>
@@ -2150,7 +2126,7 @@
                 }
             } catch (error) {
                 console.error('Connection error:', error);
-                alert('Failed to connect. Make sure backend is running!\n\nError: ' + error.message + '\n\nRun START-BAILEYS.bat first!');
+                alert('Failed to connect. Make sure backend is running!\n\nError: ' + error.message + '\n\nRun START-WHATSAPP-CRM.bat first!');
                 updateConnectionStatus('disconnected');
             }
         }
@@ -2201,7 +2177,8 @@
                 console.error('Error checking QR immediately:', error);
             }
             
-            // Set up interval to check for QR
+            // Set up interval to check for QR - less frequent to avoid multiple QR generation
+            let qrShown = false;
             checkQRInterval = setInterval(async () => {
                 try {
                     const response = await fetch(`${API_CONFIG.baseUrl}/sessions/${API_CONFIG.sessionId}/status`);
@@ -2215,24 +2192,27 @@
                     console.log('QR interval check:', result.data?.status, 'QR:', !!result.data?.qr);
                     
                     if (result.success && result.data) {
-                        if (result.data.qr) {
-                            // Show QR code
+                        if (result.data.qr && !qrShown) {
+                            // Show QR code only once
                             showQRModal(result.data.qr);
+                            qrShown = true;
                         } else if (result.data.status === 'authenticated' || result.data.status === 'connected') {
                             // Connected successfully
                             closeQRModal();
                             updateConnectionStatus(result.data.status, result.data);
                             clearInterval(checkQRInterval);
                             checkQRInterval = null;
+                            qrShown = false;
                         } else if (result.data.status === 'disconnected') {
                             // Not connected, but no QR
                             console.log('Session disconnected, no QR available');
+                            qrShown = false;
                         }
                     }
                 } catch (error) {
                     console.error('Error checking QR:', error);
                 }
-            }, 2000); // Check every 2 seconds
+            }, 3000); // Check every 3 seconds
         }
 
         // Disconnect WhatsApp
@@ -2269,7 +2249,7 @@
             // Clear any existing QR first
             container.innerHTML = '';
             
-            // Display QR code - Baileys returns base64 image
+            // Display QR code - WAHA returns base64 image
             if (qrCode && (qrCode.startsWith('data:') || qrCode.startsWith('http'))) {
                 // Add timestamp to prevent caching
                 const img = document.createElement('img');
@@ -2380,17 +2360,30 @@
             // Stop any existing timer first
             stopQRTimer();
             
+            // Only start new timer if modal is showing
+            const modal = document.getElementById('qrModal');
+            if (!modal.classList.contains('show')) {
+                return;
+            }
+            
             qrCountdown = 60;
             updateQRTimer();
             
             qrTimer = setInterval(() => {
+                // Check if modal still showing
+                if (!modal.classList.contains('show')) {
+                    stopQRTimer();
+                    return;
+                }
+                
                 qrCountdown--;
                 updateQRTimer();
                 
                 if (qrCountdown <= 0) {
                     stopQRTimer();
-                    // Auto refresh QR when expired
-                    refreshQR();
+                    // Don't auto-refresh, let user manually refresh
+                    document.getElementById('qrTimer').textContent = 'Expired';
+                    document.getElementById('qrTimerFill').style.width = '0%';
                 }
             }, 1000);
         }
@@ -2869,12 +2862,21 @@
             });
             
             // Listen for new messages
-            socket.on('message:new', (message) => {
-                if (currentConversation && message.conversationId === currentConversation.id) {
-                    displayNewMessage(message);
+            socket.on('message:new', (data) => {
+                console.log('New message received:', data);
+                
+                if (currentConversation && data.conversationId === currentConversation.id) {
+                    displayNewMessage(data.message);
                 }
                 
                 // Update contact list
+                loadContacts();
+            });
+            
+            // Listen for conversation updates
+            socket.on('conversation:updated', (data) => {
+                console.log('Conversation updated:', data);
+                // Refresh contact list to show unread count
                 loadContacts();
             });
             
@@ -3058,12 +3060,10 @@
         // Start compliance monitoring
         async function startComplianceMonitoring() {
             updateComplianceStatus();
-            checkActiveHours();
             
             // Update every minute
             setInterval(() => {
                 updateComplianceStatus();
-                checkActiveHours();
             }, 60000);
         }
         
@@ -3132,24 +3132,6 @@
             }
         }
         
-        // Check active hours
-        function checkActiveHours() {
-            const now = new Date();
-            const hour = now.getHours();
-            const isActive = hour >= 8 && hour <= 21;
-            
-            const warning = document.getElementById('chatWarning');
-            const warningText = document.getElementById('chatWarningText');
-            
-            if (!isActive) {
-                warning.classList.add('show');
-                warningText.textContent = 'Outside active hours (08:00-21:00 WIB)';
-            } else {
-                warning.classList.remove('show');
-            }
-            
-            return isActive;
-        }
         
         // Check message compliance
         function checkMessageCompliance(message) {
@@ -3161,40 +3143,24 @@
             ];
             
             const messageLower = message.toLowerCase();
-            const warning = document.getElementById('chatWarning');
-            const warningText = document.getElementById('chatWarningText');
             
             for (const word of prohibitedWords) {
                 if (messageLower.includes(word)) {
-                    warning.classList.add('show');
-                    warningText.textContent = `Prohibited word detected: "${word}"`;
                     return false;
                 }
             }
             
             // Check message length
             if (message.length > 1000) {
-                warning.classList.add('show');
-                warningText.textContent = 'Message too long (max 1000 characters)';
                 return false;
             }
             
-            // All good
-            if (checkActiveHours()) {
-                warning.classList.remove('show');
-            }
             return true;
         }
         
         // Check compliance before sending
         function checkComplianceBeforeSend() {
             const message = document.getElementById('messageInput').value;
-            
-            // Check active hours
-            if (!checkActiveHours()) {
-                alert('Cannot send messages outside active hours (08:00-21:00 WIB)');
-                return false;
-            }
             
             // Check message compliance
             if (!checkMessageCompliance(message)) {

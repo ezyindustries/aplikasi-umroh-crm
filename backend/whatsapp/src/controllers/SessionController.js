@@ -1,8 +1,5 @@
-// Use Baileys by default, fallback to WAHA
-const USE_BAILEYS = process.env.USE_BAILEYS !== 'false';
-const whatsappService = USE_BAILEYS 
-  ? require('../services/BaileysService')
-  : require('../services/WAHAService');
+// Use WhatsAppWebService (WAHA-compatible implementation)
+const whatsappService = require('../services/WhatsAppWebService');
 const { WhatsAppSession } = require('../models');
 const logger = require('../utils/logger');
 
@@ -176,6 +173,38 @@ class SessionController {
       });
     } catch (error) {
       logger.api.error('Error refreshing QR:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+
+  // Load chat history
+  async loadChatHistory(req, res) {
+    try {
+      const { sessionId } = req.params;
+      
+      logger.api.info('Loading chat history for session:', sessionId);
+      
+      // Get the client
+      const client = whatsappService.clients.get(sessionId);
+      if (!client) {
+        return res.status(400).json({
+          success: false,
+          error: 'Session not connected'
+        });
+      }
+      
+      // Load chats
+      await whatsappService.loadExistingChats(sessionId, client);
+      
+      res.json({
+        success: true,
+        message: 'Chat history loading initiated'
+      });
+    } catch (error) {
+      logger.api.error('Error loading chat history:', error);
       res.status(500).json({
         success: false,
         error: error.message

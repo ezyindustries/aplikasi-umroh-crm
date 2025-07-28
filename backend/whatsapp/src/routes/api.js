@@ -24,6 +24,7 @@ router.get('/sessions', sessionController.getAllSessions);
 router.post('/sessions/:sessionId/webhook', sessionController.setWebhook);
 router.post('/sessions/:sessionId/reconnect', sessionController.reconnect);
 router.post('/sessions/:sessionId/refresh-qr', sessionController.refreshQR);
+router.post('/sessions/:sessionId/load-history', sessionController.loadChatHistory);
 router.get('/sessions/:sessionId/qr', sessionController.getQR);
 
 // Message routes

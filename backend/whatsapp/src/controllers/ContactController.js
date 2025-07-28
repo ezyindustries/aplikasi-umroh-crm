@@ -1,9 +1,6 @@
 const { Contact, Conversation, Message } = require('../models');
-// Use Baileys by default, fallback to WAHA
-const USE_BAILEYS = process.env.USE_BAILEYS !== 'false';
-const whatsappService = USE_BAILEYS 
-  ? require('../services/BaileysService')
-  : require('../services/WAHAService');
+// Use WhatsAppWebService (WAHA-compatible implementation)
+const whatsappService = require('../services/WhatsAppWebService');
 const logger = require('../utils/logger');
 const { Op } = require('sequelize');
 const sequelize = require('../config/database');
