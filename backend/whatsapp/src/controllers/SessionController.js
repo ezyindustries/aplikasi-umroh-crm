@@ -1,0 +1,158 @@
+// Use Baileys by default, fallback to WAHA
+const USE_BAILEYS = process.env.USE_BAILEYS !== 'false';
+const whatsappService = USE_BAILEYS 
+  ? require('../services/BaileysService')
+  : require('../services/WAHAService');
+const { WhatsAppSession } = require('../models');
+const logger = require('../utils/logger');
+
+class SessionController {
+  // Start WhatsApp session
+  async start(req, res) {
+    try {
+      const { sessionId = 'default' } = req.body;
+      
+      logger.api.info('Starting WhatsApp session:', sessionId);
+      
+      const result = await whatsappService.startSession(sessionId);
+      
+      res.json({
+        success: true,
+        data: result,
+        message: 'Session starting. Please check status for QR code.'
+      });
+    } catch (error) {
+      logger.api.error('Error starting session:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+
+  // Stop WhatsApp session
+  async stop(req, res) {
+    try {
+      const { sessionId } = req.params;
+      
+      logger.api.info('Stopping WhatsApp session:', sessionId);
+      
+      await whatsappService.stopSession(sessionId);
+      
+      res.json({
+        success: true,
+        message: 'Session stopped successfully'
+      });
+    } catch (error) {
+      logger.api.error('Error stopping session:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+
+  // Get session status
+  async getStatus(req, res) {
+    try {
+      const { sessionId } = req.params;
+      
+      const status = await whatsappService.getSessionStatus(sessionId);
+      
+      // Get session from database
+      const session = await WhatsAppSession.findOne({
+        where: { sessionName: sessionId }
+      });
+      
+      res.json({
+        success: true,
+        data: {
+          status: status.status,
+          qr: status.qr,
+          phone: session?.phoneNumber,
+          connectedAt: session?.connectedAt,
+          sessionInfo: session
+        }
+      });
+    } catch (error) {
+      logger.api.error('Error getting session status:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+
+  // Get all sessions
+  async getAllSessions(req, res) {
+    try {
+      const sessions = await WhatsAppSession.findAll({
+        attributes: ['id', 'sessionName', 'phoneNumber', 'status', 'connectedAt', 'lastHealthCheck']
+      });
+      
+      res.json({
+        success: true,
+        data: sessions
+      });
+    } catch (error) {
+      logger.api.error('Error getting sessions:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+
+  // Set webhook for session
+  async setWebhook(req, res) {
+    try {
+      const { sessionId } = req.params;
+      const { webhookUrl } = req.body;
+      
+      await whatsappService.setWebhook(sessionId, webhookUrl);
+      
+      res.json({
+        success: true,
+        message: 'Webhook set successfully'
+      });
+    } catch (error) {
+      logger.api.error('Error setting webhook:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+
+  // Reconnect session
+  async reconnect(req, res) {
+    try {
+      const { sessionId } = req.params;
+      
+      logger.api.info('Reconnecting WhatsApp session:', sessionId);
+      
+      // Stop first
+      await whatsappService.stopSession(sessionId);
+      
+      // Wait a bit
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Start again
+      const result = await whatsappService.startSession(sessionId);
+      
+      res.json({
+        success: true,
+        data: result,
+        message: 'Session reconnecting. Please check status.'
+      });
+    } catch (error) {
+      logger.api.error('Error reconnecting session:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+}
+
+module.exports = new SessionController();
