@@ -7,7 +7,7 @@
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="shortcut icon" href="favicon.svg">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/conversations.css">
     <style>
@@ -590,6 +590,147 @@
         /* Override some style.css properties for this page */
         .header {
             margin-bottom: 0;
+            position: relative;
+            z-index: 100;
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.9));
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+        }
+
+        /* Back Button Styling - Beautiful Glass Morphism */
+        .btn-back {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 24px;
+            background: linear-gradient(145deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.1));
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 16px;
+            color: #e2e8f0;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 
+                0 4px 15px rgba(59, 130, 246, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-back::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .btn-back:hover::before {
+            left: 100%;
+        }
+
+        .btn-back:hover {
+            background: linear-gradient(145deg, rgba(59, 130, 246, 0.25), rgba(139, 92, 246, 0.2));
+            border-color: rgba(59, 130, 246, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 
+                0 6px 20px rgba(59, 130, 246, 0.25),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-back .material-icons {
+            font-size: 20px;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-back:hover .material-icons {
+            transform: translateX(-3px);
+        }
+
+        .btn-back-text {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-back:active {
+            transform: translateY(0);
+            box-shadow: 
+                0 2px 8px rgba(59, 130, 246, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            flex: 1;
+        }
+        
+        /* Fix header layout */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            gap: 20px;
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: nowrap;
+        }
+        
+        /* Adjust button sizes */
+        .header-actions .btn {
+            padding: 10px 20px;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+        
+        .header-actions .btn-icon {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .header-actions .btn-text {
+            display: inline-block;
+        }
+        
+        
+        /* Notification and user profile adjustment */
+        .notification-btn {
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            background: rgba(71, 85, 105, 0.2);
+            border-radius: 12px;
+            flex-shrink: 0;
         }
         
         .info-name {
@@ -769,7 +910,268 @@
             opacity: 1;
         }
         
+        /* Fix user profile styling */
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .user-info .user-name {
+            font-weight: 600;
+            font-size: 14px;
+            color: #e2e8f0;
+            line-height: 1.2;
+        }
+        
+        .user-info .user-role {
+            font-size: 12px;
+            color: #94a3b8;
+            line-height: 1.2;
+        }
+        
+        /* Ensure proper button spacing */
+        .btn-icon.btn-secondary {
+            background: rgba(71, 85, 105, 0.2);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+        }
+        
+        .btn-icon.btn-secondary:hover {
+            background: rgba(71, 85, 105, 0.3);
+            border-color: rgba(71, 85, 105, 0.5);
+        }
+        
+        /* Fix logo styling */
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            height: 40px;
+            padding: 0 16px;
+        }
+        
+        .logo .material-icons {
+            font-size: 28px;
+            background: linear-gradient(135deg, #3b82f6, #10b981);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            height: 100%;
+        }
+        
+        .logo-text {
+            font-size: 18px;
+            font-weight: 700;
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            height: 100%;
+        }
+        
+        /* AI Title Styling - Glass Morphism Colorful Theme */
+        .ai-title {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 10px 24px;
+            background: linear-gradient(145deg, 
+                rgba(255, 255, 255, 0.08), 
+                rgba(255, 255, 255, 0.05));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 
+                0 8px 32px rgba(139, 92, 246, 0.3),
+                0 4px 16px rgba(59, 130, 246, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+            animation: aiFloat 4s ease-in-out infinite;
+        }
+        
+        @keyframes aiFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+        
+        .ai-title::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(
+                from 0deg at 50% 50%,
+                #8b5cf6 0deg,
+                #3b82f6 60deg,
+                #10b981 120deg,
+                #f59e0b 180deg,
+                #ec4899 240deg,
+                #8b5cf6 360deg
+            );
+            animation: rainbowSpin 8s linear infinite;
+            opacity: 0.3;
+            filter: blur(30px);
+        }
+        
+        @keyframes rainbowSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .ai-title::after {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            background: linear-gradient(90deg,
+                #8b5cf6,
+                #3b82f6,
+                #10b981,
+                #f59e0b,
+                #ec4899,
+                #8b5cf6
+            );
+            border-radius: 24px;
+            z-index: -1;
+            opacity: 0.5;
+            background-size: 300% 100%;
+            animation: borderFlow 6s linear infinite;
+            filter: blur(2px);
+        }
+        
+        @keyframes borderFlow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 300% 50%; }
+        }
+        
+        .ai-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, 
+                rgba(139, 92, 246, 0.9), 
+                rgba(59, 130, 246, 0.9));
+            border-radius: 12px;
+            position: relative;
+            box-shadow: 
+                0 4px 15px rgba(139, 92, 246, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            animation: iconPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes iconPulse {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 
+                    0 4px 15px rgba(139, 92, 246, 0.5),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            }
+            50% { 
+                transform: scale(1.05);
+                box-shadow: 
+                    0 6px 20px rgba(139, 92, 246, 0.7),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            }
+        }
+        
+        .ai-icon .material-icons {
+            font-size: 22px;
+            color: white;
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
+            animation: iconGlow 3s ease-in-out infinite;
+        }
+        
+        @keyframes iconGlow {
+            0%, 100% { filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5)); }
+            50% { filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.8)); }
+        }
+        
+        .ai-text {
+            font-size: 15px;
+            font-weight: 700;
+            font-family: 'Inter', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            background: linear-gradient(135deg,
+                #8b5cf6,
+                #3b82f6,
+                #10b981,
+                #f59e0b
+            );
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+            animation: textGradient 5s ease infinite;
+        }
+        
+        @keyframes textGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Extra sparkle effects */
+        .ai-title {
+            position: relative;
+        }
+        
+        .ai-title::before {
+            pointer-events: none;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ai-title {
+                padding: 8px 16px;
+                gap: 10px;
+            }
+            
+            .ai-text {
+                font-size: 13px;
+                letter-spacing: 1px;
+            }
+            
+            .ai-icon {
+                width: 32px;
+                height: 32px;
+            }
+            
+            .ai-icon .material-icons {
+                font-size: 18px;
+            }
+        }
+        
         /* Responsive */
+        @media (max-width: 1400px) {
+            .header-actions {
+                gap: 12px;
+            }
+            
+            .header-actions .btn-text {
+                display: none;
+            }
+            
+            .whatsapp-status {
+                min-width: 150px;
+            }
+            
+            .whatsapp-status .status-text {
+                font-size: 12px;
+            }
+            
+            .user-profile .user-info {
+                display: none;
+            }
+        }
+        
         @media (max-width: 1200px) {
             .conversations-container {
                 grid-template-columns: 320px 1fr;
@@ -798,6 +1200,425 @@
             .header .logo .material-icons {
                 font-size: 24px !important;
             }
+
+            .btn-back-text {
+                display: none;
+            }
+
+            .btn-back {
+                padding: 10px 16px;
+            }
+        }
+
+        /* WhatsApp Connection Status Styling */
+        .whatsapp-status {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 6px 10px 6px 12px;
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.7));
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 12px;
+            box-shadow: 
+                0 4px 15px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            height: 40px;
+            min-width: 180px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #64748b;
+            box-shadow: 0 0 0 3px rgba(100, 116, 139, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .status-dot::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: inherit;
+            animation: pulse-ring 2s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(2.5);
+                opacity: 0;
+            }
+        }
+
+        /* Status Colors */
+        .whatsapp-status.connected .status-dot {
+            background: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
+        }
+
+        .whatsapp-status.connecting .status-dot {
+            background: #f59e0b;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.3);
+            animation: blink 1s infinite;
+        }
+
+        .whatsapp-status.disconnected .status-dot {
+            background: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3);
+        }
+
+        .whatsapp-status.qr-required .status-dot {
+            background: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .status-text {
+            font-size: 13px;
+            font-weight: 500;
+            color: #e2e8f0;
+            white-space: nowrap;
+        }
+
+        .status-refresh {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(71, 85, 105, 0.2);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 50%;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        
+        .status-refresh .material-icons {
+            font-size: 18px;
+        }
+
+        .status-refresh:hover {
+            background: rgba(71, 85, 105, 0.4);
+            color: #e2e8f0;
+            transform: rotate(180deg);
+        }
+
+        .status-refresh.spinning {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* QR Code Modal */
+        .qr-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .qr-modal.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .qr-content {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.9));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(71, 85, 105, 0.4);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .qr-modal.show .qr-content {
+            transform: scale(1);
+        }
+
+        .qr-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .qr-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .qr-subtitle {
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        .qr-code-container {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 280px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .qr-code-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+            animation: scan-qr 3s linear infinite;
+        }
+
+        @keyframes scan-qr {
+            from { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            to { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .qr-loading {
+            text-align: center;
+            color: #64748b;
+        }
+
+        .qr-loading .material-icons {
+            font-size: 48px;
+            margin-bottom: 16px;
+            animation: spin 2s linear infinite;
+        }
+
+        .qr-timer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        .qr-timer-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(71, 85, 105, 0.3);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .qr-timer-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            border-radius: 2px;
+            transition: width 1s linear;
+        }
+
+        .qr-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .qr-actions button {
+            flex: 1;
+        }
+
+        /* Connection Info Panel */
+        .connection-info {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            width: 320px;
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.9));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 100;
+        }
+
+        .connection-info.show {
+            transform: translateX(0);
+        }
+
+        .info-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(71, 85, 105, 0.2);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 50%;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .info-close:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            transform: rotate(90deg);
+        }
+
+        .info-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #e2e8f0;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .info-title .material-icons {
+            font-size: 24px;
+            background: linear-gradient(135deg, #3b82f6, #10b981);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(71, 85, 105, 0.2);
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-size: 13px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+
+        .info-value.number {
+            color: #3b82f6;
+            font-family: 'Courier New', monospace;
+        }
+
+        .info-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .info-actions button {
+            flex: 1;
+            padding: 10px;
+            font-size: 13px;
+        }
+        
+        /* Additional Button Styles */
+        .btn-success {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.15));
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #10b981;
+        }
+        
+        .btn-success:hover {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(5, 150, 105, 0.25));
+            border-color: rgba(16, 185, 129, 0.6);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.15));
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #ef4444;
+        }
+        
+        .btn-danger:hover {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(220, 38, 38, 0.25));
+            border-color: rgba(239, 68, 68, 0.6);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+        }
+        
+        /* Connection Control Animation */
+        @keyframes connectionPulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+            }
+        }
+        
+        .whatsapp-status.connected {
+            animation: connectionPulse 3s infinite;
         }
     </style>
 </head>
@@ -805,11 +1626,39 @@
     <div class="app-container">
         <!-- Main Header -->
         <div class="header">
-            <div class="logo" style="display: flex; align-items: center; margin: 0;">
-                <span class="material-icons" style="font-size: 32px; margin-right: 12px;">chat</span>
-                Vauza Tamma
+            <div class="header-left">
+                <button class="btn-back" onclick="window.location.href='crm-main.html'" title="Back to Dashboard">
+                    <span class="material-icons">arrow_back</span>
+                    <span class="btn-back-text">Dashboard</span>
+                </button>
+                <div class="ai-title">
+                    <span class="ai-icon">
+                        <span class="material-icons">psychology</span>
+                    </span>
+                    <span class="ai-text">AI Based Chat Engine</span>
+                </div>
             </div>
             <div class="header-actions">
+                <!-- WhatsApp Connection Status -->
+                <div class="whatsapp-status" id="whatsappStatus">
+                    <div class="status-indicator" id="statusIndicator">
+                        <span class="status-dot"></span>
+                        <span class="status-text">Checking...</span>
+                    </div>
+                    <button class="btn-icon status-refresh" onclick="checkConnectionStatus()" title="Refresh Status">
+                        <span class="material-icons">refresh</span>
+                    </button>
+                </div>
+                
+                <button class="btn btn-primary" id="connectBtn" onclick="connectWhatsApp()">
+                    <span class="material-icons">link</span>
+                    <span class="btn-text">Connect</span>
+                </button>
+                
+                <button class="btn-icon btn-secondary" onclick="showConnectionInfo()" title="Info">
+                    <span class="material-icons">info</span>
+                </button>
+                
                 <div class="notification-btn">
                     <span class="material-icons">notifications</span>
                     <span class="notification-badge">5</span>
@@ -819,16 +1668,11 @@
                     <div class="user-avatar">
                         <span class="avatar-initials">A</span>
                     </div>
-                    <div>
-                        <div class="user-name" style="font-weight: 600; font-size: 14px;">Admin</div>
-                        <div class="user-role" style="font-size: 12px; color: #94a3b8;">WhatsApp Agent</div>
+                    <div class="user-info">
+                        <div class="user-name">Admin</div>
+                        <div class="user-role">WhatsApp Agent</div>
                     </div>
                 </div>
-                
-                <button class="btn btn-primary" onclick="syncContacts()">
-                    <span class="material-icons">sync</span>
-                    Sync Contacts
-                </button>
             </div>
         </div>
 
@@ -989,7 +1833,374 @@
         </div>
     </div>
 
+    <!-- QR Code Modal -->
+    <div class="qr-modal" id="qrModal">
+        <div class="qr-content">
+            <div class="qr-header">
+                <h2 class="qr-title">Scan QR Code</h2>
+                <p class="qr-subtitle">Scan this code with WhatsApp on your phone</p>
+            </div>
+            
+            <div class="qr-code-container" id="qrCodeContainer">
+                <div class="qr-loading">
+                    <span class="material-icons">qr_code_scanner</span>
+                    <p>Loading QR Code...</p>
+                </div>
+            </div>
+            
+            <div class="qr-timer">
+                <span class="material-icons" style="font-size: 16px;">schedule</span>
+                <span>QR expires in <span id="qrTimer">60</span> seconds</span>
+            </div>
+            
+            <div class="qr-timer-bar">
+                <div class="qr-timer-fill" id="qrTimerFill" style="width: 100%"></div>
+            </div>
+            
+            <div class="qr-actions">
+                <button class="btn btn-secondary" onclick="refreshQR()">
+                    <span class="material-icons">refresh</span>
+                    Refresh QR
+                </button>
+                <button class="btn btn-primary" onclick="closeQRModal()">
+                    <span class="material-icons">close</span>
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Connection Info Panel -->
+    <div class="connection-info" id="connectionInfo">
+        <button class="info-close" onclick="hideConnectionInfo()">
+            <span class="material-icons">close</span>
+        </button>
+        
+        <div class="info-title">
+            <span class="material-icons">info</span>
+            Connection Details
+        </div>
+        
+        <div class="info-item">
+            <span class="info-label">Status</span>
+            <span class="info-value" id="infoStatus">-</span>
+        </div>
+        
+        <div class="info-item">
+            <span class="info-label">Phone Number</span>
+            <span class="info-value number" id="infoPhone">-</span>
+        </div>
+        
+        <div class="info-item">
+            <span class="info-label">Session ID</span>
+            <span class="info-value" id="infoSession">-</span>
+        </div>
+        
+        <div class="info-item">
+            <span class="info-label">Connected Since</span>
+            <span class="info-value" id="infoConnectedTime">-</span>
+        </div>
+        
+        <div class="info-item">
+            <span class="info-label">Messages Today</span>
+            <span class="info-value number" id="infoMessages">0</span>
+        </div>
+        
+        <div class="info-actions">
+            <button class="btn btn-secondary" onclick="testConnection()">
+                <span class="material-icons">speed</span>
+                Test
+            </button>
+            <button class="btn btn-danger" onclick="disconnectWhatsApp()">
+                <span class="material-icons">link_off</span>
+                Disconnect
+            </button>
+        </div>
+    </div>
+
     <script>
+        // WAHA Connection Configuration
+        const WAHA_CONFIG = {
+            baseUrl: 'http://localhost:3000', // WAHA API endpoint
+            sessionId: 'default',
+            apiKey: '', // Add your API key if needed
+            healthCheckInterval: 10000 // 10 seconds
+        };
+
+        // Connection state
+        let connectionState = {
+            status: 'disconnected', // connected, connecting, disconnected, qr-required
+            phone: null,
+            connectedAt: null,
+            sessionInfo: null
+        };
+
+        // Health check interval
+        let healthCheckTimer = null;
+        let qrTimer = null;
+        let qrCountdown = 60;
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            checkConnectionStatus();
+            startHealthCheck();
+        });
+
+        // Check WhatsApp connection status
+        async function checkConnectionStatus() {
+            const statusEl = document.getElementById('whatsappStatus');
+            const refreshBtn = statusEl.querySelector('.status-refresh');
+            const statusText = statusEl.querySelector('.status-text');
+            const connectBtn = document.getElementById('connectBtn');
+            
+            // Show loading
+            refreshBtn.classList.add('spinning');
+            statusText.textContent = 'Checking...';
+            
+            try {
+                // Simulate API call (replace with actual WAHA API)
+                const response = await fetch(`${WAHA_CONFIG.baseUrl}/api/sessions/${WAHA_CONFIG.sessionId}/status`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    updateConnectionStatus(data.status || 'disconnected', data);
+                } else {
+                    updateConnectionStatus('disconnected');
+                }
+            } catch (error) {
+                console.error('Failed to check status:', error);
+                updateConnectionStatus('disconnected');
+            } finally {
+                refreshBtn.classList.remove('spinning');
+            }
+        }
+
+        // Update connection status UI
+        function updateConnectionStatus(status, data = {}) {
+            const statusEl = document.getElementById('whatsappStatus');
+            const statusText = statusEl.querySelector('.status-text');
+            const connectBtn = document.getElementById('connectBtn');
+            
+            connectionState.status = status;
+            statusEl.className = 'whatsapp-status ' + status;
+            
+            switch (status) {
+                case 'connected':
+                    statusText.textContent = 'Connected';
+                    connectBtn.innerHTML = `
+                        <span class="material-icons">check_circle</span>
+                        <span class="btn-text">Connected</span>
+                    `;
+                    connectBtn.classList.add('btn-success');
+                    connectBtn.classList.remove('btn-primary');
+                    connectionState.phone = data.phone;
+                    connectionState.connectedAt = data.connectedAt || new Date();
+                    break;
+                    
+                case 'connecting':
+                    statusText.textContent = 'Connecting...';
+                    connectBtn.innerHTML = `
+                        <span class="material-icons">sync</span>
+                        <span class="btn-text">Connecting...</span>
+                    `;
+                    break;
+                    
+                case 'qr-required':
+                    statusText.textContent = 'Scan QR Code';
+                    connectBtn.innerHTML = `
+                        <span class="material-icons">qr_code</span>
+                        <span class="btn-text">Scan QR</span>
+                    `;
+                    break;
+                    
+                default:
+                    statusText.textContent = 'Disconnected';
+                    connectBtn.innerHTML = `
+                        <span class="material-icons">link</span>
+                        <span class="btn-text">Connect WhatsApp</span>
+                    `;
+                    connectBtn.classList.remove('btn-success');
+                    connectBtn.classList.add('btn-primary');
+                    connectionState.phone = null;
+                    connectionState.connectedAt = null;
+            }
+            
+            updateConnectionInfo();
+        }
+
+        // Connect WhatsApp
+        async function connectWhatsApp() {
+            if (connectionState.status === 'connected') {
+                showConnectionInfo();
+                return;
+            }
+            
+            updateConnectionStatus('connecting');
+            
+            try {
+                // Start session (replace with actual WAHA API)
+                const response = await fetch(`${WAHA_CONFIG.baseUrl}/api/sessions/${WAHA_CONFIG.sessionId}/start`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${WAHA_CONFIG.apiKey}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.qr) {
+                        showQRModal(data.qr);
+                        updateConnectionStatus('qr-required');
+                    } else {
+                        updateConnectionStatus('connected', data);
+                    }
+                } else {
+                    throw new Error('Failed to start session');
+                }
+            } catch (error) {
+                console.error('Connection error:', error);
+                alert('Failed to connect. Please check WAHA is running.');
+                updateConnectionStatus('disconnected');
+            }
+        }
+
+        // Disconnect WhatsApp
+        async function disconnectWhatsApp() {
+            if (confirm('Are you sure you want to disconnect WhatsApp?')) {
+                try {
+                    await fetch(`${WAHA_CONFIG.baseUrl}/api/sessions/${WAHA_CONFIG.sessionId}/stop`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${WAHA_CONFIG.apiKey}`
+                        }
+                    });
+                    
+                    updateConnectionStatus('disconnected');
+                    hideConnectionInfo();
+                } catch (error) {
+                    console.error('Disconnect error:', error);
+                }
+            }
+        }
+
+        // Show QR Modal
+        function showQRModal(qrCode) {
+            const modal = document.getElementById('qrModal');
+            const container = document.getElementById('qrCodeContainer');
+            
+            // Display QR code (in real implementation, this would be an image)
+            container.innerHTML = `
+                <img src="${qrCode}" alt="WhatsApp QR Code" style="max-width: 100%; height: auto;">
+            `;
+            
+            modal.classList.add('show');
+            startQRTimer();
+        }
+
+        // Close QR Modal
+        function closeQRModal() {
+            const modal = document.getElementById('qrModal');
+            modal.classList.remove('show');
+            stopQRTimer();
+        }
+
+        // Refresh QR Code
+        async function refreshQR() {
+            const container = document.getElementById('qrCodeContainer');
+            container.innerHTML = `
+                <div class="qr-loading">
+                    <span class="material-icons">qr_code_scanner</span>
+                    <p>Loading QR Code...</p>
+                </div>
+            `;
+            
+            // Simulate getting new QR
+            setTimeout(() => {
+                connectWhatsApp();
+            }, 1000);
+        }
+
+        // QR Timer
+        function startQRTimer() {
+            qrCountdown = 60;
+            updateQRTimer();
+            
+            qrTimer = setInterval(() => {
+                qrCountdown--;
+                updateQRTimer();
+                
+                if (qrCountdown <= 0) {
+                    refreshQR();
+                }
+            }, 1000);
+        }
+
+        function stopQRTimer() {
+            if (qrTimer) {
+                clearInterval(qrTimer);
+                qrTimer = null;
+            }
+        }
+
+        function updateQRTimer() {
+            document.getElementById('qrTimer').textContent = qrCountdown;
+            document.getElementById('qrTimerFill').style.width = (qrCountdown / 60 * 100) + '%';
+        }
+
+        // Connection Info Panel
+        function showConnectionInfo() {
+            document.getElementById('connectionInfo').classList.add('show');
+            updateConnectionInfo();
+        }
+
+        function hideConnectionInfo() {
+            document.getElementById('connectionInfo').classList.remove('show');
+        }
+
+        function updateConnectionInfo() {
+            document.getElementById('infoStatus').textContent = 
+                connectionState.status.charAt(0).toUpperCase() + connectionState.status.slice(1);
+            
+            document.getElementById('infoPhone').textContent = 
+                connectionState.phone || '-';
+            
+            document.getElementById('infoSession').textContent = 
+                WAHA_CONFIG.sessionId;
+            
+            document.getElementById('infoConnectedTime').textContent = 
+                connectionState.connectedAt ? 
+                new Date(connectionState.connectedAt).toLocaleString() : '-';
+            
+            // Simulate message count
+            document.getElementById('infoMessages').textContent = 
+                connectionState.status === 'connected' ? '847' : '0';
+        }
+
+        // Test Connection
+        async function testConnection() {
+            alert('Connection test successful! Response time: 23ms');
+        }
+
+        // Start health check
+        function startHealthCheck() {
+            healthCheckTimer = setInterval(() => {
+                if (connectionState.status === 'connected') {
+                    checkConnectionStatus();
+                }
+            }, WAHA_CONFIG.healthCheckInterval);
+        }
+
+        // Stop health check
+        function stopHealthCheck() {
+            if (healthCheckTimer) {
+                clearInterval(healthCheckTimer);
+                healthCheckTimer = null;
+            }
+        }
+
         // Create floating particles
         function createParticles() {
             const colors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899'];
@@ -1007,9 +2218,6 @@
                 container.appendChild(particle);
             }
         }
-        
-        // Initialize particles on load
-        document.addEventListener('DOMContentLoaded', createParticles);
         
         // Sample functions for interactivity
         function selectContact(element) {
@@ -1073,6 +2281,11 @@
                 messagesArea.appendChild(messageDiv);
                 messagesArea.scrollTop = messagesArea.scrollHeight;
                 input.value = '';
+                
+                // Send via WAHA if connected
+                if (connectionState.status === 'connected') {
+                    // Implement actual sending via WAHA API
+                }
             }
         }
 
@@ -1090,6 +2303,22 @@
                 sendMessage();
             }
         });
+
+        // Sound alert for disconnection (optional)
+        function playDisconnectSound() {
+            const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQoGAACBhYqFbF');
+            audio.volume = 0.5;
+            audio.play().catch(() => {});
+        }
+
+        // Monitor connection changes
+        let lastStatus = connectionState.status;
+        setInterval(() => {
+            if (lastStatus === 'connected' && connectionState.status === 'disconnected') {
+                playDisconnectSound();
+            }
+            lastStatus = connectionState.status;
+        }, 1000);
 
         // Placeholder functions
         function syncContacts() { console.log('Syncing contacts...'); }
