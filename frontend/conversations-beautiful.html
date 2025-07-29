@@ -2105,13 +2105,16 @@
         
         // Socket.IO will be initialized in initializeSocket() function
 
-        // Connection state
-        let connectionState = {
+        // Connection state - make it global for debugging
+        window.connectionState = {
             status: 'disconnected', // connected, connecting, disconnected, qr-required
             phone: null,
             connectedAt: null,
             sessionInfo: null
         };
+        
+        // Also keep local reference
+        let connectionState = window.connectionState;
 
         // Health check interval
         let healthCheckTimer = null;
@@ -2122,9 +2125,11 @@
         // Initialize on load
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('Page loaded, initializing...');
+            console.log('Initial connectionState:', connectionState);
             createParticles();
             initializeSocket(); // Initialize Socket.IO connection
             await checkConnectionStatus();
+            console.log('After checkConnectionStatus, connectionState:', connectionState);
             startHealthCheck();
             startComplianceMonitoring();
             // Don't load contacts until WhatsApp is connected
@@ -2160,11 +2165,15 @@
 
         // Update connection status UI
         function updateConnectionStatus(status, data = {}) {
+            console.log('updateConnectionStatus called with:', status, data);
+            
             const statusEl = document.getElementById('whatsappStatus');
             const statusText = statusEl.querySelector('.status-text');
             const connectBtn = document.getElementById('connectBtn');
             
             connectionState.status = status;
+            console.log('connectionState updated to:', connectionState);
+            
             statusEl.className = 'whatsapp-status ' + status;
             
             switch (status) {
