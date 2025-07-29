@@ -2530,6 +2530,12 @@
             const modal = document.getElementById('qrModal');
             const container = document.getElementById('qrCodeContainer');
             
+            // Prevent showing multiple modals
+            if (modal.classList.contains('show')) {
+                console.log('QR modal already showing, skipping');
+                return;
+            }
+            
             console.log('Showing QR modal with code:', qrCode ? 'Present' : 'Missing');
             console.log('QR preview:', qrCode ? qrCode.substring(0, 50) + '...' : 'N/A');
             
@@ -3867,6 +3873,13 @@
         
         // Connect WhatsApp function
         async function connectWhatsApp() {
+            // Check if already connected
+            if (connectionState.status === 'connected' || connectionState.status === 'WORKING') {
+                console.log('Already connected to WhatsApp');
+                showNotification('WhatsApp is already connected', 'info');
+                return;
+            }
+            
             console.log('Connecting to WhatsApp...');
             updateConnectionStatus('connecting');
             
@@ -3886,6 +3899,8 @@
                 
                 if (result.success) {
                     console.log('Session started, checking for QR...');
+                    // Reset checking flag
+                    isCheckingQR = false;
                     // Start checking for QR code
                     checkForQRCode();
                 } else {
@@ -3898,8 +3913,19 @@
             }
         }
         
+        // Flag to prevent duplicate QR checks
+        let isCheckingQR = false;
+        
         // Check for QR Code
         async function checkForQRCode() {
+            // Prevent duplicate calls
+            if (isCheckingQR) {
+                console.log('Already checking for QR, skipping duplicate call');
+                return;
+            }
+            
+            isCheckingQR = true;
+            
             try {
                 // First, check current status
                 const statusResponse = await fetch(`${API_CONFIG.baseUrl}/sessions/${API_CONFIG.sessionId}/status`);
@@ -3911,30 +3937,54 @@
                     const status = statusResult.data.status;
                     
                     if (status === 'SCAN_QR_CODE') {
-                        // Get QR code
-                        const qrResponse = await fetch(`${API_CONFIG.baseUrl}/sessions/${API_CONFIG.sessionId}/qr`);
-                        const qrResult = await qrResponse.json();
-                        
-                        if (qrResult.success && qrResult.data.qr) {
-                            showQRModal(qrResult.data.qr);
-                            // Continue checking status
-                            startQRCheckInterval();
+                        // Get QR code only if modal not already showing
+                        const modal = document.getElementById('qrModal');
+                        if (!modal.classList.contains('show')) {
+                            const qrResponse = await fetch(`${API_CONFIG.baseUrl}/sessions/${API_CONFIG.sessionId}/qr`);
+                            const qrResult = await qrResponse.json();
+                            
+                            if (qrResult.success && qrResult.data.qr) {
+                                showQRModal(qrResult.data.qr);
+                                // Continue checking status
+                                startQRCheckInterval();
+                                isCheckingQR = false;
+                                return;
+                            } else {
+                                console.log('No QR code available yet, retrying...');
+                                setTimeout(() => {
+                                    isCheckingQR = false;
+                                    checkForQRCode();
+                                }, 2000);
+                                return;
+                            }
                         } else {
-                            console.log('No QR code available yet, retrying...');
-                            setTimeout(checkForQRCode, 2000);
+                            console.log('QR modal already showing, starting interval check');
+                            startQRCheckInterval();
+                            isCheckingQR = false;
+                            return;
                         }
                     } else if (status === 'authenticated' || status === 'connected' || status === 'WORKING') {
                         console.log('Already connected!');
+                        closeQRModal();
                         updateConnectionStatus('connected', statusResult.data);
                         loadContacts();
+                        isCheckingQR = false;
+                        return;
                     } else {
                         console.log('Status:', status, '- waiting...');
-                        setTimeout(checkForQRCode, 2000);
+                        setTimeout(() => {
+                            isCheckingQR = false;
+                            checkForQRCode();
+                        }, 2000);
+                        return;
                     }
                 }
             } catch (error) {
                 console.error('Error checking for QR:', error);
-                setTimeout(checkForQRCode, 5000);
+                setTimeout(() => {
+                    isCheckingQR = false;
+                    checkForQRCode();
+                }, 5000);
             }
         }
         
