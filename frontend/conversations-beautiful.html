@@ -2116,24 +2116,7 @@
         // Also keep local reference
         let connectionState = window.connectionState;
 
-        // Health check interval
-        let healthCheckTimer = null;
-        let qrTimer = null;
-        let qrCountdown = 60;
-        let checkQRInterval = null;
 
-        // Initialize on load
-        document.addEventListener('DOMContentLoaded', async function() {
-            console.log('Page loaded, initializing...');
-            console.log('Initial connectionState:', connectionState);
-            createParticles();
-            initializeSocket(); // Initialize Socket.IO connection
-            await checkConnectionStatus();
-            console.log('After checkConnectionStatus, connectionState:', connectionState);
-            startHealthCheck();
-            startComplianceMonitoring();
-            // Don't load contacts until WhatsApp is connected
-        });
 
         // Check WhatsApp connection status
         async function checkConnectionStatus() {
@@ -2414,8 +2397,8 @@
             console.log('checkForQRCode called');
             
             // Clear any existing interval first
-            if (checkQRInterval) {
-                clearInterval(checkQRInterval);
+            if (qrCheckInterval) {
+                clearInterval(qrCheckInterval);
             }
             
             // Check immediately first
@@ -2457,7 +2440,7 @@
             
             // Set up interval to check for QR - less frequent to avoid multiple QR generation
             let qrShown = false;
-            checkQRInterval = setInterval(async () => {
+            qrCheckInterval = setInterval(async () => {
                 try {
                     const response = await fetch(`${API_CONFIG.baseUrl}/sessions/${API_CONFIG.sessionId}/status`);
                     
@@ -2479,8 +2462,8 @@
                             console.log('WhatsApp connected! Status:', result.data.status);
                             closeQRModal();
                             updateConnectionStatus(result.data.status, result.data);
-                            clearInterval(checkQRInterval);
-                            checkQRInterval = null;
+                            clearInterval(qrCheckInterval);
+                            qrCheckInterval = null;
                             qrShown = false;
                             
                             // Emit connected event
@@ -2581,9 +2564,9 @@
             stopQRTimer();
             
             // Clear QR check interval
-            if (checkQRInterval) {
-                clearInterval(checkQRInterval);
-                checkQRInterval = null;
+            if (qrCheckInterval) {
+                clearInterval(qrCheckInterval);
+                qrCheckInterval = null;
             }
         }
 
