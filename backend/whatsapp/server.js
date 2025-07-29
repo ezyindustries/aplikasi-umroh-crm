@@ -47,6 +47,10 @@ app.use((req, res, next) => {
   next();
 });
 
+// Webhook routes (must be before main API routes for proper routing)
+const webhookRoutes = require('./src/routes/webhooks');
+app.use('/api/webhooks', webhookRoutes);
+
 // API routes
 app.use('/api', apiRoutes);
 

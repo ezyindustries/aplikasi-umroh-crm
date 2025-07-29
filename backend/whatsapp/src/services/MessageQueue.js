@@ -1,7 +1,7 @@
 const Bull = require('bull');
 const { Message, ConversationSession, Contact } = require('../models');
-// Use WhatsAppWebService (WAHA-compatible implementation)
-const whatsappService = require('./WhatsAppWebService');
+// Use RealWAHAService for exact WAHA API compatibility
+const whatsappService = require('./RealWAHAService');
 const logger = require('../utils/logger');
 
 class MessageQueueService {

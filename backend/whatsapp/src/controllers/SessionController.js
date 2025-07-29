@@ -1,5 +1,5 @@
-// Use WhatsAppWebService (WAHA-compatible implementation)
-const whatsappService = require('../services/WhatsAppWebService');
+// Use RealWAHAService for exact WAHA API compatibility
+const whatsappService = require('../services/RealWAHAService');
 const { WhatsAppSession } = require('../models');
 const logger = require('../utils/logger');
 
@@ -187,17 +187,17 @@ class SessionController {
       
       logger.api.info('Loading chat history for session:', sessionId);
       
-      // Get the client
-      const client = whatsappService.clients.get(sessionId);
-      if (!client) {
+      // Check if session is connected
+      const status = await whatsappService.getSessionStatus(sessionId);
+      if (status.status !== 'authenticated') {
         return res.status(400).json({
           success: false,
           error: 'Session not connected'
         });
       }
       
-      // Load chats
-      await whatsappService.loadExistingChats(sessionId, client);
+      // Load chats using WAHA service
+      await whatsappService.loadExistingChats(sessionId);
       
       res.json({
         success: true,

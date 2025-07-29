@@ -1,33 +1,49 @@
-const whatsappService = require('./src/services/WhatsAppWebService');
+const sequelize = require('./src/config/database');
+const { Message, Conversation, Contact } = require('./src/models');
+const logger = require('./src/utils/logger');
 
-console.log('=== Forcing Chat History Load ===\n');
+// Import WAHA service
+const whatsappService = require('./src/services/RealWAHAService');
 
 async function forceLoadChats() {
-  try {
-    // Get the client instance
-    const client = whatsappService.clients.get('default');
-    
-    if (!client) {
-      console.log('❌ No active WhatsApp session found');
-      console.log('Please connect WhatsApp first via the frontend');
-      return;
+    try {
+        logger.info('=== FORCE LOADING WHATSAPP CHATS ===\n');
+        
+        // Check if WhatsApp is connected
+        const sessionName = 'default';
+        
+        const status = await whatsappService.getSessionStatus(sessionName);
+        logger.info(`📱 WhatsApp Status: ${status.status}`);
+        
+        if (status.status !== 'authenticated') {
+            logger.error('❌ WhatsApp is not connected!');
+            logger.info('\n📱 Please make sure:');
+            logger.info('1. Backend is running');
+            logger.info('2. WhatsApp is connected (scan QR if needed)');
+            logger.info('3. Status shows "Connected" in the app');
+            return;
+        }
+        
+        logger.info('✅ WhatsApp is connected!\n');
+        logger.info('🔄 Starting to load all chats...\n');
+        
+        // Use WAHA service to load chats
+        await whatsappService.loadExistingChats(sessionName);
+        
+        logger.info('\n\n=============================');
+        logger.info('✅ CHAT LOADING INITIATED!');
+        logger.info('=============================\n');
+        
+        logger.info('🔄 Please wait for chats to load and then refresh your browser!');
+        logger.info('📊 Check the backend logs for progress updates.');
+        
+    } catch (error) {
+        logger.error('❌ Error loading chats:', error);
     }
-    
-    console.log('✅ Found active session');
-    console.log('Loading chat history...\n');
-    
-    // Force load existing chats
-    await whatsappService.loadExistingChats('default', client);
-    
-    console.log('\n✅ Chat history loading initiated');
-    console.log('Check the backend console for progress');
-    
-  } catch (error) {
-    console.error('Error:', error.message);
-  }
 }
 
-// Wait a bit for service to initialize
-setTimeout(() => {
-  forceLoadChats();
-}, 1000);
+// Run the force load
+forceLoadChats().then(() => {
+    logger.info('\n📌 Script completed. Keep the backend running!');
+    // Don't close sequelize - let the backend keep running
+});
