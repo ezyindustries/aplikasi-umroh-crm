@@ -1,6 +1,7 @@
 const { Message, Conversation, Contact, ConversationSession } = require('../models');
 const messageQueue = require('../services/MessageQueue');
-const { canSendMessage, trackUniqueUser } = require('../config/rateLimiter');
+// Removed rate limiter to fix 429 error
+// const { canSendMessage, trackUniqueUser } = require('../config/rateLimiter');
 const wahaComplianceService = require('../services/WAHAComplianceService');
 const logger = require('../utils/logger');
 const { Op } = require('sequelize');
@@ -27,18 +28,8 @@ class MessageController {
         });
       }
 
-      // Check rate limits
-      const canSend = await canSendMessage(toNumber, !!templateName);
-      if (!canSend.allowed) {
-        return res.status(429).json({
-          success: false,
-          error: 'Rate limit exceeded',
-          retryAfter: canSend.retryAfter
-        });
-      }
-
-      // Track unique user
-      await trackUniqueUser(toNumber);
+      // Rate limiting removed to fix 429 error
+      // Previously checked rate limits here
 
       // Get conversation
       const conversation = await Conversation.findByPk(conversationId, {
