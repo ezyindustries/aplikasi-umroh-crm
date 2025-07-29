@@ -194,6 +194,83 @@
             box-shadow: 0 4px 20px rgba(59, 130, 246, 0.2);
         }
         
+        /* Contacts Action Bar */
+        .contacts-action-bar {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(15, 23, 42, 0.5);
+        }
+        
+        .load-history-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: linear-gradient(145deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 10px;
+            color: #3b82f6;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .load-history-btn:hover {
+            background: linear-gradient(145deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.1));
+            border-color: rgba(59, 130, 246, 0.5);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+        
+        .load-history-btn:active {
+            transform: translateY(0);
+        }
+        
+        .load-history-btn span.material-icons {
+            font-size: 18px;
+        }
+        
+        .refresh-contacts-btn {
+            padding: 10px;
+            background: rgba(71, 85, 105, 0.2);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 10px;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .refresh-contacts-btn:hover {
+            background: rgba(71, 85, 105, 0.3);
+            border-color: rgba(71, 85, 105, 0.5);
+            color: #cbd5e1;
+            transform: rotate(180deg);
+        }
+        
+        .refresh-contacts-btn span.material-icons {
+            font-size: 18px;
+        }
+        
+        /* Loading state for history button */
+        .load-history-btn.loading {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        
+        .load-history-btn.loading span.material-icons {
+            animation: spin 1s linear infinite;
+        }
+        
         .contact-avatar {
             width: 48px;
             height: 48px;
@@ -1756,6 +1833,18 @@
                         <div class="filter-tab" onclick="filterContacts('groups')">Groups</div>
                     </div>
                 </div>
+                
+                <!-- Action Bar for Load History -->
+                <div class="contacts-action-bar" id="contactsActionBar">
+                    <button class="load-history-btn" onclick="loadWhatsAppHistory()">
+                        <span class="material-icons">history</span>
+                        <span>Load Chat History</span>
+                    </button>
+                    <button class="refresh-contacts-btn" onclick="loadContacts()" title="Refresh contacts">
+                        <span class="material-icons">refresh</span>
+                    </button>
+                </div>
+                
                 <div class="contacts-list" id="contacts-list">
                     <!-- Contacts will be loaded here after WhatsApp connection -->
                 </div>
@@ -1818,31 +1907,51 @@
                 <div class="info-header">
                     <div class="info-avatar">AH</div>
                     <div class="info-name">No contact selected</div>
-                    <div class="info-phone">+62 812-3456-7890</div>
+                    <div class="info-phone">-</div>
                 </div>
 
                 <div class="info-section-title">Contact Info</div>
                 <div class="info-card">
                     <div class="info-label">Email</div>
-                    <div class="info-value">ahmad.hassan@email.com</div>
+                    <div class="info-value" id="contact-email">Belum teridentifikasi</div>
                 </div>
                 <div class="info-card">
                     <div class="info-label">Location</div>
-                    <div class="info-value">Jakarta, Indonesia</div>
+                    <div class="info-value" id="contact-location">Belum teridentifikasi</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Paket Umroh</div>
+                    <div class="info-value" id="contact-package">Belum teridentifikasi</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Status</div>
+                    <div class="info-value" id="contact-status">Belum teridentifikasi</div>
                 </div>
 
                 <div class="info-section-title">Labels</div>
                 <div class="info-card">
-                    <div class="label-tags">
-                        <span class="label-tag">Prospek</span>
-                        <span class="label-tag">Ramadhan 2025</span>
-                        <span class="label-tag">VIP</span>
+                    <div class="label-tags" id="contact-labels">
+                        <span class="label-tag">Belum ada label</span>
                     </div>
                 </div>
 
                 <div class="info-section-title">Media & Files</div>
                 <div class="info-card">
-                    <div class="info-value">12 Photos, 3 Documents</div>
+                    <div class="info-value" id="contact-media">0 Photos, 0 Documents</div>
+                </div>
+
+                <div class="info-section-title">Insights</div>
+                <div class="info-card">
+                    <div class="info-label">Total Messages</div>
+                    <div class="info-value" id="total-messages">0</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">First Contact</div>
+                    <div class="info-value" id="first-contact">-</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Keywords</div>
+                    <div class="info-value" id="contact-keywords">Belum teridentifikasi</div>
                 </div>
             </div>
         </div>
@@ -1966,7 +2075,7 @@
     <script>
         // Backend Configuration
         const API_CONFIG = {
-            baseUrl: 'http://localhost:3001/api', // Backend API endpoint
+            baseUrl: 'http://localhost:3002/api', // Backend API endpoint
             sessionId: 'default',
             healthCheckInterval: 10000 // 10 seconds
         };
@@ -2710,6 +2819,9 @@
             document.querySelector('.info-name').textContent = contact.name || contact.phoneNumber;
             document.querySelector('.info-phone').textContent = contact.phoneNumber;
             document.querySelector('.info-avatar').textContent = getInitials(contact.name || contact.phoneNumber);
+            
+            // Update contact info panel
+            updateContactInfoPanel(contact);
         }
         
         // Create new conversation
@@ -2773,6 +2885,9 @@
             });
             
             messagesArea.scrollTop = messagesArea.scrollHeight;
+            
+            // Analyze messages for contact info
+            analyzeConversation(messages);
         }
         
         // Send message
@@ -2859,6 +2974,10 @@
                     // Show a temporary message to user
                     showNotification(data.message, 'info');
                 }
+                // Reload contacts to show loaded chats
+                setTimeout(() => {
+                    loadContacts();
+                }, 1000);
             });
             
             // Listen for new messages
@@ -2963,11 +3082,259 @@
             return icons[status] || '';
         }
         
+        // Update contact info panel
+        function updateContactInfoPanel(contact) {
+            // Reset all fields to default
+            document.getElementById('contact-email').textContent = 'Belum teridentifikasi';
+            document.getElementById('contact-location').textContent = 'Belum teridentifikasi';
+            document.getElementById('contact-package').textContent = 'Belum teridentifikasi';
+            document.getElementById('contact-status').textContent = 'Belum teridentifikasi';
+            document.getElementById('contact-keywords').textContent = 'Belum teridentifikasi';
+            document.getElementById('total-messages').textContent = '0';
+            document.getElementById('first-contact').textContent = '-';
+            document.getElementById('contact-media').textContent = '0 Photos, 0 Documents';
+            
+            // Update labels
+            const labelsContainer = document.getElementById('contact-labels');
+            labelsContainer.innerHTML = '<span class="label-tag">Belum ada label</span>';
+        }
+        
+        // Analyze conversation to extract contact info
+        function analyzeConversation(messages) {
+            if (!messages || messages.length === 0) return;
+            
+            // Extract information from messages
+            const analysis = {
+                email: null,
+                location: null,
+                package: null,
+                status: null,
+                keywords: new Set(),
+                mediaCount: { photos: 0, documents: 0 },
+                firstContact: null,
+                totalMessages: messages.length
+            };
+            
+            // Email pattern
+            const emailPattern = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g;
+            
+            // Location patterns
+            const locationPatterns = [
+                /\b(jakarta|bandung|surabaya|medan|semarang|makassar|palembang|tangerang|depok|bekasi)\b/gi,
+                /\b(jawa\s*(barat|timur|tengah)|sumatra|kalimantan|sulawesi|bali)\b/gi
+            ];
+            
+            // Package patterns
+            const packagePatterns = [
+                /\b(paket\s*(regular|vip|eksekutif|ekonomi|premium))\b/gi,
+                /\b(ramadhan|syawal|dzulhijjah|muharram)\s*\d{4}/gi,
+                /\b(9\s*hari|12\s*hari|15\s*hari|21\s*hari|plus\s*turki)\b/gi
+            ];
+            
+            // Status patterns
+            const statusPatterns = {
+                'Prospek': /\b(tanya|info|berapa|harga|jadwal|kapan)\b/gi,
+                'Hot Prospect': /\b(serius|minat|tertarik|booking|daftar)\b/gi,
+                'Jamaah': /\b(sudah\s*transfer|dp|lunas|bayar)\b/gi,
+                'Repeat': /\b(lagi|kembali|umroh\s*ke-?\d+)\b/gi
+            };
+            
+            // Analyze each message
+            messages.forEach((message, index) => {
+                const content = message.content || '';
+                
+                // Extract email
+                const emailMatches = content.match(emailPattern);
+                if (emailMatches && !analysis.email) {
+                    analysis.email = emailMatches[0];
+                }
+                
+                // Extract location
+                locationPatterns.forEach(pattern => {
+                    const matches = content.match(pattern);
+                    if (matches && !analysis.location) {
+                        analysis.location = matches[0];
+                    }
+                });
+                
+                // Extract package
+                packagePatterns.forEach(pattern => {
+                    const matches = content.match(pattern);
+                    if (matches && !analysis.package) {
+                        analysis.package = matches[0];
+                    }
+                });
+                
+                // Determine status
+                for (const [status, pattern] of Object.entries(statusPatterns)) {
+                    if (pattern.test(content) && !analysis.status) {
+                        analysis.status = status;
+                    }
+                }
+                
+                // Extract keywords (nouns and important words)
+                const keywordPatterns = /\b(umroh|haji|visa|paspor|hotel|pesawat|makkah|madinah|ziarah|manasik)\b/gi;
+                const keywordMatches = content.match(keywordPatterns);
+                if (keywordMatches) {
+                    keywordMatches.forEach(kw => analysis.keywords.add(kw.toLowerCase()));
+                }
+                
+                // Count media
+                if (message.messageType === 'image') analysis.mediaCount.photos++;
+                if (message.messageType === 'document') analysis.mediaCount.documents++;
+                
+                // First contact
+                if (index === messages.length - 1) {
+                    analysis.firstContact = message.createdAt;
+                }
+            });
+            
+            // Update UI with analysis results
+            if (analysis.email) document.getElementById('contact-email').textContent = analysis.email;
+            if (analysis.location) document.getElementById('contact-location').textContent = analysis.location;
+            if (analysis.package) document.getElementById('contact-package').textContent = analysis.package;
+            if (analysis.status) document.getElementById('contact-status').textContent = analysis.status;
+            
+            document.getElementById('total-messages').textContent = analysis.totalMessages;
+            document.getElementById('first-contact').textContent = analysis.firstContact ? formatDate(analysis.firstContact) : '-';
+            document.getElementById('contact-media').textContent = `${analysis.mediaCount.photos} Photos, ${analysis.mediaCount.documents} Documents`;
+            
+            if (analysis.keywords.size > 0) {
+                document.getElementById('contact-keywords').textContent = Array.from(analysis.keywords).join(', ');
+            }
+            
+            // Update labels based on analysis
+            updateContactLabels(analysis);
+        }
+        
+        // Update contact labels based on analysis
+        function updateContactLabels(analysis) {
+            const labelsContainer = document.getElementById('contact-labels');
+            labelsContainer.innerHTML = '';
+            
+            const labels = [];
+            
+            // Add status label
+            if (analysis.status) {
+                labels.push(analysis.status);
+            }
+            
+            // Add package label
+            if (analysis.package) {
+                if (analysis.package.toLowerCase().includes('ramadhan')) {
+                    labels.push('Ramadhan 2025');
+                } else if (analysis.package.toLowerCase().includes('vip')) {
+                    labels.push('VIP');
+                }
+            }
+            
+            // Add engagement label
+            if (analysis.totalMessages > 20) {
+                labels.push('Aktif');
+            }
+            
+            // Add location label
+            if (analysis.location) {
+                labels.push(analysis.location);
+            }
+            
+            // Display labels or default
+            if (labels.length > 0) {
+                labels.forEach(label => {
+                    const span = document.createElement('span');
+                    span.className = 'label-tag';
+                    span.textContent = label;
+                    labelsContainer.appendChild(span);
+                });
+            } else {
+                labelsContainer.innerHTML = '<span class="label-tag">Belum ada label</span>';
+            }
+        }
+        
+        // Format date helper
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return date.toLocaleDateString('id-ID', options);
+        }
+        
         // Sound alert for disconnection (optional)
         function playDisconnectSound() {
             const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQoGAACBhYqFbF');
             audio.volume = 0.5;
             audio.play().catch(() => {});
+        }
+        
+        // Load WhatsApp chat history
+        async function loadWhatsAppHistory() {
+            const statusEl = document.getElementById('whatsappStatus');
+            const statusText = statusEl.querySelector('.status-text');
+            const historyBtn = document.querySelector('.load-history-btn');
+            
+            // Check if connected
+            if (connectionState.status !== 'connected') {
+                showNotification('Please connect WhatsApp first', 'warning');
+                return;
+            }
+            
+            // Show loading state
+            historyBtn.classList.add('loading');
+            historyBtn.innerHTML = '<span class="material-icons">hourglass_empty</span><span>Loading...</span>';
+            statusText.textContent = 'Loading chats...';
+            showNotification('Loading chat history from WhatsApp...', 'info');
+            
+            try {
+                const response = await fetch(`${API_CONFIG.baseUrl}/sessions/${API_CONFIG.sessionId}/load-history`, {
+                    method: 'POST'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Chat history is being loaded. This may take a few moments...', 'success');
+                    statusText.textContent = 'Connected';
+                } else {
+                    showNotification('Failed to load chat history: ' + (result.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                console.error('Error loading chat history:', error);
+                showNotification('Error loading chat history', 'error');
+            } finally {
+                historyBtn.classList.remove('loading');
+                historyBtn.innerHTML = '<span class="material-icons">history</span><span>Load Chat History</span>';
+                checkConnectionStatus();
+            }
+        }
+        
+        // Show notification helper
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                padding: 16px 24px;
+                background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : '#3b82f6'};
+                color: white;
+                border-radius: 8px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                z-index: 10000;
+                font-family: Inter, sans-serif;
+                font-size: 14px;
+                font-weight: 500;
+                animation: slideIn 0.3s ease-out;
+            `;
+            notification.textContent = message;
+            
+            // Add to body
+            document.body.appendChild(notification);
+            
+            // Remove after 5 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => notification.remove(), 300);
+            }, 5000);
         }
 
         // Monitor connection changes

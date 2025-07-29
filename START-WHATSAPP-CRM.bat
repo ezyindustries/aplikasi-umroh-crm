@@ -13,12 +13,12 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-REM Check if port 3001 is already in use
-echo Checking if port 3001 is already in use...
-netstat -ano | findstr :3001 | findstr LISTENING >nul
+REM Check if port 3002 is already in use
+echo Checking if port 3002 is already in use...
+netstat -ano | findstr :3002 | findstr LISTENING >nul
 if %errorlevel% == 0 (
     echo.
-    echo WARNING: Port 3001 is already in use by WhatsApp CRM Backend!
+    echo WARNING: Port 3002 is already in use by WhatsApp CRM Backend!
     echo.
     echo Select an option:
     echo 1. Kill existing process and restart backend
@@ -68,7 +68,7 @@ echo ========================================
 echo Application started successfully!
 echo.
 echo Frontend: http://localhost:8080/conversations-beautiful.html
-echo Backend API: http://localhost:3001
+echo Backend API: http://localhost:3002
 echo.
 echo To stop: Close both command windows
 echo ========================================
@@ -78,8 +78,8 @@ exit /b 0
 
 :kill_and_restart
 echo.
-echo Terminating existing process on port 3001...
-for /f "tokens=5" %%a in ('netstat -aon ^| findstr :3001 ^| findstr LISTENING') do (
+echo Terminating existing process on port 3002...
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr :3002 ^| findstr LISTENING') do (
     echo Killing process PID: %%a
     taskkill /PID %%a /F 2>nul
 )
@@ -101,10 +101,10 @@ start "" "http://localhost:8080/conversations-beautiful.html"
 echo.
 echo ========================================
 echo Frontend started successfully!
-echo Using existing backend on port 3001
+echo Using existing backend on port 3002
 echo.
 echo Frontend: http://localhost:8080/conversations-beautiful.html
-echo Backend API: http://localhost:3001 (already running)
+echo Backend API: http://localhost:3002 (already running)
 echo ========================================
 echo.
 pause

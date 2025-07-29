@@ -1,5 +1,5 @@
-// Use RealWAHAService for exact WAHA API compatibility
-const whatsappService = require('../services/RealWAHAService');
+// Use WhatsAppWebService for now until WAHA is properly configured
+const whatsappService = require('../services/WhatsAppWebService');
 const { WhatsAppSession } = require('../models');
 const logger = require('../utils/logger');
 

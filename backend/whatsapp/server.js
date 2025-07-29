@@ -20,7 +20,7 @@ const server = http.createServer(app);
 // Socket.IO for real-time updates
 const io = socketIO(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:8080',
+    origin: ['http://localhost:8080', 'file://', 'null', '*'],
     credentials: true
   }
 });
@@ -31,7 +31,13 @@ global.io = io;
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:8080',
+  origin: function(origin, callback) {
+    // Allow requests with no origin (file://, mobile apps, etc)
+    if (!origin) return callback(null, true);
+    
+    // Allow all origins for development
+    return callback(null, true);
+  },
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));

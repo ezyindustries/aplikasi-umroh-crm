@@ -1,4 +1,4 @@
-const { Contact, Message, WhatsAppSession } = require('../models');
+const { Contact, Message, WhatsAppSession, Conversation } = require('../models');
 const wahaCompliance = require('../config/wahaCompliance');
 const logger = require('../utils/logger');
 const { Op } = require('sequelize');
@@ -323,10 +323,17 @@ class WAHAComplianceService {
         direction: 'outbound',
         createdAt: { [Op.gte]: today }
       },
-      include: [{ model: Contact, as: 'contact' }]
+      include: [{
+        model: Conversation,
+        as: 'conversation',
+        include: [{
+          model: Contact,
+          as: 'contact'
+        }]
+      }]
     });
 
-    const blockedCount = messages.filter(m => m.contact?.status === 'blocked').length;
+    const blockedCount = messages.filter(m => m.conversation?.contact?.status === 'blocked').length;
     const totalCount = messages.length;
 
     return {

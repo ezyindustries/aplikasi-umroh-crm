@@ -600,8 +600,8 @@ class WhatsAppWebService {
             });
           }
           
-          // Fetch recent messages (last 50)
-          const messages = await chat.fetchMessages({ limit: 50 });
+          // Fetch recent messages (last 100)
+          const messages = await chat.fetchMessages({ limit: 100 });
           logger.info(`  - Loading ${messages.length} messages`);
           
           for (const msg of messages) {

@@ -35,11 +35,10 @@ class ContactController {
           as: 'conversations',
           required: false,
           where: { status: 'active' },
-          order: [['lastMessageAt', 'DESC']],
-          limit: 1,
           include: [{
             model: Message,
             as: 'messages',
+            separate: true,
             order: [['createdAt', 'DESC']],
             limit: 1
           }]
@@ -55,6 +54,24 @@ class ContactController {
         filteredContacts = contacts.filter(contact => 
           contact.conversations.some(conv => conv.unreadCount > 0)
         );
+      }
+
+      // For each contact, ensure messages are loaded
+      for (const contact of filteredContacts) {
+        if (contact.conversations && contact.conversations.length > 0) {
+          for (const conv of contact.conversations) {
+            // Load the latest message if not already loaded
+            if (!conv.messages || conv.messages.length === 0) {
+              const latestMessage = await Message.findOne({
+                where: { conversationId: conv.id },
+                order: [['createdAt', 'DESC']]
+              });
+              if (latestMessage) {
+                conv.setDataValue('messages', [latestMessage]);
+              }
+            }
+          }
+        }
       }
 
       res.json({
