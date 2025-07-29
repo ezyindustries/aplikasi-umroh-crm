@@ -2164,12 +2164,14 @@
                 case 'authenticated':
                 case 'WORKING':
                     statusText.textContent = 'Connected';
+                    // Change button to disconnect when connected
                     connectBtn.innerHTML = `
-                        <span class="material-icons">check_circle</span>
-                        <span class="btn-text">Connected</span>
+                        <span class="material-icons">link_off</span>
+                        <span class="btn-text">Disconnect</span>
                     `;
-                    connectBtn.classList.add('btn-success');
-                    connectBtn.classList.remove('btn-primary');
+                    connectBtn.classList.remove('btn-success', 'btn-primary');
+                    connectBtn.classList.add('btn-danger');
+                    connectBtn.setAttribute('onclick', 'disconnectWhatsApp()');
                     connectionState.phone = data.phone || data.phoneNumber;
                     connectionState.connectedAt = data.connectedAt || new Date();
                     // Load contacts when authenticated
@@ -2198,69 +2200,14 @@
                         <span class="material-icons">link</span>
                         <span class="btn-text">Connect WhatsApp</span>
                     `;
-                    connectBtn.classList.remove('btn-success');
+                    connectBtn.classList.remove('btn-success', 'btn-danger');
                     connectBtn.classList.add('btn-primary');
+                    connectBtn.setAttribute('onclick', 'connectWhatsApp()');
                     connectionState.phone = null;
                     connectionState.connectedAt = null;
             }
             
             updateConnectionInfo();
-        }
-
-        // Connect to WAHA WhatsApp API
-        async function connectWhatsApp() {
-            console.log('Connecting to WAHA...');
-            
-            try {
-                // Update UI to show connecting state
-                const connectBtn = document.getElementById('connectBtn');
-                const btnText = connectBtn.querySelector('.btn-text');
-                const originalText = btnText.textContent;
-                btnText.textContent = 'Connecting...';
-                connectBtn.disabled = true;
-                
-                // Step 1: Check if backend is running
-                const healthCheck = await fetch(`${API_CONFIG.baseUrl}/health`);
-                if (!healthCheck.ok) {
-                    throw new Error('Backend server is not running. Please start the backend first.');
-                }
-                
-                // Step 2: Start WAHA session
-                const startResponse = await fetch(`${API_CONFIG.baseUrl}/sessions/start`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        sessionId: API_CONFIG.sessionId || 'default'
-                    })
-                });
-                
-                if (!startResponse.ok) {
-                    const error = await startResponse.json();
-                    throw new Error(error.error || 'Failed to start WAHA session');
-                }
-                
-                const startResult = await startResponse.json();
-                console.log('WAHA session started:', startResult);
-                
-                // Step 3: Check session status and get QR if needed
-                await checkWAHAStatus();
-                
-                // Restore button
-                btnText.textContent = originalText;
-                connectBtn.disabled = false;
-                
-            } catch (error) {
-                console.error('WAHA connection error:', error);
-                alert(`Failed to connect to WAHA:\n${error.message}`);
-                
-                // Restore button
-                const connectBtn = document.getElementById('connectBtn');
-                const btnText = connectBtn.querySelector('.btn-text');
-                btnText.textContent = 'Connect WhatsApp';
-                connectBtn.disabled = false;
-            }
         }
         
         // Check WAHA session status
@@ -2801,33 +2748,7 @@
             console.log('Filtering by:', filter);
         }
 
-        function sendMessage() {
-            const input = document.querySelector('.chat-input');
-            const message = input.value.trim();
-            
-            if (message) {
-                const messagesArea = document.getElementById('messages-area');
-                const messageDiv = document.createElement('div');
-                messageDiv.className = 'message sent';
-                messageDiv.innerHTML = `
-                    <div class="message-bubble">
-                        <div class="message-text">${message}</div>
-                        <div class="message-time">
-                            ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-                            <span class="material-icons" style="font-size: 16px; color: #3b82f6;">done</span>
-                        </div>
-                    </div>
-                `;
-                messagesArea.appendChild(messageDiv);
-                messagesArea.scrollTop = messagesArea.scrollHeight;
-                input.value = '';
-                
-                // Send via WAHA if connected
-                if (connectionState.status === 'connected') {
-                    // Implement actual sending via WAHA API
-                }
-            }
-        }
+        // Removed duplicate sendMessage function - using async version below
 
         // Auto-resize textarea
         const chatInput = document.getElementById('messageInput');
@@ -2879,27 +2800,124 @@
         
         // Load contacts
         async function loadContacts(filter = 'all') {
+            console.log('=== loadContacts called ===');
+            console.log('Filter:', filter);
+            console.log('API_CONFIG:', API_CONFIG);
+            
             try {
-                let url = `${API_CONFIG.baseUrl}/contacts?status=active`;
+                // Get conversations instead of just contacts - this includes last message
+                let url = `${API_CONFIG.baseUrl}/conversations?status=active&limit=50`;
                 if (filter === 'unread') {
                     url += '&hasUnread=true';
                 }
                 
+                console.log('Fetching from URL:', url);
                 const response = await fetch(url);
+                console.log('Response status:', response.status);
+                
                 const result = await response.json();
+                console.log('API Result:', result);
                 
                 if (result.success) {
-                    displayContacts(result.data);
+                    console.log(`Found ${result.data.length} conversations`);
+                    
+                    // Transform conversations data to match displayContacts format
+                    const contactsData = result.data.map(conv => ({
+                        ...conv.contact,
+                        conversations: [conv],
+                        lastMessage: conv.messages?.[0],
+                        isWithin24hWindow: conv.isWithin24hWindow
+                    }));
+                    
+                    console.log('Transformed data:', contactsData);
+                    displayContacts(contactsData);
+                    
+                    // Show total conversations loaded
+                    console.log(`Loaded ${result.data.length} conversations (Total: ${result.pagination.total})`);
+                    
+                    // Add load more button if there are more conversations
+                    if (result.pagination.total > 50) {
+                        addLoadMoreButton(result.pagination.total);
+                    }
+                } else {
+                    console.error('API returned error:', result.error);
                 }
             } catch (error) {
                 console.error('Error loading contacts:', error);
+                console.error('Stack trace:', error.stack);
             }
         }
         
-        // Display contacts in UI
-        function displayContacts(contacts) {
+        // Add load more button
+        function addLoadMoreButton(totalConversations) {
             const contactsList = document.getElementById('contacts-list');
-            contactsList.innerHTML = '';
+            const existingButton = document.getElementById('load-more-btn');
+            
+            if (existingButton) {
+                existingButton.remove();
+            }
+            
+            const loadMoreBtn = document.createElement('div');
+            loadMoreBtn.id = 'load-more-btn';
+            loadMoreBtn.className = 'load-more-button';
+            loadMoreBtn.innerHTML = `
+                <button onclick="loadMoreConversations()" style="
+                    width: 100%;
+                    padding: 12px;
+                    margin: 10px 0;
+                    background: linear-gradient(145deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));
+                    border: 1px solid rgba(59, 130, 246, 0.3);
+                    border-radius: 8px;
+                    color: #60a5fa;
+                    cursor: pointer;
+                    font-weight: 500;
+                    transition: all 0.3s ease;
+                ">
+                    Load More Conversations (Showing 50 of ${totalConversations})
+                </button>
+            `;
+            contactsList.appendChild(loadMoreBtn);
+        }
+        
+        // Load more conversations
+        let currentOffset = 0;
+        async function loadMoreConversations() {
+            currentOffset += 50;
+            try {
+                const response = await fetch(`${API_CONFIG.baseUrl}/conversations?status=active&limit=50&offset=${currentOffset}`);
+                const result = await response.json();
+                
+                if (result.success && result.data.length > 0) {
+                    const contactsData = result.data.map(conv => ({
+                        ...conv.contact,
+                        conversations: [conv],
+                        lastMessage: conv.messages?.[0],
+                        isWithin24hWindow: conv.isWithin24hWindow
+                    }));
+                    
+                    // Append to existing contacts
+                    appendContacts(contactsData);
+                    
+                    // Update or remove load more button
+                    if (currentOffset + 50 < result.pagination.total) {
+                        const btn = document.querySelector('#load-more-btn button');
+                        if (btn) {
+                            btn.textContent = `Load More Conversations (Showing ${currentOffset + 50} of ${result.pagination.total})`;
+                        }
+                    } else {
+                        document.getElementById('load-more-btn')?.remove();
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading more conversations:', error);
+                showNotification('Failed to load more conversations', 'error');
+            }
+        }
+        
+        // Append contacts to existing list
+        function appendContacts(contacts) {
+            const contactsList = document.getElementById('contacts-list');
+            const loadMoreBtn = document.getElementById('load-more-btn');
             
             contacts.forEach(contact => {
                 const conversation = contact.conversations?.[0];
@@ -2908,7 +2926,60 @@
                 
                 const contactItem = document.createElement('div');
                 contactItem.className = 'contact-item';
-                contactItem.onclick = (e) => selectContact(contact, conversation, contactItem);
+                contactItem.onclick = (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    selectContact(contact, conversation, contactItem);
+                };
+                
+                contactItem.innerHTML = `
+                    <div class="contact-avatar">${getInitials(contact.name || contact.phoneNumber)}</div>
+                    <div class="contact-info">
+                        <div class="contact-name">${contact.name || contact.phoneNumber}</div>
+                        <div class="contact-message">${lastMessage?.content || 'No messages yet'}</div>
+                    </div>
+                    <div class="contact-meta">
+                        <div class="contact-time">${formatTime(lastMessage?.createdAt)}</div>
+                        ${unreadCount > 0 ? `<div class="unread-badge">${unreadCount}</div>` : ''}
+                    </div>
+                `;
+                
+                // Insert before load more button if it exists
+                if (loadMoreBtn) {
+                    contactsList.insertBefore(contactItem, loadMoreBtn);
+                } else {
+                    contactsList.appendChild(contactItem);
+                }
+            });
+        }
+        
+        // Display contacts in UI
+        function displayContacts(contacts) {
+            console.log('=== displayContacts called ===');
+            console.log('Number of contacts:', contacts.length);
+            
+            const contactsList = document.getElementById('contacts-list');
+            if (!contactsList) {
+                console.error('ERROR: contacts-list element not found!');
+                return;
+            }
+            
+            console.log('Clearing contacts list...');
+            contactsList.innerHTML = '';
+            
+            contacts.forEach((contact, index) => {
+                console.log(`Processing contact ${index}:`, contact);
+                const conversation = contact.conversations?.[0];
+                const lastMessage = conversation?.messages?.[0];
+                const unreadCount = conversation?.unreadCount || 0;
+                
+                const contactItem = document.createElement('div');
+                contactItem.className = 'contact-item';
+                contactItem.onclick = (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    selectContact(contact, conversation, contactItem);
+                };
                 
                 contactItem.innerHTML = `
                     <div class="contact-avatar">${getInitials(contact.name || contact.phoneNumber)}</div>
@@ -3102,11 +3173,73 @@
                     document.getElementById('messages-area').appendChild(messageDiv);
                     document.getElementById('messages-area').scrollTop = document.getElementById('messages-area').scrollHeight;
                 } else {
-                    showNotification('Failed to send message: ' + (result.error || 'Unknown error'), 'error');
+                    // Check for rate limit error
+                    if (response.status === 429) {
+                        const retryAfter = result.retryAfter || 60;
+                        showNotification(`Rate limit exceeded. Please wait ${retryAfter} seconds before sending more messages.`, 'warning');
+                        
+                        // Disable input temporarily
+                        input.disabled = true;
+                        const sendBtn = document.querySelector('.send-btn');
+                        if (sendBtn) {
+                            sendBtn.disabled = true;
+                            setTimeout(() => {
+                                input.disabled = false;
+                                if (sendBtn) sendBtn.disabled = false;
+                                input.focus();
+                            }, retryAfter * 1000);
+                        }
+                    } else {
+                        showNotification('Failed to send message: ' + (result.error || 'Unknown error'), 'error');
+                    }
                 }
             } catch (error) {
                 console.error('Error sending message:', error);
                 showNotification('Failed to send message', 'error');
+            }
+        }
+        
+        // Format time for display
+        function formatTime(date) {
+            const d = new Date(date);
+            const hours = d.getHours().toString().padStart(2, '0');
+            const minutes = d.getMinutes().toString().padStart(2, '0');
+            return `${hours}:${minutes}`;
+        }
+        
+        // Display new message in chat area
+        function displayNewMessage(message) {
+            console.log('Displaying new message:', message);
+            
+            const messagesArea = document.getElementById('messages-area');
+            if (!messagesArea) {
+                console.error('Messages area not found');
+                return;
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${message.direction === 'inbound' ? 'received' : 'sent'}`;
+            
+            const statusIcon = message.status === 'sent' ? 'done' : 
+                             message.status === 'delivered' ? 'done_all' : 
+                             message.status === 'read' ? 'done_all' : 'schedule';
+            
+            messageDiv.innerHTML = `
+                <div class="message-bubble">
+                    <div class="message-text">${message.content || ''}</div>
+                    <div class="message-time">
+                        ${formatTime(new Date(message.createdAt))}
+                        ${message.direction === 'outbound' ? `<span class="material-icons" style="font-size: 16px; color: ${message.status === 'read' ? '#3b82f6' : '#64748b'};">${statusIcon}</span>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            messagesArea.appendChild(messageDiv);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+            
+            // Show notification if message is inbound
+            if (message.direction === 'inbound') {
+                showNotification(`New message from ${currentContact?.name || 'Unknown'}`, 'info');
             }
         }
         
@@ -3535,6 +3668,97 @@
         function checkComplianceBeforeSend() {
             // Basic compliance check before sending
             return true;
+        }
+        
+        // Connect WhatsApp
+        async function connectWhatsApp() {
+            const connectBtn = document.getElementById('connectBtn');
+            const originalContent = connectBtn.innerHTML;
+            
+            try {
+                // Show loading state
+                connectBtn.innerHTML = '<span class="material-icons">sync</span><span class="btn-text">Connecting...</span>';
+                connectBtn.disabled = true;
+                
+                const response = await fetch(`${API_CONFIG.baseUrl}/sessions/${API_CONFIG.sessionId}/start`, {
+                    method: 'POST'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    if (result.qr) {
+                        // Show QR code
+                        showQRModal(result.qr);
+                    } else if (result.status === 'connected' || result.status === 'WORKING') {
+                        // Already connected
+                        updateConnectionStatus('connected', result);
+                        showNotification('WhatsApp sudah terhubung', 'success');
+                    }
+                } else {
+                    showNotification('Gagal menghubungkan WhatsApp: ' + (result.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                console.error('Error connecting WhatsApp:', error);
+                showNotification('Error menghubungkan WhatsApp', 'error');
+            } finally {
+                connectBtn.innerHTML = originalContent;
+                connectBtn.disabled = false;
+            }
+        }
+        
+        // Disconnect WhatsApp
+        async function disconnectWhatsApp() {
+            if (!confirm('Apakah Anda yakin ingin disconnect dari WhatsApp? Anda perlu scan QR code lagi untuk reconnect.')) {
+                return;
+            }
+            
+            const connectBtn = document.getElementById('connectBtn');
+            const originalContent = connectBtn.innerHTML;
+            
+            try {
+                // Show loading state
+                connectBtn.innerHTML = '<span class="material-icons">sync</span><span class="btn-text">Disconnecting...</span>';
+                connectBtn.disabled = true;
+                
+                // Call stop endpoint with logout=true to properly disconnect
+                const response = await fetch(`${API_CONFIG.baseUrl}/sessions/${API_CONFIG.sessionId}/stop`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ logout: true })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    updateConnectionStatus('disconnected');
+                    showNotification('WhatsApp berhasil disconnected', 'success');
+                    
+                    // Clear contacts and messages
+                    document.getElementById('contacts-list').innerHTML = '';
+                    const messagesArea = document.getElementById('messages-area');
+                    if (messagesArea) {
+                        messagesArea.innerHTML = '';
+                    }
+                    
+                    // Reset current conversation
+                    currentConversation = null;
+                    currentContact = null;
+                } else {
+                    showNotification('Gagal disconnect: ' + (result.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                console.error('Error disconnecting WhatsApp:', error);
+                showNotification('Error saat disconnect', 'error');
+            } finally {
+                connectBtn.innerHTML = originalContent;
+                connectBtn.disabled = false;
+                
+                // Check status again
+                setTimeout(checkConnectionStatus, 1000);
+            }
         }
         
         // Load WhatsApp chat history

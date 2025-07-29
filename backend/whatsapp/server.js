@@ -62,8 +62,10 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Webhook routes (must be before main API routes for proper routing)
+// Import webhook routes
 const webhookRoutes = require('./src/routes/webhooks');
+
+// Webhook routes (must be before main API routes for proper routing)
 app.use('/api/webhooks', webhookRoutes);
 
 // API routes

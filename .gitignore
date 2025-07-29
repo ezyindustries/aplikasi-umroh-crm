@@ -54,3 +54,7 @@ backup/
 
 # Local settings
 .claude/settings.local.json
+
+# Windows special files
+NUL
+nul

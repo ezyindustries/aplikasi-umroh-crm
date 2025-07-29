@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Conversations</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .conversation-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+        .conversation-item:hover {
+            background: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Debug Conversations Loading</h1>
+        
+        <div id="status"></div>
+        <div id="results"></div>
+        
+        <h2>Conversations List:</h2>
+        <div id="conversations"></div>
+    </div>
+
+    <script>
+        const API_CONFIG = {
+            baseUrl: 'http://localhost:3001/api',
+            sessionId: 'default'
+        };
+
+        async function debugConversations() {
+            const statusDiv = document.getElementById('status');
+            const resultsDiv = document.getElementById('results');
+            const conversationsDiv = document.getElementById('conversations');
+            
+            // Step 1: Check Backend Health
+            statusDiv.innerHTML = '<div class="status info">Checking backend health...</div>';
+            try {
+                const healthResponse = await fetch(`${API_CONFIG.baseUrl}/health`);
+                const healthData = await healthResponse.json();
+                statusDiv.innerHTML += `<div class="status success">✓ Backend is running: ${healthData.message}</div>`;
+            } catch (error) {
+                statusDiv.innerHTML += `<div class="status error">✗ Backend error: ${error.message}</div>`;
+                return;
+            }
+            
+            // Step 2: Check Session Status
+            statusDiv.innerHTML += '<div class="status info">Checking WhatsApp session...</div>';
+            try {
+                const sessionResponse = await fetch(`${API_CONFIG.baseUrl}/sessions/${API_CONFIG.sessionId}/status`);
+                const sessionData = await sessionResponse.json();
+                statusDiv.innerHTML += `<div class="status success">✓ Session status: ${sessionData.data?.status || 'Unknown'}</div>`;
+                resultsDiv.innerHTML = `<h3>Session Info:</h3><pre>${JSON.stringify(sessionData.data, null, 2)}</pre>`;
+            } catch (error) {
+                statusDiv.innerHTML += `<div class="status error">✗ Session error: ${error.message}</div>`;
+            }
+            
+            // Step 3: Load Conversations
+            statusDiv.innerHTML += '<div class="status info">Loading conversations...</div>';
+            try {
+                const url = `${API_CONFIG.baseUrl}/conversations?status=active&limit=50`;
+                console.log('Fetching from:', url);
+                
+                const response = await fetch(url);
+                const result = await response.json();
+                
+                console.log('Response:', result);
+                
+                if (result.success) {
+                    statusDiv.innerHTML += `<div class="status success">✓ Loaded ${result.data.length} conversations (Total: ${result.pagination.total})</div>`;
+                    
+                    // Display conversations
+                    conversationsDiv.innerHTML = '';
+                    result.data.forEach((conv, index) => {
+                        const lastMessage = conv.messages?.[0];
+                        conversationsDiv.innerHTML += `
+                            <div class="conversation-item">
+                                <strong>${index + 1}. ${conv.contact.name || conv.contact.phoneNumber}</strong><br>
+                                Phone: ${conv.contact.phoneNumber}<br>
+                                Last Message: ${lastMessage?.content || 'No messages'}<br>
+                                Time: ${new Date(conv.lastMessageAt).toLocaleString()}<br>
+                                Unread: ${conv.unreadCount}
+                            </div>
+                        `;
+                    });
+                } else {
+                    statusDiv.innerHTML += `<div class="status error">✗ Failed to load conversations: ${result.error}</div>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML += `<div class="status error">✗ Error loading conversations: ${error.message}</div>`;
+                console.error('Full error:', error);
+            }
+        }
+
+        // Run debug on load
+        debugConversations();
+    </script>
+</body>
+</html>

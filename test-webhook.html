@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Webhook</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .container {
+            background: #f5f5f5;
+            padding: 30px;
+            border-radius: 8px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .log {
+            background: #fff;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #ddd;
+        }
+        .log-entry.success {
+            border-left-color: #4CAF50;
+            background: #f1f8f4;
+        }
+        .log-entry.error {
+            border-left-color: #f44336;
+            background: #fef1f1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test WAHA Webhook</h1>
+        
+        <p>This page will send a test message to trigger the webhook and check if messages appear in frontend.</p>
+        
+        <div>
+            <button onclick="sendTestMessage()">Send Test Message</button>
+            <button onclick="checkBackendLogs()">Check Backend Logs</button>
+            <button onclick="checkFrontendConnection()">Check Frontend Connection</button>
+            <button onclick="clearLog()">Clear Log</button>
+        </div>
+        
+        <div class="log" id="log">
+            <div class="log-entry">Ready to test...</div>
+        </div>
+    </div>
+
+    <script>
+        function addLog(message, type = 'info') {
+            const log = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        async function sendTestMessage() {
+            addLog('Sending test message via WAHA webhook...');
+            
+            try {
+                // Simulate incoming message webhook
+                const webhookData = {
+                    event: 'message',
+                    session: 'default',
+                    payload: {
+                        id: 'test_' + Date.now(),
+                        from: '6281234567890@c.us',
+                        to: '628113032232@c.us',
+                        body: 'Test message from webhook at ' + new Date().toLocaleTimeString(),
+                        type: 'chat',
+                        timestamp: Math.floor(Date.now() / 1000),
+                        fromMe: false
+                    },
+                    contact: {
+                        id: '6281234567890@c.us',
+                        name: 'Test User',
+                        pushname: 'Test User'
+                    }
+                };
+                
+                const response = await fetch('http://localhost:3001/api/webhooks/waha', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(webhookData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    addLog('Webhook sent successfully: ' + JSON.stringify(result), 'success');
+                    addLog('Check frontend to see if message appears', 'success');
+                } else {
+                    addLog('Webhook failed: ' + JSON.stringify(result), 'error');
+                }
+                
+            } catch (error) {
+                addLog('Error: ' + error.message, 'error');
+            }
+        }
+        
+        async function checkBackendLogs() {
+            addLog('Checking backend connection...');
+            
+            try {
+                const response = await fetch('http://localhost:3001/api/health');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addLog('Backend is running: ' + data.message, 'success');
+                    
+                    // Check conversations
+                    const convResponse = await fetch('http://localhost:3001/api/conversations?limit=5');
+                    const convData = await convResponse.json();
+                    
+                    if (convData.success) {
+                        addLog(`Found ${convData.pagination.total} conversations in database`, 'success');
+                    }
+                } else {
+                    addLog('Backend error: ' + JSON.stringify(data), 'error');
+                }
+            } catch (error) {
+                addLog('Backend connection error: ' + error.message, 'error');
+            }
+        }
+        
+        async function checkFrontendConnection() {
+            addLog('Checking if frontend is connected via Socket.IO...');
+            
+            // Try to connect to Socket.IO
+            const script = document.createElement('script');
+            script.src = 'https://cdn.socket.io/4.5.4/socket.io.min.js';
+            document.head.appendChild(script);
+            
+            script.onload = () => {
+                const socket = io('http://localhost:3001', {
+                    transports: ['websocket', 'polling']
+                });
+                
+                socket.on('connect', () => {
+                    addLog('Socket.IO connected successfully', 'success');
+                    socket.emit('join:session', 'default');
+                });
+                
+                socket.on('message:new', (data) => {
+                    addLog('Received new message event: ' + JSON.stringify(data), 'success');
+                });
+                
+                socket.on('connect_error', (error) => {
+                    addLog('Socket.IO connection error: ' + error.message, 'error');
+                });
+                
+                setTimeout(() => {
+                    if (socket.connected) {
+                        addLog('Socket.IO is connected and listening for events', 'success');
+                    } else {
+                        addLog('Socket.IO failed to connect', 'error');
+                    }
+                }, 2000);
+            };
+        }
+        
+        function clearLog() {
+            document.getElementById('log').innerHTML = '<div class="log-entry">Log cleared</div>';
+        }
+        
+        // Auto-check on load
+        window.addEventListener('DOMContentLoaded', () => {
+            checkBackendLogs();
+        });
+    </script>
+</body>
+</html>

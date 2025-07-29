@@ -28,7 +28,7 @@ router.post('/sessions/:sessionId/load-history', sessionController.loadChatHisto
 router.get('/sessions/:sessionId/qr', sessionController.getQR);
 
 // Message routes
-router.post('/messages/send', createRateLimitMiddleware('messageSending'), messageController.sendMessage);
+router.post('/messages/send', messageController.sendMessage);
 router.get('/messages/:conversationId', messageController.getMessages);
 router.get('/messages/search', messageController.searchMessages);
 router.get('/messages/:messageId/status', messageController.getMessageStatus);

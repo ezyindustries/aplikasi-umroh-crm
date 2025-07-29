@@ -96,6 +96,16 @@ class MessageController {
       });
     } catch (error) {
       logger.api.error('Error sending message:', error);
+      
+      // Check for rate limit error
+      if (error.response && error.response.status === 429) {
+        return res.status(429).json({
+          success: false,
+          error: 'Rate limit exceeded. Please wait before sending more messages.',
+          retryAfter: error.response.headers['retry-after'] || 60
+        });
+      }
+      
       res.status(500).json({
         success: false,
         error: error.message
@@ -113,7 +123,24 @@ class MessageController {
         where: { conversationId },
         order: [['createdAt', 'DESC']],
         limit: parseInt(limit),
-        offset: parseInt(offset)
+        offset: parseInt(offset),
+        attributes: [
+          'id',
+          'conversationId',
+          'content',
+          'messageType',
+          'direction',
+          'status',
+          'whatsappMessageId',
+          'createdAt',
+          'isStarred',
+          'fromNumber',
+          'toNumber',
+          'mediaUrl',
+          'sentAt',
+          'deliveredAt',
+          'readAt'
+        ]
       });
 
       // Mark messages as read
@@ -260,52 +287,6 @@ class MessageController {
     }
   }
 
-  // Get messages for a conversation
-  async getMessages(req, res) {
-    try {
-      const { conversationId } = req.params;
-      const { limit = 50, offset = 0 } = req.query;
-      
-      logger.api.info(`Getting messages for conversation: ${conversationId}`);
-      
-      // Get messages with pagination
-      const messages = await Message.findAll({
-        where: { conversation_id: conversationId },
-        order: [['createdAt', 'DESC']],
-        limit: parseInt(limit),
-        offset: parseInt(offset),
-        attributes: [
-          'id',
-          'conversationId',
-          'content',
-          'messageType',
-          'direction',
-          'status',
-          'whatsappMessageId',
-          'createdAt'
-        ]
-      });
-      
-      // Reverse to show oldest first
-      messages.reverse();
-      
-      res.json({
-        success: true,
-        data: messages,
-        pagination: {
-          limit: parseInt(limit),
-          offset: parseInt(offset),
-          total: messages.length
-        }
-      });
-    } catch (error) {
-      logger.api.error('Error getting messages:', error);
-      res.status(500).json({
-        success: false,
-        error: error.message
-      });
-    }
-  }
 
   // Get queue status
   async getQueueStatus(req, res) {

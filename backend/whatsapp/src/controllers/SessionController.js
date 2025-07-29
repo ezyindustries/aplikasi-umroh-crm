@@ -190,12 +190,17 @@ class SessionController {
       
       logger.api.info('Loading chat history for session:', sessionId);
       
-      // Check if session is connected
+      // Check if session is connected - accept multiple valid states
       const status = await whatsappService.getSessionStatus(sessionId);
-      if (status.status !== 'authenticated') {
+      logger.api.info('Session status check:', { status: status.status, fullStatus: status });
+      
+      const validStatuses = ['authenticated', 'WORKING', 'connected', 'CONNECTED'];
+      if (!validStatuses.includes(status.status)) {
         return res.status(400).json({
           success: false,
-          error: 'Session not connected'
+          error: 'Session not connected',
+          currentStatus: status.status,
+          expectedStatuses: validStatuses
         });
       }
       

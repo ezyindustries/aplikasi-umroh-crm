@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Conversations API</title>
+</head>
+<body>
+    <h1>Testing Conversations API</h1>
+    <div id="result"></div>
+    
+    <script>
+        async function testAPI() {
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                console.log('Fetching conversations...');
+                const response = await fetch('http://localhost:3001/api/conversations?limit=50');
+                const data = await response.json();
+                
+                console.log('Response:', data);
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <h2>Success!</h2>
+                        <p>Found ${data.data.length} conversations</p>
+                        <p>Total in database: ${data.pagination.total}</p>
+                        <pre>${JSON.stringify(data.data.slice(0, 3), null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<h2>Error: ${data.error}</h2>`;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.innerHTML = `<h2>Network Error: ${error.message}</h2>`;
+            }
+        }
+        
+        // Test on load
+        testAPI();
+    </script>
+</body>
+</html>

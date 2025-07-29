@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WAHA Webhook Monitor</title>
+    <script src="https://cdn.socket.io/4.6.2/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #3b82f6;
+            margin-bottom: 30px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .panel {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #3a3a3a;
+        }
+        .panel h2 {
+            margin-top: 0;
+            color: #10b981;
+            font-size: 18px;
+        }
+        .webhook-item {
+            background: #3a3a3a;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            overflow-x: auto;
+        }
+        .webhook-time {
+            color: #9ca3af;
+            margin-bottom: 5px;
+        }
+        .webhook-event {
+            color: #3b82f6;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #3b82f6;
+            color: white;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .status.connected {
+            background: #10b981;
+            color: #000;
+        }
+        .status.disconnected {
+            background: #ef4444;
+        }
+        .clear-btn {
+            background: #ef4444;
+        }
+        .clear-btn:hover {
+            background: #dc2626;
+        }
+        pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .log-entry {
+            padding: 5px;
+            margin: 2px 0;
+            background: #3a3a3a;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 11px;
+        }
+        .log-info { color: #3b82f6; }
+        .log-error { color: #ef4444; }
+        .log-success { color: #10b981; }
+        .empty-state {
+            text-align: center;
+            color: #6b7280;
+            padding: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>WAHA Webhook Monitor</h1>
+        
+        <div class="status disconnected" id="socketStatus">
+            Backend Socket: Disconnected
+        </div>
+        
+        <div class="controls">
+            <button onclick="sendTestWebhook()">Send Test Webhook</button>
+            <button onclick="checkWAHAStatus()">Check WAHA Status</button>
+            <button onclick="clearWebhooks()" class="clear-btn">Clear All</button>
+        </div>
+        
+        <div class="grid">
+            <div class="panel">
+                <h2>Incoming Webhooks</h2>
+                <div id="webhooks">
+                    <div class="empty-state">Waiting for webhooks...</div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2>Backend Logs</h2>
+                <div id="logs">
+                    <div class="empty-state">Waiting for logs...</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel" style="margin-top: 20px;">
+            <h2>WAHA Configuration</h2>
+            <div id="wahaConfig">
+                <div class="empty-state">Click "Check WAHA Status" to load configuration</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let socket;
+        const webhooksContainer = document.getElementById('webhooks');
+        const logsContainer = document.getElementById('logs');
+        const wahaConfigContainer = document.getElementById('wahaConfig');
+        
+        // Connect to backend socket
+        function connectSocket() {
+            socket = io('http://localhost:3001', {
+                transports: ['websocket', 'polling']
+            });
+            
+            socket.on('connect', () => {
+                console.log('Connected to backend');
+                updateSocketStatus(true);
+                socket.emit('join:session', 'default');
+            });
+            
+            socket.on('disconnect', () => {
+                console.log('Disconnected from backend');
+                updateSocketStatus(false);
+            });
+            
+            // Listen for webhook events
+            socket.on('webhook:received', (data) => {
+                addWebhook(data);
+            });
+            
+            // Listen for message events
+            socket.on('message:new', (data) => {
+                addLog('New message received', 'success', data);
+            });
+            
+            // Listen for logs
+            socket.on('log:webhook', (data) => {
+                addLog(data.message, data.level, data.data);
+            });
+        }
+        
+        function updateSocketStatus(connected) {
+            const status = document.getElementById('socketStatus');
+            if (connected) {
+                status.textContent = 'Backend Socket: Connected';
+                status.className = 'status connected';
+            } else {
+                status.textContent = 'Backend Socket: Disconnected';
+                status.className = 'status disconnected';
+            }
+        }
+        
+        function addWebhook(data) {
+            if (webhooksContainer.querySelector('.empty-state')) {
+                webhooksContainer.innerHTML = '';
+            }
+            
+            const item = document.createElement('div');
+            item.className = 'webhook-item';
+            item.innerHTML = `
+                <div class="webhook-time">${new Date().toLocaleTimeString()}</div>
+                <div class="webhook-event">Event: ${data.event || 'unknown'}</div>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+            
+            webhooksContainer.insertBefore(item, webhooksContainer.firstChild);
+            
+            // Keep only last 20 webhooks
+            while (webhooksContainer.children.length > 20) {
+                webhooksContainer.removeChild(webhooksContainer.lastChild);
+            }
+        }
+        
+        function addLog(message, level = 'info', data = null) {
+            if (logsContainer.querySelector('.empty-state')) {
+                logsContainer.innerHTML = '';
+            }
+            
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${level}`;
+            const time = new Date().toLocaleTimeString();
+            
+            let content = `[${time}] ${message}`;
+            if (data) {
+                content += `\n${JSON.stringify(data, null, 2)}`;
+            }
+            
+            entry.textContent = content;
+            logsContainer.insertBefore(entry, logsContainer.firstChild);
+            
+            // Keep only last 50 logs
+            while (logsContainer.children.length > 50) {
+                logsContainer.removeChild(logsContainer.lastChild);
+            }
+        }
+        
+        async function sendTestWebhook() {
+            try {
+                const testData = {
+                    event: 'message',
+                    session: 'default',
+                    payload: {
+                        id: `test_${Date.now()}`,
+                        from: '6281234567890@c.us',
+                        to: '628113032232@c.us',
+                        body: 'Test webhook from monitor',
+                        type: 'chat',
+                        timestamp: Date.now(),
+                        fromMe: false,
+                        _data: {
+                            notifyName: 'Test User'
+                        }
+                    }
+                };
+                
+                const response = await fetch('http://localhost:3001/api/webhooks/waha', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(testData)
+                });
+                
+                const result = await response.json();
+                addLog('Test webhook sent', response.ok ? 'success' : 'error', result);
+                
+            } catch (error) {
+                addLog('Failed to send test webhook', 'error', { error: error.message });
+            }
+        }
+        
+        async function checkWAHAStatus() {
+            try {
+                const response = await fetch('http://localhost:3000/api/sessions/default');
+                const data = await response.json();
+                
+                wahaConfigContainer.innerHTML = `
+                    <div class="webhook-item">
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+                
+                addLog('WAHA status checked', 'success');
+                
+            } catch (error) {
+                addLog('Failed to check WAHA status', 'error', { error: error.message });
+            }
+        }
+        
+        function clearWebhooks() {
+            webhooksContainer.innerHTML = '<div class="empty-state">Cleared. Waiting for new webhooks...</div>';
+            logsContainer.innerHTML = '<div class="empty-state">Cleared. Waiting for new logs...</div>';
+        }
+        
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            connectSocket();
+            checkWAHAStatus();
+        });
+    </script>
+</body>
+</html>

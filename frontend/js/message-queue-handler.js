@@ -66,9 +66,19 @@ class MessageQueueHandler {
             if (response.status === 429) {
                 // Rate limited
                 this.rateLimitUI.handleRateLimitError(data);
-                input.disabled = false;
-                sendBtn.disabled = false;
-                sendBtn.innerHTML = '<i class="material-icons">send</i>';
+                
+                // Show user-friendly message with retry time
+                const retryAfter = data.retryAfter || 60;
+                this.showError(`Rate limit exceeded. Please wait ${retryAfter} seconds before sending more messages.`);
+                
+                // Re-enable after retry time
+                setTimeout(() => {
+                    input.disabled = false;
+                    sendBtn.disabled = false;
+                    sendBtn.innerHTML = '<i class="material-icons">send</i>';
+                    input.focus();
+                }, retryAfter * 1000);
+                
                 return false;
             }
 

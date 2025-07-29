@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Socket.IO Debug Monitor</title>
+    <script src="https://cdn.socket.io/4.6.2/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .status.connected {
+            background: #22c55e;
+            color: #000;
+        }
+        .status.disconnected {
+            background: #ef4444;
+        }
+        .events {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .event {
+            margin: 10px 0;
+            padding: 10px;
+            background: #3a3a3a;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .event-time {
+            color: #9ca3af;
+            margin-right: 10px;
+        }
+        .event-name {
+            color: #3b82f6;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #3b82f6;
+            color: white;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        .clear-btn {
+            background: #ef4444;
+        }
+        .clear-btn:hover {
+            background: #dc2626;
+        }
+        h1 {
+            color: #3b82f6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Socket.IO Debug Monitor</h1>
+        
+        <div class="status disconnected" id="status">
+            Disconnected
+        </div>
+        
+        <div class="controls">
+            <button onclick="connect()">Connect</button>
+            <button onclick="disconnect()">Disconnect</button>
+            <button onclick="joinSession()">Join Session</button>
+            <button onclick="sendTestEvent()">Send Test Event</button>
+            <button class="clear-btn" onclick="clearEvents()">Clear Events</button>
+        </div>
+        
+        <h2>Events Log</h2>
+        <div class="events" id="events">
+            <div class="event">Waiting for connection...</div>
+        </div>
+    </div>
+
+    <script>
+        let socket;
+        const eventsContainer = document.getElementById('events');
+        const statusElement = document.getElementById('status');
+        
+        function logEvent(eventName, data) {
+            const time = new Date().toLocaleTimeString();
+            const eventDiv = document.createElement('div');
+            eventDiv.className = 'event';
+            eventDiv.innerHTML = `
+                <span class="event-time">${time}</span>
+                <span class="event-name">${eventName}</span>
+                <span>${JSON.stringify(data, null, 2)}</span>
+            `;
+            eventsContainer.insertBefore(eventDiv, eventsContainer.firstChild);
+            
+            // Keep only last 100 events
+            while (eventsContainer.children.length > 100) {
+                eventsContainer.removeChild(eventsContainer.lastChild);
+            }
+        }
+        
+        function updateStatus(connected) {
+            if (connected) {
+                statusElement.textContent = 'Connected';
+                statusElement.className = 'status connected';
+            } else {
+                statusElement.textContent = 'Disconnected';
+                statusElement.className = 'status disconnected';
+            }
+        }
+        
+        function connect() {
+            if (socket) {
+                socket.disconnect();
+            }
+            
+            logEvent('Connecting', { url: 'http://localhost:3001' });
+            
+            socket = io('http://localhost:3001', {
+                transports: ['websocket', 'polling'],
+                reconnection: true
+            });
+            
+            // Connection events
+            socket.on('connect', () => {
+                logEvent('Connected', { id: socket.id });
+                updateStatus(true);
+            });
+            
+            socket.on('disconnect', (reason) => {
+                logEvent('Disconnected', { reason });
+                updateStatus(false);
+            });
+            
+            socket.on('connect_error', (error) => {
+                logEvent('Connection Error', { message: error.message });
+            });
+            
+            // WhatsApp events
+            socket.on('session:status', (data) => {
+                logEvent('session:status', data);
+            });
+            
+            socket.on('session:qr', (data) => {
+                logEvent('session:qr', { ...data, qr: data.qr ? 'QR_CODE_DATA' : null });
+            });
+            
+            socket.on('session:connected', (data) => {
+                logEvent('session:connected', data);
+            });
+            
+            // Message events
+            socket.on('message:new', (data) => {
+                logEvent('message:new', data);
+            });
+            
+            socket.on('message:sent', (data) => {
+                logEvent('message:sent', data);
+            });
+            
+            socket.on('message:status', (data) => {
+                logEvent('message:status', data);
+            });
+            
+            // Conversation events
+            socket.on('conversation:update', (data) => {
+                logEvent('conversation:update', data);
+            });
+            
+            socket.on('conversation:updated', (data) => {
+                logEvent('conversation:updated', data);
+            });
+            
+            // Catch all events
+            socket.onAny((eventName, ...args) => {
+                if (!['connect', 'disconnect', 'connect_error'].includes(eventName)) {
+                    logEvent(`[Any] ${eventName}`, args);
+                }
+            });
+        }
+        
+        function disconnect() {
+            if (socket) {
+                socket.disconnect();
+                logEvent('Manual Disconnect', {});
+            }
+        }
+        
+        function joinSession() {
+            if (socket && socket.connected) {
+                socket.emit('join:session', 'default');
+                logEvent('Emitted', { event: 'join:session', session: 'default' });
+            } else {
+                alert('Not connected!');
+            }
+        }
+        
+        function sendTestEvent() {
+            if (socket && socket.connected) {
+                socket.emit('test:event', { message: 'Hello from debug monitor!' });
+                logEvent('Emitted', { event: 'test:event' });
+            } else {
+                alert('Not connected!');
+            }
+        }
+        
+        function clearEvents() {
+            eventsContainer.innerHTML = '<div class="event">Events cleared</div>';
+        }
+        
+        // Auto-connect on load
+        window.addEventListener('DOMContentLoaded', () => {
+            connect();
+        });
+    </script>
+</body>
+</html>

@@ -29,13 +29,35 @@ router.post('/waha', async (req, res) => {
     // Log the event
     logger.info(`WAHA Webhook Event: ${event.event}`, {
       session: event.session,
-      event: event.event
+      event: event.event,
+      from: event.payload?.from,
+      body: event.payload?.body
     });
+    
+    // Emit to frontend for monitoring
+    if (global.io) {
+      global.io.emit('webhook:received', event);
+      global.io.emit('log:webhook', {
+        message: `Webhook received: ${event.event}`,
+        level: 'info',
+        data: {
+          session: event.session,
+          from: event.payload?.from
+        }
+      });
+    }
     
     // Process the event asynchronously
     setImmediate(() => {
       wahaService.handleWebhook(event).catch(error => {
         logger.error('Error processing webhook:', error);
+        if (global.io) {
+          global.io.emit('log:webhook', {
+            message: 'Error processing webhook',
+            level: 'error',
+            data: { error: error.message }
+          });
+        }
       });
     });
     

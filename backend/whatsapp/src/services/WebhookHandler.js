@@ -72,29 +72,46 @@ class WebhookHandler {
   }
 
   // Handle incoming message
-  async handleMessage(payload) {
-    const { message, contact, sessionId } = payload;
-
+  async handleMessage(event) {
+    // WAHA sends the full event structure
+    const { payload, session } = event;
+    
     // Skip if message is from self
-    if (message.fromMe) {
+    if (payload.fromMe) {
       return;
     }
 
-    // Queue message for processing
-    await messageQueue.queueIncomingMessage({
-      message,
-      contact,
-      sessionId,
-      timestamp: new Date()
+    logger.webhook.info('Processing incoming message:', {
+      from: payload.from,
+      messageId: payload.id,
+      session: session
+    });
+
+    // Queue message for processing with WAHA format
+    await messageQueue.processIncomingMessage({
+      sessionId: session,
+      message: {
+        id: payload.id,
+        from: payload.from,
+        to: payload.to || session,
+        type: payload.type || 'text',
+        text: payload.body,
+        caption: payload.caption,
+        mediaId: payload.media?.id,
+        timestamp: payload.timestamp,
+        isForwarded: payload.isForwarded || false,
+        quotedMessageId: payload.quotedMsgId,
+        pushname: payload._data?.notifyName || payload.from
+      }
     });
   }
 
   // Handle message acknowledgment (delivery/read receipts)
-  async handleMessageAck(payload) {
-    const { message, ack } = payload;
+  async handleMessageAck(event) {
+    const { payload } = event;
     
     let status;
-    switch (ack) {
+    switch (payload.ack) {
       case 1: // SENT
         status = 'sent';
         break;
@@ -112,69 +129,69 @@ class WebhookHandler {
     }
 
     await messageQueue.queueStatusUpdate(
-      message.id,
+      payload.id,
       status,
-      message.timestamp
+      payload.timestamp
     );
   }
 
   // Handle connection state changes
-  async handleStateChange(payload) {
-    const { state, sessionId } = payload;
+  async handleStateChange(event) {
+    const { payload, session } = event;
     const { WhatsAppSession } = require('../models');
 
-    logger.webhook.info(`Session ${sessionId} state changed to: ${state}`);
+    logger.webhook.info(`Session ${session} state changed to: ${payload}`);
 
     // Update session status in database
     await WhatsAppSession.update(
       { 
-        status: this.mapStateToStatus(state),
+        status: this.mapStateToStatus(payload),
         lastHealthCheck: new Date()
       },
-      { where: { sessionName: sessionId } }
+      { where: { sessionName: session } }
     );
 
     // Emit event for real-time updates
     if (global.io) {
       global.io.emit('session:status', {
-        sessionId,
-        status: state
+        sessionId: session,
+        status: payload
       });
     }
   }
 
   // Handle group join events
-  async handleGroupJoin(payload) {
-    const { group, contact, sessionId } = payload;
+  async handleGroupJoin(event) {
+    const { payload, session } = event;
     
     logger.webhook.info('Group join event:', {
-      group: group.name,
-      contact: contact.name,
-      sessionId
+      group: payload.id,
+      participant: payload.participant,
+      sessionId: session
     });
 
     // You can implement group tracking here if needed
   }
 
   // Handle group leave events
-  async handleGroupLeave(payload) {
-    const { group, contact, sessionId } = payload;
+  async handleGroupLeave(event) {
+    const { payload, session } = event;
     
     logger.webhook.info('Group leave event:', {
-      group: group.name,
-      contact: contact.name,
-      sessionId
+      group: payload.id,
+      participant: payload.participant,
+      sessionId: session
     });
   }
 
   // Handle incoming calls
-  async handleCall(payload) {
-    const { call, contact, sessionId } = payload;
+  async handleCall(event) {
+    const { payload, session } = event;
     
     logger.webhook.info('Incoming call:', {
-      from: contact.name,
-      type: call.isVideo ? 'video' : 'voice',
-      sessionId
+      from: payload.from,
+      type: payload.isVideo ? 'video' : 'voice',
+      sessionId: session
     });
 
     // You can implement call logging or auto-reject here

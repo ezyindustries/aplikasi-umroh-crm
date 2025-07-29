@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Simple Conversations</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .contact-list {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .contact-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .contact-item:hover {
+            background: #f0f0f0;
+        }
+        .contact-name {
+            font-weight: bold;
+            color: #333;
+        }
+        .contact-message {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .contact-time {
+            float: right;
+            color: #999;
+            font-size: 12px;
+        }
+        .error {
+            color: red;
+            padding: 20px;
+            text-align: center;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center;">Simple Conversations Test</h1>
+    
+    <div class="contact-list" id="contactList">
+        <div class="loading">Loading conversations...</div>
+    </div>
+
+    <script>
+        // Simple test without any complex logic
+        async function loadConversations() {
+            const contactList = document.getElementById('contactList');
+            
+            try {
+                console.log('Fetching conversations...');
+                const response = await fetch('http://localhost:3001/api/conversations?status=active&limit=50');
+                const data = await response.json();
+                
+                console.log('API Response:', data);
+                
+                if (data.success && data.data.length > 0) {
+                    contactList.innerHTML = '';
+                    
+                    data.data.forEach(conv => {
+                        const contact = conv.contact;
+                        const lastMessage = conv.messages?.[0];
+                        
+                        const item = document.createElement('div');
+                        item.className = 'contact-item';
+                        
+                        const time = new Date(conv.lastMessageAt).toLocaleTimeString();
+                        
+                        item.innerHTML = `
+                            <div class="contact-time">${time}</div>
+                            <div class="contact-name">${contact.name || contact.phoneNumber}</div>
+                            <div class="contact-message">${lastMessage?.content || 'No messages'}</div>
+                        `;
+                        
+                        item.onclick = () => {
+                            alert(`Clicked on: ${contact.name || contact.phoneNumber}`);
+                        };
+                        
+                        contactList.appendChild(item);
+                    });
+                    
+                    // Add summary
+                    const summary = document.createElement('div');
+                    summary.style.textAlign = 'center';
+                    summary.style.padding = '20px';
+                    summary.style.color = '#666';
+                    summary.innerHTML = `Showing ${data.data.length} of ${data.pagination.total} conversations`;
+                    contactList.appendChild(summary);
+                    
+                } else {
+                    contactList.innerHTML = '<div class="error">No conversations found</div>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                contactList.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+        
+        // Load on page load
+        loadConversations();
+        
+        // Reload every 10 seconds
+        setInterval(loadConversations, 10000);
+    </script>
+</body>
+</html>

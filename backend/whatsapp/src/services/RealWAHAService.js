@@ -1247,6 +1247,58 @@ class WAHAService extends EventEmitter {
       return { status: 'error', error: error.message };
     }
   }
+
+  /**
+   * Handle webhook from WAHA
+   * @param {Object} event - WAHA webhook event
+   */
+  // Set webhook for a session
+  async setWebhook(sessionName = 'default', webhookUrl) {
+    try {
+      logger.info(`Setting webhook for session ${sessionName}:`, webhookUrl);
+      
+      const response = await this.api.put(`/api/sessions/${sessionName}/webhooks`, {
+        webhooks: [{
+          url: webhookUrl,
+          events: ['message', 'message.ack', 'state.change', 'group.join', 'group.leave', 'call'],
+          hmac: process.env.WEBHOOK_SECRET ? {
+            key: process.env.WEBHOOK_SECRET
+          } : null
+        }]
+      });
+      
+      logger.info('Webhook configured successfully');
+      return response.data;
+    } catch (error) {
+      logger.error('Error setting webhook:', error.response?.data || error.message);
+      throw error;
+    }
+  }
+
+  // Parse phone number from WhatsApp ID
+  parsePhoneNumber(whatsappId) {
+    if (!whatsappId) return null;
+    // Remove @c.us or @s.whatsapp.net suffix
+    return whatsappId.split('@')[0];
+  }
+
+  async handleWebhook(event) {
+    try {
+      logger.info('WAHA webhook received:', {
+        event: event.event,
+        session: event.session
+      });
+
+      const webhookHandler = require('./WebhookHandler');
+      
+      // Pass to webhook handler
+      await webhookHandler.handleWebhook(event);
+      
+    } catch (error) {
+      logger.error('Error handling WAHA webhook:', error);
+      throw error;
+    }
+  }
 }
 
 module.exports = new WAHAService();
