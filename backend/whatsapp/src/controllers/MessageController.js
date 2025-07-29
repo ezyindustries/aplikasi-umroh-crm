@@ -276,12 +276,12 @@ class MessageController {
         offset: parseInt(offset),
         attributes: [
           'id',
-          'conversation_id',
+          'conversationId',
           'content',
-          'message_type',
+          'messageType',
           'direction',
           'status',
-          'wa_id',
+          'whatsappMessageId',
           'createdAt'
         ]
       });

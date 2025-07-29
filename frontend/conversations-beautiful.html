@@ -3050,8 +3050,12 @@
             const input = document.getElementById('messageInput');
             const message = input.value.trim();
             
-            if (!message || !currentConversation || !currentContact) {
-                console.error('Cannot send message:', { message, currentConversation, currentContact });
+            if (!message) {
+                return; // Empty message, do nothing
+            }
+            
+            if (!currentContact || !currentConversation) {
+                showNotification('Please select a contact first to send a message', 'warning');
                 return;
             }
             
