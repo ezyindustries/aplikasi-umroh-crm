@@ -2762,39 +2762,6 @@
             }
         }
         
-        // Handle contact click from contact list
-        function handleContactClick(element, contact, conversation) {
-            // Remove active from all contacts
-            document.querySelectorAll('.contact-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            // Add active to selected
-            element.classList.add('active');
-            
-            // Clear unread badge
-            const badge = element.querySelector('.unread-badge');
-            if (badge) {
-                badge.style.display = 'none';
-            }
-            
-            // Add ripple effect
-            const ripple = document.createElement('div');
-            ripple.style.position = 'absolute';
-            ripple.style.borderRadius = '50%';
-            ripple.style.background = 'rgba(255, 255, 255, 0.3)';
-            ripple.style.width = ripple.style.height = '0';
-            ripple.style.left = '50%';
-            ripple.style.top = '50%';
-            ripple.style.transform = 'translate(-50%, -50%)';
-            ripple.style.animation = 'ripple 0.6s ease-out';
-            element.style.position = 'relative';
-            element.appendChild(ripple);
-            
-            setTimeout(() => ripple.remove(), 600);
-            
-            // Call the main selectContact function with element
-            selectContact(contact, conversation, element);
-        }
         
         // Show notification
         function showNotification(message, type = 'info') {
@@ -2948,7 +2915,7 @@
                 
                 const contactItem = document.createElement('div');
                 contactItem.className = 'contact-item';
-                contactItem.onclick = (e) => handleContactClick(contactItem, contact, conversation);
+                contactItem.onclick = (e) => selectContact(contact, conversation, contactItem);
                 
                 contactItem.innerHTML = `
                     <div class="contact-avatar">${getInitials(contact.name || contact.phoneNumber)}</div>
@@ -3894,7 +3861,28 @@
             return time;
         }
         
-        // Note: Initialization is already handled in the DOMContentLoaded event listener above
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Initializing WhatsApp CRM...');
+            
+            // Create particles
+            createParticles();
+            
+            // Initialize socket connection
+            initializeSocket();
+            
+            // Check initial connection status
+            checkConnectionStatus();
+            
+            // Load contacts
+            loadContacts();
+            
+            // Start compliance monitoring
+            startComplianceMonitoring();
+            
+            // Start health check
+            startHealthCheck();
+        });
     </script>
 </body>
 </html>
