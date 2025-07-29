@@ -1,7 +1,7 @@
-# WAHA Integration Complete
+# WAHA Integration with SQLite
 
 ## Summary
-I have successfully implemented exact WAHA API compatibility as requested. The application now uses the real WAHA API instead of whatsapp-web.js as an alternative.
+WhatsApp CRM using WAHA API with SQLite database for simple and portable data storage.
 
 ## Changes Made
 

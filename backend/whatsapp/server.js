@@ -53,6 +53,15 @@ app.use((req, res, next) => {
   next();
 });
 
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    message: 'WhatsApp CRM Backend is running',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Webhook routes (must be before main API routes for proper routing)
 const webhookRoutes = require('./src/routes/webhooks');
 app.use('/api/webhooks', webhookRoutes);

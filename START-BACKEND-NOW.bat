@@ -1,20 +1,15 @@
 @echo off
-title Backend Server - Aplikasi Umroh (Ready)
+title WhatsApp Backend
 color 0A
-cls
 
-echo ================================================
-echo    BACKEND SERVER - READY TO START
-echo ================================================
-echo.
-echo Dependencies have been fixed!
-echo Starting server now...
-echo.
-echo DO NOT CLOSE THIS WINDOW!
-echo ================================================
+echo ======================================
+echo     STARTING WHATSAPP BACKEND
+echo ======================================
 echo.
 
-cd backend
-npm start
+cd /d "%~dp0backend\whatsapp"
+
+echo Starting backend on port 3001...
+node server.js
 
 pause

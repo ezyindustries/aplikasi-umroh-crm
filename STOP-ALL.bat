@@ -1,36 +1,33 @@
 @echo off
-title Stop All Services - Aplikasi Umroh
+title WhatsApp CRM - Stop All Services
 color 0C
-cls
 
-echo ================================================
-echo    STOPPING ALL SERVICES
-echo ================================================
+echo ============================================
+echo        STOPPING ALL WHATSAPP CRM SERVICES
+echo ============================================
 echo.
 
-echo [1/3] Stopping WAHA WhatsApp API...
-docker stop waha-umroh >nul 2>&1
-if %errorlevel% equ 0 (
-    echo [OK] WAHA stopped
-) else (
-    echo [INFO] WAHA was not running
-)
-
+:: Stop WAHA Docker
+echo [1] Stopping WAHA Docker container...
+docker stop waha >nul 2>&1
+docker rm waha >nul 2>&1
+echo WAHA stopped.
 echo.
-echo [2/3] Stopping Backend Server...
-taskkill /F /FI "WINDOWTITLE eq Backend Server - Aplikasi Umroh*" >nul 2>&1
-taskkill /F /FI "WINDOWTITLE eq npm*" >nul 2>&1
-echo [OK] Backend stopped
 
+:: Kill Node.js processes
+echo [2] Stopping Node.js processes...
+taskkill /F /IM node.exe >nul 2>&1
+echo Node.js processes stopped.
 echo.
-echo [3/3] Stopping Frontend Server...
-taskkill /F /FI "WINDOWTITLE eq Frontend Server - Aplikasi Umroh*" >nul 2>&1
-taskkill /F /FI "WINDOWTITLE eq python*" >nul 2>&1
-echo [OK] Frontend stopped
 
+:: Kill any http-server processes
+echo [3] Stopping http-server...
+taskkill /F /IM http-server.exe >nul 2>&1
+echo HTTP server stopped.
 echo.
-echo ================================================
-echo    ALL SERVICES STOPPED
-echo ================================================
+
+echo ============================================
+echo         ALL SERVICES STOPPED
+echo ============================================
 echo.
 pause

@@ -142,6 +142,22 @@ class WAHAService extends EventEmitter {
         startTime: new Date()
       });
       
+      // Configure webhook after session is created
+      try {
+        const webhookUrl = process.env.WEBHOOK_URL || `http://localhost:${process.env.PORT || 3001}/api/webhooks/waha`;
+        logger.info(`Configuring webhook for session ${sessionName}: ${webhookUrl}`);
+        
+        await this.api.post(`/api/sessions/${sessionName}/webhooks`, {
+          url: webhookUrl,
+          events: ['message', 'message.ack', 'state.change', 'group.join', 'group.leave']
+        });
+        
+        logger.info('Webhook configured successfully');
+      } catch (webhookError) {
+        logger.error('Failed to configure webhook:', webhookError);
+        // Continue anyway - webhook is not critical for basic functionality
+      }
+      
       return {
         success: true,
         session: response.data
@@ -165,6 +181,18 @@ class WAHAService extends EventEmitter {
             status: status.status || 'starting',
             config: sessionConfig.config
           });
+          
+          // Configure webhook for existing session
+          try {
+            const webhookUrl = process.env.WEBHOOK_URL || `http://localhost:${process.env.PORT || 3001}/api/webhooks/waha`;
+            await this.api.post(`/api/sessions/${sessionName}/webhooks`, {
+              url: webhookUrl,
+              events: ['message', 'message.ack', 'state.change', 'group.join', 'group.leave']
+            });
+            logger.info('Webhook configured for existing session');
+          } catch (webhookError) {
+            logger.error('Failed to configure webhook for existing session:', webhookError);
+          }
           
           return {
             success: true,

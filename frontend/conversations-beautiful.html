@@ -2792,8 +2792,8 @@
             
             setTimeout(() => ripple.remove(), 600);
             
-            // Call the main selectContact function
-            selectContact(contact, conversation);
+            // Call the main selectContact function with element
+            selectContact(contact, conversation, element);
         }
         
         // Show notification
@@ -2967,29 +2967,43 @@
         }
         
         // Select contact and load conversation
-        async function selectContact(contact, conversation) {
+        async function selectContact(contact, conversation, element = null) {
+            console.log('Selecting contact:', contact);
             currentContact = contact;
             
             // Update UI
             document.querySelectorAll('.contact-item').forEach(item => {
                 item.classList.remove('active');
             });
-            event.currentTarget.classList.add('active');
+            
+            // Add active class to clicked element
+            if (element) {
+                element.classList.add('active');
+            }
             
             // Update chat header
             updateChatHeader(contact);
             
-            // Load or create conversation
-            if (conversation) {
-                currentConversation = conversation;
-                loadMessages(conversation.id);
-            } else {
-                createConversation(contact.id);
-            }
+            // Clear current messages
+            const messagesArea = document.getElementById('messages-area');
+            messagesArea.innerHTML = '<div class="loading-messages">Loading messages...</div>';
             
-            // Join socket room
-            if (currentConversation) {
-                socket.emit('join:conversation', currentConversation.id);
+            // Load or create conversation
+            try {
+                if (conversation) {
+                    currentConversation = conversation;
+                    await loadMessages(conversation.id);
+                } else {
+                    await createConversation(contact.id);
+                }
+                
+                // Join socket room
+                if (currentConversation && socket) {
+                    socket.emit('join:conversation', currentConversation.id);
+                }
+            } catch (error) {
+                console.error('Error selecting contact:', error);
+                messagesArea.innerHTML = '<div class="error-message">Failed to load messages</div>';
             }
         }
         
@@ -3076,12 +3090,17 @@
             const input = document.getElementById('messageInput');
             const message = input.value.trim();
             
-            if (!message || !currentConversation || !currentContact) return;
+            if (!message || !currentConversation || !currentContact) {
+                console.error('Cannot send message:', { message, currentConversation, currentContact });
+                return;
+            }
             
             // Check compliance before sending
             if (!checkComplianceBeforeSend()) {
                 return;
             }
+            
+            console.log('Sending message:', { conversationId: currentConversation.id, toNumber: currentContact.phoneNumber });
             
             try {
                 const response = await fetch(`${API_CONFIG.baseUrl}/messages/send`, {
@@ -3119,11 +3138,11 @@
                     document.getElementById('messages-area').appendChild(messageDiv);
                     document.getElementById('messages-area').scrollTop = document.getElementById('messages-area').scrollHeight;
                 } else {
-                    alert('Failed to send message: ' + (result.error || 'Unknown error'));
+                    showNotification('Failed to send message: ' + (result.error || 'Unknown error'), 'error');
                 }
             } catch (error) {
                 console.error('Error sending message:', error);
-                alert('Failed to send message');
+                showNotification('Failed to send message', 'error');
             }
         }
         
