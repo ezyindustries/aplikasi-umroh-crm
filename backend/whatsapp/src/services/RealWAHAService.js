@@ -6,6 +6,11 @@ const logger = require('../utils/logger');
 const { WhatsAppSession, Contact, Message, Conversation } = require('../models');
 const EventEmitter = require('events');
 
+// Import services
+const ContactService = require('./ContactService');
+const ConversationService = require('./ConversationService');
+const MessageService = require('./MessageService');
+
 /**
  * WAHA (WhatsApp HTTP API) Service
  * Exact implementation following WAHA API specification
@@ -28,6 +33,11 @@ class WAHAService extends EventEmitter {
     // Session management
     this.sessions = new Map();
     this.qrCodes = new Map();
+    
+    // Initialize services
+    this.contactService = ContactService;
+    this.conversationService = ConversationService;
+    this.messageService = MessageService;
     
     // Axios instance with default config
     this.api = axios.create({
@@ -285,6 +295,111 @@ class WAHAService extends EventEmitter {
         return null; // No QR code available
       }
       logger.error('Error getting QR code:', error);
+      throw error;
+    }
+  }
+  
+  // Load existing chats from WhatsApp (WAHA: GET /api/{session}/chats)
+  async loadExistingChats(sessionName = 'default', limit = 50) {
+    try {
+      logger.info(`Loading existing chats for session: ${sessionName}`);
+      
+      // Get all chats from WAHA
+      const response = await this.api.get(`/api/${sessionName}/chats`, {
+        params: {
+          limit: limit,
+          offset: 0
+        }
+      });
+      
+      if (!response.data || !Array.isArray(response.data)) {
+        logger.warn('No chats data returned from WAHA');
+        return { count: 0, chats: [] };
+      }
+      
+      const chats = response.data;
+      logger.info(`Found ${chats.length} chats from WhatsApp`);
+      
+      // Process each chat
+      for (const chat of chats) {
+        try {
+          // Get or create contact
+          const phoneNumber = chat.id.split('@')[0];
+          const contact = await this.contactService.getOrCreateContact({
+            phoneNumber: phoneNumber,
+            name: chat.name || phoneNumber,
+            waId: chat.id
+          });
+          
+          // Get or create conversation
+          const conversation = await this.conversationService.getOrCreateConversation({
+            contactId: contact.id,
+            sessionId: sessionName,
+            waId: chat.id
+          });
+          
+          // Load recent messages for this chat
+          if (chat.lastMessage) {
+            try {
+              const messagesResponse = await this.api.get(`/api/${sessionName}/chats/${chat.id}/messages`, {
+                params: {
+                  limit: 20,
+                  downloadMedia: false
+                }
+              });
+              
+              if (messagesResponse.data && Array.isArray(messagesResponse.data)) {
+                for (const msg of messagesResponse.data) {
+                  await this.messageService.saveIncomingMessage({
+                    conversationId: conversation.id,
+                    waId: msg.id,
+                    content: msg.body || msg.caption || '',
+                    messageType: msg.type || 'text',
+                    direction: msg.fromMe ? 'outbound' : 'inbound',
+                    status: msg.ack ? 'delivered' : 'sent',
+                    timestamp: msg.timestamp ? new Date(msg.timestamp * 1000) : new Date()
+                  });
+                }
+              }
+            } catch (msgError) {
+              logger.error(`Error loading messages for chat ${chat.id}:`, msgError);
+            }
+          }
+          
+          // Update conversation metadata
+          await conversation.update({
+            lastMessageAt: chat.timestamp ? new Date(chat.timestamp * 1000) : new Date(),
+            unreadCount: chat.unreadCount || 0
+          });
+          
+        } catch (chatError) {
+          logger.error(`Error processing chat ${chat.id}:`, chatError);
+        }
+      }
+      
+      // Emit event that chats have been loaded
+      if (global.io) {
+        global.io.emit('chats:loaded', {
+          sessionId: sessionName,
+          count: chats.length,
+          message: `${chats.length} percakapan berhasil dimuat dari WhatsApp`
+        });
+      }
+      
+      return {
+        count: chats.length,
+        chats: chats.map(chat => ({
+          id: chat.id,
+          name: chat.name,
+          phoneNumber: chat.id.split('@')[0],
+          lastMessage: chat.lastMessage,
+          timestamp: chat.timestamp,
+          unreadCount: chat.unreadCount || 0
+        }))
+      };
+      
+    } catch (error) {
+      logger.error('Error loading existing chats:', error);
       throw error;
     }
   }

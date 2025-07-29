@@ -200,11 +200,14 @@ class SessionController {
       }
       
       // Load chats using WAHA service
-      await whatsappService.loadExistingChats(sessionId);
+      const result = await whatsappService.loadExistingChats(sessionId);
       
       res.json({
         success: true,
-        message: 'Chat history loading initiated'
+        message: 'Chat history loading initiated',
+        data: {
+          count: result.count || 0
+        }
       });
     } catch (error) {
       logger.api.error('Error loading chat history:', error);

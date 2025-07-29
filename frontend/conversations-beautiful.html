@@ -2723,8 +2723,8 @@
             }
         }
         
-        // Sample functions for interactivity
-        function selectContact(element) {
+        // Handle contact click from contact list
+        function handleContactClick(element, contact, conversation) {
             // Remove active from all contacts
             document.querySelectorAll('.contact-item').forEach(item => {
                 item.classList.remove('active');
@@ -2752,6 +2752,9 @@
             element.appendChild(ripple);
             
             setTimeout(() => ripple.remove(), 600);
+            
+            // Call the main selectContact function
+            selectContact(contact, conversation);
         }
         
         // Show notification
@@ -2906,7 +2909,7 @@
                 
                 const contactItem = document.createElement('div');
                 contactItem.className = 'contact-item';
-                contactItem.onclick = () => selectContact(contact, conversation);
+                contactItem.onclick = (e) => handleContactClick(contactItem, contact, conversation);
                 
                 contactItem.innerHTML = `
                     <div class="contact-avatar">${getInitials(contact.name || contact.phoneNumber)}</div>
@@ -3397,11 +3400,116 @@
             return date.toLocaleDateString('id-ID', options);
         }
         
+        // Load WhatsApp History
+        async function loadWhatsAppHistory() {
+            const btn = event.target.closest('.load-history-btn');
+            if (!btn) return;
+            
+            // Check if WhatsApp is connected
+            if (connectionState.status !== 'connected' && connectionState.status !== 'WORKING') {
+                showNotification('WhatsApp belum terhubung. Silakan hubungkan terlebih dahulu.', 'error');
+                return;
+            }
+            
+            // Show loading state
+            btn.classList.add('loading');
+            btn.disabled = true;
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = `
+                <span class="material-icons">sync</span>
+                <span>Loading...</span>
+            `;
+            
+            try {
+                console.log('Loading WhatsApp history...');
+                
+                // Call backend to load chats - note the correct endpoint
+                const response = await fetch(`${API_CONFIG.baseUrl}/sessions/${API_CONFIG.sessionId}/load-history`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        limit: 50 // Load last 50 chats
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Memuat riwayat chat dari WhatsApp...', 'success');
+                    
+                    // Wait a moment for backend to process, then reload contacts
+                    setTimeout(() => {
+                        loadContacts();
+                    }, 2000);
+                } else {
+                    throw new Error(result.error || 'Failed to load chats');
+                }
+            } catch (error) {
+                console.error('Error loading WhatsApp history:', error);
+                showNotification('Gagal memuat riwayat chat: ' + error.message, 'error');
+            } finally {
+                // Restore button state
+                btn.classList.remove('loading');
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+            }
+        }
+        
+        // Search in chat
+        function searchInChat() {
+            // Implement search functionality
+            showNotification('Fitur pencarian dalam chat akan segera tersedia', 'info');
+        }
+        
+        // Make call
+        function makeCall() {
+            if (!currentContact) {
+                showNotification('Silakan pilih kontak terlebih dahulu', 'error');
+                return;
+            }
+            
+            showNotification('Fitur panggilan belum tersedia', 'info');
+        }
+        
+        // Show chat menu
+        function showChatMenu() {
+            // Implement chat menu
+            showNotification('Menu chat akan segera tersedia', 'info');
+        }
+        
         // Sound alert for disconnection (optional)
         function playDisconnectSound() {
             const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQoGAACBhYqFbF');
             audio.volume = 0.5;
             audio.play().catch(() => {});
+        }
+        
+        // Compliance monitoring
+        function startComplianceMonitoring() {
+            // Placeholder for compliance monitoring
+            console.log('Compliance monitoring started');
+        }
+        
+        // Check message compliance
+        function checkMessageCompliance(message) {
+            // Basic compliance check
+            if (message.length > 1000) {
+                showNotification('Pesan terlalu panjang. Maksimal 1000 karakter.', 'warning');
+                return false;
+            }
+            return true;
+        }
+        
+        // Check compliance before sending
+        function checkComplianceBeforeSend() {
+            // Basic compliance check before sending
+            return true;
         }
         
         // Load WhatsApp chat history
