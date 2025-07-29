@@ -10,11 +10,8 @@ const conversationController = require('../controllers/ConversationController');
 // Webhook handler
 const webhookHandler = require('../services/WebhookHandler');
 
-// Rate limiting
-const { createRateLimitMiddleware } = require('../config/rateLimiter');
-
-// Apply rate limiting to all API routes
-router.use(createRateLimitMiddleware('api'));
+// Rate limiting - removed global rate limiting to fix message sending
+// const { createRateLimitMiddleware } = require('../config/rateLimiter');
 
 // Session routes
 router.post('/sessions/start', sessionController.start);
