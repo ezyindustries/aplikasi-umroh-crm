@@ -2120,10 +2120,11 @@
         let checkQRInterval = null;
 
         // Initialize on load
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('Page loaded, initializing...');
             createParticles();
             initializeSocket(); // Initialize Socket.IO connection
-            checkConnectionStatus();
+            await checkConnectionStatus();
             startHealthCheck();
             startComplianceMonitoring();
             // Don't load contacts until WhatsApp is connected
@@ -2296,6 +2297,14 @@
                     }
                     // Remove alert for smoother UX
                     console.log('WhatsApp is already connected!');
+                } else if (result.data.status === 'STOPPED') {
+                    // Session is stopped, need to wait for it to start
+                    console.log('Session is starting, waiting for QR...');
+                    
+                    // Poll for QR code after a short delay
+                    setTimeout(async () => {
+                        await checkForQRCode();
+                    }, 2000);
                 } else {
                     // Other status
                     console.log('Session status:', result.data.status);
@@ -2311,7 +2320,22 @@
                 // Get QR code from WAHA
                 const qrResponse = await fetch(`${API_CONFIG.baseUrl}/sessions/${API_CONFIG.sessionId || 'default'}/qr`);
                 if (!qrResponse.ok) {
-                    throw new Error('Failed to get QR code');
+                    const errorData = await qrResponse.json().catch(() => ({}));
+                    console.error('QR endpoint error:', {
+                        status: qrResponse.status,
+                        statusText: qrResponse.statusText,
+                        error: errorData
+                    });
+                    
+                    // If 500 error, it might mean session needs time to initialize
+                    if (qrResponse.status === 500) {
+                        console.log('Session might still be initializing, retrying...');
+                        // Retry after 2 seconds
+                        setTimeout(() => checkForQRCode(), 2000);
+                        return;
+                    }
+                    
+                    throw new Error(`Failed to get QR code: ${qrResponse.status} ${errorData.error || qrResponse.statusText}`);
                 }
                 
                 const qrData = await qrResponse.json();
@@ -3833,26 +3857,7 @@
             return time;
         }
         
-        // Initialize on page load
-        window.addEventListener('DOMContentLoaded', async () => {
-            console.log('Page loaded, initializing...');
-            
-            // Connect to WebSocket
-            initializeSocket();
-            
-            // Check WhatsApp connection status
-            await checkWAHAStatus();
-            
-            // Load initial data
-            loadContacts();
-            // loadTemplates(); // Comment out for now - function not implemented yet
-            
-            // Load compliance status
-            // loadComplianceStatus(); // Comment out - not implemented yet
-            
-            // Set up periodic status check
-            // setInterval(loadComplianceStatus, 60000); // Comment out - not implemented yet
-        });
+        // Note: Initialization is already handled in the DOMContentLoaded event listener above
     </script>
 </body>
 </html>
