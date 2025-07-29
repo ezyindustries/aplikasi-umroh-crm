@@ -2372,15 +2372,12 @@
                         const statusResponse = await fetch(`${API_CONFIG.baseUrl}/sessions/${API_CONFIG.sessionId || 'default'}/status`);
                         if (statusResponse.ok) {
                             const statusData = await statusResponse.json();
-                            if (statusData.data.status === 'WORKING' || statusData.data.status === 'connected') {
+                            if (statusData.data.status === 'WORKING' || statusData.data.status === 'connected' || statusData.data.status === 'authenticated') {
                                 clearInterval(statusInterval);
                                 qrModal.style.display = 'none';
-                                updateConnectionStatus('connected');
-                                if (statusData.data.phone) {
-                                    connectionState.phoneNumber = statusData.data.phone;
-                                    updateConnectionInfo();
-                                }
-                                alert('WhatsApp connected successfully!');
+                                // Pass the actual status and data
+                                updateConnectionStatus(statusData.data.status, statusData.data);
+                                showNotification('WhatsApp berhasil terhubung!', 'success');
                             }
                         }
                     } catch (error) {
@@ -2468,13 +2465,22 @@
                             // Show QR code only once
                             showQRModal(result.data.qr);
                             qrShown = true;
-                        } else if (result.data.status === 'authenticated' || result.data.status === 'connected') {
+                        } else if (result.data.status === 'authenticated' || result.data.status === 'connected' || result.data.status === 'WORKING') {
                             // Connected successfully
+                            console.log('WhatsApp connected! Status:', result.data.status);
                             closeQRModal();
                             updateConnectionStatus(result.data.status, result.data);
                             clearInterval(checkQRInterval);
                             checkQRInterval = null;
                             qrShown = false;
+                            
+                            // Emit connected event
+                            if (socket) {
+                                socket.emit('session:connected', {
+                                    sessionId: API_CONFIG.sessionId,
+                                    status: result.data.status
+                                });
+                            }
                         } else if (result.data.status === 'disconnected') {
                             // Not connected, but no QR
                             console.log('Session disconnected, no QR available');
@@ -3429,8 +3435,11 @@
             const btn = event.target.closest('.load-history-btn');
             if (!btn) return;
             
+            console.log('Load history - Connection state:', connectionState);
+            
             // Check if WhatsApp is connected
-            if (connectionState.status !== 'connected' && connectionState.status !== 'WORKING') {
+            if (connectionState.status !== 'connected' && connectionState.status !== 'WORKING' && connectionState.status !== 'authenticated') {
+                console.error('WhatsApp not connected. Current status:', connectionState.status);
                 showNotification('WhatsApp belum terhubung. Silakan hubungkan terlebih dahulu.', 'error');
                 return;
             }
