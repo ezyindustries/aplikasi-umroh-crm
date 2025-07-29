@@ -1349,7 +1349,8 @@
         }
 
         /* Status Colors */
-        .whatsapp-status.connected .status-dot {
+        .whatsapp-status.connected .status-dot,
+        .whatsapp-status.WORKING .status-dot {
             background: #10b981;
             box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
         }
@@ -1706,7 +1707,8 @@
             }
         }
         
-        .whatsapp-status.connected {
+        .whatsapp-status.connected,
+        .whatsapp-status.WORKING {
             animation: connectionPulse 3s infinite;
         }
         
@@ -2072,10 +2074,31 @@
         </div>
     </div>
 
+    <!-- QR Code Modal -->
+    <div id="qrModal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); z-index: 9999; align-items: center; justify-content: center;">
+        <div style="background: linear-gradient(145deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95)); backdrop-filter: blur(20px); border-radius: 20px; padding: 24px; max-width: 400px; width: 90%; border: 1px solid rgba(71, 85, 105, 0.3); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; color: #e2e8f0; font-size: 20px;">Scan QR Code</h3>
+                <button class="close-btn" onclick="document.getElementById('qrModal').style.display='none'" style="background: none; border: none; color: #94a3b8; cursor: pointer; padding: 4px;">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <div id="qrCodeContainer" style="background: white; padding: 20px; border-radius: 12px; text-align: center; min-height: 300px; display: flex; align-items: center; justify-content: center;">
+                <div style="color: #64748b;">
+                    <span class="material-icons" style="font-size: 48px; opacity: 0.5;">qr_code_scanner</span>
+                    <p style="margin-top: 16px;">Loading QR Code...</p>
+                </div>
+            </div>
+            <p style="margin-top: 16px; color: #94a3b8; text-align: center; font-size: 14px;">
+                Open WhatsApp on your phone and scan this QR code to connect
+            </p>
+        </div>
+    </div>
+
     <script>
         // Backend Configuration
         const API_CONFIG = {
-            baseUrl: 'http://localhost:3002/api', // Backend API endpoint
+            baseUrl: 'http://localhost:3001/api', // Backend API endpoint
             sessionId: 'default',
             healthCheckInterval: 10000 // 10 seconds
         };
@@ -2146,6 +2169,7 @@
             switch (status) {
                 case 'connected':
                 case 'authenticated':
+                case 'WORKING':
                     statusText.textContent = 'Connected';
                     connectBtn.innerHTML = `
                         <span class="material-icons">check_circle</span>
@@ -2153,7 +2177,7 @@
                     `;
                     connectBtn.classList.add('btn-success');
                     connectBtn.classList.remove('btn-primary');
-                    connectionState.phone = data.phone;
+                    connectionState.phone = data.phone || data.phoneNumber;
                     connectionState.connectedAt = data.connectedAt || new Date();
                     // Load contacts when authenticated
                     loadContacts();
@@ -2190,53 +2214,168 @@
             updateConnectionInfo();
         }
 
-        // Connect WhatsApp
+        // Connect to WAHA WhatsApp API
         async function connectWhatsApp() {
-            console.log('Connect button clicked');
-            
-            if (connectionState.status === 'connected' || connectionState.status === 'authenticated') {
-                showConnectionInfo();
-                return;
-            }
-            
-            updateConnectionStatus('connecting');
+            console.log('Connecting to WAHA...');
             
             try {
-                // First check if backend is available
-                console.log('Checking backend health...');
+                // Update UI to show connecting state
+                const connectBtn = document.getElementById('connectBtn');
+                const btnText = connectBtn.querySelector('.btn-text');
+                const originalText = btnText.textContent;
+                btnText.textContent = 'Connecting...';
+                connectBtn.disabled = true;
+                
+                // Step 1: Check if backend is running
                 const healthCheck = await fetch(`${API_CONFIG.baseUrl}/health`);
                 if (!healthCheck.ok) {
-                    throw new Error('Backend not available. Please start the backend first!');
+                    throw new Error('Backend server is not running. Please start the backend first.');
                 }
                 
-                console.log('Sending request to:', `${API_CONFIG.baseUrl}/sessions/start`);
-                const response = await fetch(`${API_CONFIG.baseUrl}/sessions/start`, {
+                // Step 2: Start WAHA session
+                const startResponse = await fetch(`${API_CONFIG.baseUrl}/sessions/start`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        sessionId: API_CONFIG.sessionId
+                        sessionId: API_CONFIG.sessionId || 'default'
                     })
                 });
                 
+                if (!startResponse.ok) {
+                    const error = await startResponse.json();
+                    throw new Error(error.error || 'Failed to start WAHA session');
+                }
+                
+                const startResult = await startResponse.json();
+                console.log('WAHA session started:', startResult);
+                
+                // Step 3: Check session status and get QR if needed
+                await checkWAHAStatus();
+                
+                // Restore button
+                btnText.textContent = originalText;
+                connectBtn.disabled = false;
+                
+            } catch (error) {
+                console.error('WAHA connection error:', error);
+                alert(`Failed to connect to WAHA:\n${error.message}`);
+                
+                // Restore button
+                const connectBtn = document.getElementById('connectBtn');
+                const btnText = connectBtn.querySelector('.btn-text');
+                btnText.textContent = 'Connect WhatsApp';
+                connectBtn.disabled = false;
+            }
+        }
+        
+        // Check WAHA session status
+        async function checkWAHAStatus() {
+            try {
+                const response = await fetch(`${API_CONFIG.baseUrl}/sessions/${API_CONFIG.sessionId || 'default'}/status`);
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error('Failed to get session status');
                 }
                 
                 const result = await response.json();
-                console.log('Response:', result);
+                console.log('WAHA status:', result.data);
                 
-                if (result.success) {
-                    // Start checking for QR code without alert
-                    checkForQRCode();
+                if (result.data.status === 'SCAN_QR_CODE' || result.data.status === 'STARTING') {
+                    // Show QR code modal for both SCAN_QR_CODE and STARTING status
+                    await showWAHAQRCode();
+                } else if (result.data.status === 'WORKING' || result.data.status === 'connected') {
+                    // Already connected - pass the status and full data
+                    updateConnectionStatus(result.data.status, result.data);
+                    if (result.data.phoneNumber || result.data.phone) {
+                        connectionState.phoneNumber = result.data.phoneNumber || result.data.phone;
+                        updateConnectionInfo();
+                    }
+                    if (result.data.pushName) {
+                        console.log('Connected as:', result.data.pushName);
+                    }
+                    // Remove alert for smoother UX
+                    console.log('WhatsApp is already connected!');
                 } else {
-                    throw new Error(result.error || 'Failed to start session');
+                    // Other status
+                    console.log('Session status:', result.data.status);
                 }
             } catch (error) {
-                console.error('Connection error:', error);
-                alert('Failed to connect. Make sure backend is running!\n\nError: ' + error.message + '\n\nRun START-WHATSAPP-CRM.bat first!');
-                updateConnectionStatus('disconnected');
+                console.error('Error checking WAHA status:', error);
+            }
+        }
+        
+        // Show WAHA QR Code
+        async function showWAHAQRCode() {
+            try {
+                // Get QR code from WAHA
+                const qrResponse = await fetch(`${API_CONFIG.baseUrl}/sessions/${API_CONFIG.sessionId || 'default'}/qr`);
+                if (!qrResponse.ok) {
+                    throw new Error('Failed to get QR code');
+                }
+                
+                const qrData = await qrResponse.json();
+                console.log('QR Response:', qrData);
+                
+                if (!qrData.success) {
+                    throw new Error(qrData.error || 'Failed to get QR code');
+                }
+                
+                if (!qrData.data || !qrData.data.qr) {
+                    console.log('No QR in response, checking status...');
+                    // If no QR, check if already connected
+                    const statusCheck = await fetch(`${API_CONFIG.baseUrl}/sessions/${API_CONFIG.sessionId || 'default'}/status`);
+                    const statusData = await statusCheck.json();
+                    if (statusData.data.status === 'WORKING') {
+                        updateConnectionStatus('connected');
+                        alert('WhatsApp is already connected!');
+                        return;
+                    }
+                    throw new Error('No QR code available. Please try reconnecting.');
+                }
+                
+                // Show QR modal
+                const qrModal = document.getElementById('qrModal');
+                const qrContainer = document.getElementById('qrCodeContainer');
+                
+                // Display QR code as base64 image
+                qrContainer.innerHTML = `<img src="${qrData.data.qr}" alt="WhatsApp QR Code" style="max-width: 100%; height: auto;">`;
+                qrModal.style.display = 'flex';
+                
+                // Start polling for status
+                const statusInterval = setInterval(async () => {
+                    try {
+                        const statusResponse = await fetch(`${API_CONFIG.baseUrl}/sessions/${API_CONFIG.sessionId || 'default'}/status`);
+                        if (statusResponse.ok) {
+                            const statusData = await statusResponse.json();
+                            if (statusData.data.status === 'WORKING' || statusData.data.status === 'connected') {
+                                clearInterval(statusInterval);
+                                qrModal.style.display = 'none';
+                                updateConnectionStatus('connected');
+                                if (statusData.data.phone) {
+                                    connectionState.phoneNumber = statusData.data.phone;
+                                    updateConnectionInfo();
+                                }
+                                alert('WhatsApp connected successfully!');
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error polling status:', error);
+                    }
+                }, 3000); // Check every 3 seconds
+                
+                // Clean up interval when modal is closed
+                const closeBtn = qrModal.querySelector('.close-btn');
+                if (closeBtn) {
+                    closeBtn.onclick = () => {
+                        clearInterval(statusInterval);
+                        qrModal.style.display = 'none';
+                    };
+                }
+                
+            } catch (error) {
+                console.error('Error showing QR code:', error);
+                alert('Failed to get QR code. Please try again.');
             }
         }
         
@@ -3585,6 +3724,27 @@
             
             return time;
         }
+        
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            console.log('Page loaded, initializing...');
+            
+            // Connect to WebSocket
+            initializeSocket();
+            
+            // Check WhatsApp connection status
+            await checkWAHAStatus();
+            
+            // Load initial data
+            loadContacts();
+            // loadTemplates(); // Comment out for now - function not implemented yet
+            
+            // Load compliance status
+            // loadComplianceStatus(); // Comment out - not implemented yet
+            
+            // Set up periodic status check
+            // setInterval(loadComplianceStatus, 60000); // Comment out - not implemented yet
+        });
     </script>
 </body>
 </html>

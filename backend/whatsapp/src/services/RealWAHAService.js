@@ -19,6 +19,12 @@ class WAHAService extends EventEmitter {
     this.baseURL = process.env.WAHA_URL || 'http://localhost:3000';
     this.apiKey = process.env.WAHA_API_KEY || '';
     
+    // Debug logging
+    logger.info('WAHA Service initialized with:', {
+      baseURL: this.baseURL,
+      hasApiKey: !!this.apiKey
+    });
+    
     // Session management
     this.sessions = new Map();
     this.qrCodes = new Map();
@@ -53,67 +59,61 @@ class WAHAService extends EventEmitter {
   
   // Start a new session (WAHA: POST /api/sessions/)
   async startSession(sessionName = 'default', config = {}) {
-    try {
-      logger.info(`Starting WAHA session: ${sessionName}`);
-      
-      const sessionConfig = {
-        name: sessionName,
-        config: {
-          // Webhook configuration
-          webhooks: config.webhooks || [{
-            url: `${process.env.APP_URL || 'http://localhost:3001'}/api/webhooks/waha`,
-            events: [
-              'session.status',
-              'message',
-              'message.ack',
-              'message.reaction',
-              'message.revoked',
-              'message.waiting',
-              'chat.archive',
-              'group.join',
-              'group.leave',
-              'group.participant.changed',
-              'presence.update',
-              'poll.vote',
-              'poll.vote.failed'
-            ],
-            hmac: {
-              key: process.env.WEBHOOK_SECRET || 'your-secret-key'
-            },
-            retries: {
-              policy: 'exponential',
-              delaySeconds: 2,
-              attempts: 15
-            }
-          }],
-          
-          // Proxy configuration (if needed)
-          proxy: config.proxy,
-          
-          // Browser args for WEBJS engine
-          browserArgs: config.browserArgs || [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
-            '--disable-accelerated-2d-canvas',
-            '--no-first-run',
-            '--no-zygote',
-            '--single-process',
-            '--disable-gpu'
+    // Define sessionConfig outside try block so it's accessible in catch
+    const sessionConfig = {
+      name: sessionName,
+      config: {
+        // Webhook configuration
+        webhooks: config.webhooks || [{
+          url: `${process.env.APP_URL || 'http://localhost:3001'}/api/webhooks/waha`,
+          events: [
+            'session.status',
+            'message',
+            'message.ack',
+            'message.reaction',
+            'message.revoked',
+            'presence.update'
           ],
-          
-          // Session data path
-          sessionDataPath: config.sessionDataPath || './sessions',
-          
-          // Enable store for NOWEB engine
-          noweb: {
-            store: {
-              enabled: true,
-              fullSync: false
-            }
+          hmac: {
+            key: process.env.WEBHOOK_SECRET || 'your-secret-key'
+          },
+          retries: {
+            policy: 'exponential',
+            delaySeconds: 2,
+            attempts: 15
+          }
+        }],
+        
+        // Proxy configuration (if needed)
+        proxy: config.proxy,
+        
+        // Browser args for WEBJS engine
+        browserArgs: config.browserArgs || [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-accelerated-2d-canvas',
+          '--no-first-run',
+          '--no-zygote',
+          '--single-process',
+          '--disable-gpu'
+        ],
+        
+        // Session data path
+        sessionDataPath: config.sessionDataPath || './sessions',
+        
+        // Enable store for NOWEB engine
+        noweb: {
+          store: {
+            enabled: true,
+            fullSync: false
           }
         }
-      };
+      }
+    };
+    
+    try {
+      logger.info(`Starting WAHA session: ${sessionName}`);
       
       // Create/update session
       const response = await this.api.post('/api/sessions/', sessionConfig);
@@ -137,6 +137,56 @@ class WAHAService extends EventEmitter {
         session: response.data
       };
     } catch (error) {
+      // Handle session already exists error
+      if (error.response?.status === 422 && error.response?.data?.message?.includes('already exists')) {
+        logger.info('Session already exists, starting it...');
+        
+        try {
+          // Start the existing session
+          const startResponse = await this.api.post(`/api/sessions/${sessionName}/start`);
+          logger.info('Existing session started:', startResponse.data);
+          
+          // Get current session status
+          const status = await this.getSessionStatus(sessionName);
+          
+          // Update database
+          await WhatsAppSession.upsert({
+            sessionName,
+            status: status.status || 'starting',
+            config: sessionConfig.config
+          });
+          
+          return {
+            success: true,
+            session: { name: sessionName, status: status.status },
+            message: 'Session started'
+          };
+        } catch (startError) {
+          // If session is already started, just return current status
+          if (startError.response?.status === 422 && 
+              startError.response?.data?.message?.includes('already started')) {
+            logger.info('Session already started, getting current status...');
+            
+            const status = await this.getSessionStatus(sessionName);
+            
+            await WhatsAppSession.upsert({
+              sessionName,
+              status: status.status || 'unknown',
+              config: sessionConfig.config
+            });
+            
+            return {
+              success: true,
+              session: { name: sessionName, status: status.status },
+              message: 'Session already active'
+            };
+          }
+          
+          logger.error('Error starting existing session:', startError);
+          throw startError;
+        }
+      }
+      
       logger.error('Error starting WAHA session:', error);
       throw error;
     }
@@ -208,21 +258,33 @@ class WAHAService extends EventEmitter {
   // Get QR code (WAHA: GET /api/{session}/auth/qr)
   async getQRCode(sessionName = 'default', format = 'base64') {
     try {
+      // WAHA returns JSON with base64 when Accept header is application/json
       const response = await this.api.get(`/api/${sessionName}/auth/qr`, {
-        params: { format },
-        responseType: format === 'image' ? 'arraybuffer' : 'json'
+        headers: {
+          'Accept': 'application/json'
+        }
       });
       
-      if (format === 'base64' || format === 'raw') {
-        return response.data;
-      } else {
-        // Binary image
-        return Buffer.from(response.data, 'binary');
+      // WAHA returns {mimetype, data} for base64 format
+      if (response.data && response.data.data) {
+        // Return base64 data URL format for easy display
+        return `data:${response.data.mimetype};base64,${response.data.data}`;
       }
+      
+      // If no data, try getting raw image
+      const imageResponse = await this.api.get(`/api/${sessionName}/auth/qr`, {
+        responseType: 'arraybuffer'
+      });
+      
+      // Convert to base64 data URL
+      const base64 = Buffer.from(imageResponse.data).toString('base64');
+      return `data:image/png;base64,${base64}`;
+      
     } catch (error) {
       if (error.response?.status === 404) {
         return null; // No QR code available
       }
+      logger.error('Error getting QR code:', error);
       throw error;
     }
   }

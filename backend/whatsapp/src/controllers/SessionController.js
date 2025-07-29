@@ -1,5 +1,5 @@
-// Use WhatsAppWebService for now until WAHA is properly configured
-const whatsappService = require('../services/WhatsAppWebService');
+// Use RealWAHAService for exact WAHA API compatibility
+const whatsappService = require('../services/RealWAHAService');
 const { WhatsAppSession } = require('../models');
 const logger = require('../utils/logger');
 
@@ -66,9 +66,12 @@ class SessionController {
         data: {
           status: status.status,
           qr: status.qr,
-          phone: session?.phoneNumber,
+          phone: session?.phoneNumber || status.me?.id || status.me?.pushName,
+          phoneNumber: status.me?.id,
+          pushName: status.me?.pushName,
           connectedAt: session?.connectedAt,
-          sessionInfo: session
+          sessionInfo: session,
+          me: status.me
         }
       });
     } catch (error) {
