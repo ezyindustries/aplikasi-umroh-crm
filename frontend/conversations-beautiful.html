@@ -3195,7 +3195,13 @@
                 }
             } catch (error) {
                 console.error('Error sending message:', error);
-                showNotification('Failed to send message', 'error');
+                console.error('Error details:', {
+                    message: error.message,
+                    stack: error.stack,
+                    conversationId: currentConversation?.id,
+                    toNumber: currentContact?.phoneNumber
+                });
+                showNotification('Failed to send message: ' + error.message, 'error');
             }
         }
         

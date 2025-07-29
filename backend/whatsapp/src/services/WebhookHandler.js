@@ -76,15 +76,16 @@ class WebhookHandler {
     // WAHA sends the full event structure
     const { payload, session } = event;
     
-    // Skip if message is from self
-    if (payload.fromMe) {
-      return;
-    }
+    // Process all messages including fromMe to track outgoing messages from phone
+    // This allows messages sent from phone to appear in the CRM
+    const isFromMe = payload.fromMe || false;
 
-    logger.webhook.info('Processing incoming message:', {
+    logger.webhook.info('Processing message:', {
       from: payload.from,
+      to: payload.to,
       messageId: payload.id,
-      session: session
+      session: session,
+      isFromMe: isFromMe
     });
 
     // Queue message for processing with WAHA format
@@ -101,7 +102,8 @@ class WebhookHandler {
         timestamp: payload.timestamp,
         isForwarded: payload.isForwarded || false,
         quotedMessageId: payload.quotedMsgId,
-        pushname: payload._data?.notifyName || payload.from
+        pushname: payload._data?.notifyName || payload.from,
+        fromMe: isFromMe
       }
     });
   }

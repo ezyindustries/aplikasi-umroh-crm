@@ -129,24 +129,29 @@ class SimpleMessageQueueService {
     try {
       const { sessionId, message: whatsappMessage } = webhookData;
       
-      logger.info('Processing incoming message:', {
+      logger.info('Processing message:', {
         from: whatsappMessage.from,
-        type: whatsappMessage.type
+        to: whatsappMessage.to,
+        type: whatsappMessage.type,
+        fromMe: whatsappMessage.fromMe
       });
 
-      // Parse phone number
+      // Parse phone numbers
       const fromNumber = whatsappService.parsePhoneNumber(whatsappMessage.from);
       const toNumber = whatsappService.parsePhoneNumber(whatsappMessage.to);
+      
+      // Determine which number is the contact (not our own number)
+      const contactNumber = whatsappMessage.fromMe ? toNumber : fromNumber;
 
-      // Find or create contact
+      // Find or create contact based on the contact number (not our own)
       let contact = await Contact.findOne({
-        where: { phoneNumber: fromNumber }
+        where: { phoneNumber: contactNumber }
       });
 
       if (!contact) {
         contact = await Contact.create({
-          phoneNumber: fromNumber,
-          name: whatsappMessage.pushname || fromNumber,
+          phoneNumber: contactNumber,
+          name: whatsappMessage.pushname || contactNumber,
           source: 'whatsapp'
         });
       }
@@ -164,7 +169,7 @@ class SimpleMessageQueueService {
         });
       }
 
-      // Save message
+      // Save message with correct direction based on fromMe
       const message = await Message.create({
         conversationId: conversation.id,
         whatsappMessageId: whatsappMessage.id,
@@ -173,8 +178,8 @@ class SimpleMessageQueueService {
         messageType: whatsappMessage.type || 'text',
         content: whatsappMessage.text || whatsappMessage.caption || '',
         mediaId: whatsappMessage.mediaId,
-        status: 'received',
-        direction: 'inbound',
+        status: whatsappMessage.fromMe ? 'sent' : 'received',
+        direction: whatsappMessage.fromMe ? 'outbound' : 'inbound',
         isForwarded: whatsappMessage.isForwarded || false,
         quotedMessageId: whatsappMessage.quotedMessageId
       });
