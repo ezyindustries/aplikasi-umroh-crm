@@ -56,15 +56,7 @@ router.post('/conversations/:conversationId/assign', conversationController.assi
 router.post('/conversations/:conversationId/labels', conversationController.addLabel);
 router.delete('/conversations/:conversationId/labels', conversationController.removeLabel);
 
-// Webhook endpoint
-router.post('/webhooks/waha', async (req, res) => {
-  try {
-    const result = await webhookHandler.handleWebhook(req.body, req.headers);
-    res.json(result);
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
+// Webhook endpoint moved to separate webhook routes file to avoid duplication
 
 // Health check
 router.get('/health', (req, res) => {
