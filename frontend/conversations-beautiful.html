@@ -3861,6 +3861,112 @@
             return time;
         }
         
+        // Connect WhatsApp function
+        async function connectWhatsApp() {
+            console.log('Connecting to WhatsApp...');
+            updateConnectionStatus('connecting');
+            
+            try {
+                // Start session
+                const response = await fetch(`${API_CONFIG.baseUrl}/sessions/start`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        sessionId: API_CONFIG.sessionId
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    console.log('Session started, checking for QR...');
+                    // Start checking for QR code
+                    checkForQRCode();
+                } else {
+                    throw new Error(result.error || 'Failed to start session');
+                }
+            } catch (error) {
+                console.error('Error connecting WhatsApp:', error);
+                showNotification('Failed to connect WhatsApp: ' + error.message, 'error');
+                updateConnectionStatus('disconnected');
+            }
+        }
+        
+        // Check for QR Code
+        async function checkForQRCode() {
+            try {
+                // First, check current status
+                const statusResponse = await fetch(`${API_CONFIG.baseUrl}/sessions/${API_CONFIG.sessionId}/status`);
+                const statusResult = await statusResponse.json();
+                
+                console.log('Session status:', statusResult);
+                
+                if (statusResult.success && statusResult.data) {
+                    const status = statusResult.data.status;
+                    
+                    if (status === 'SCAN_QR_CODE') {
+                        // Get QR code
+                        const qrResponse = await fetch(`${API_CONFIG.baseUrl}/sessions/${API_CONFIG.sessionId}/qr`);
+                        const qrResult = await qrResponse.json();
+                        
+                        if (qrResult.success && qrResult.data.qr) {
+                            showQRModal(qrResult.data.qr);
+                            // Continue checking status
+                            startQRCheckInterval();
+                        } else {
+                            console.log('No QR code available yet, retrying...');
+                            setTimeout(checkForQRCode, 2000);
+                        }
+                    } else if (status === 'authenticated' || status === 'connected' || status === 'WORKING') {
+                        console.log('Already connected!');
+                        updateConnectionStatus('connected', statusResult.data);
+                        loadContacts();
+                    } else {
+                        console.log('Status:', status, '- waiting...');
+                        setTimeout(checkForQRCode, 2000);
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking for QR:', error);
+                setTimeout(checkForQRCode, 5000);
+            }
+        }
+        
+        // Start QR check interval
+        function startQRCheckInterval() {
+            if (qrCheckInterval) {
+                clearInterval(qrCheckInterval);
+            }
+            
+            qrCheckInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`${API_CONFIG.baseUrl}/sessions/${API_CONFIG.sessionId}/status`);
+                    const result = await response.json();
+                    
+                    if (result.success && result.data) {
+                        console.log('QR check - Status:', result.data.status);
+                        
+                        if (result.data.status === 'authenticated' || result.data.status === 'connected' || result.data.status === 'WORKING') {
+                            console.log('WhatsApp connected!');
+                            clearInterval(qrCheckInterval);
+                            closeQRModal();
+                            updateConnectionStatus('connected', result.data);
+                            loadContacts();
+                        } else if (result.data.status !== 'SCAN_QR_CODE') {
+                            // Session failed or stopped
+                            clearInterval(qrCheckInterval);
+                            closeQRModal();
+                            updateConnectionStatus('disconnected');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error checking QR status:', error);
+                }
+            }, 2000);
+        }
+        
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Initializing WhatsApp CRM...');
