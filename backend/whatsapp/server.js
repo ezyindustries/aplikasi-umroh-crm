@@ -20,9 +20,16 @@ const server = http.createServer(app);
 // Socket.IO for real-time updates
 const io = socketIO(server, {
   cors: {
-    origin: ['http://localhost:8080', 'file://', 'null', '*'],
-    credentials: true
-  }
+    origin: ['http://localhost:8080', 'http://localhost:8000', 'file://', 'null', '*'],
+    credentials: true,
+    methods: ['GET', 'POST']
+  },
+  transports: ['polling', 'websocket'],
+  allowEIO3: true,
+  pingTimeout: 60000,
+  pingInterval: 25000,
+  upgradeTimeout: 10000,
+  maxHttpBufferSize: 1e6
 });
 
 // Make io globally accessible
@@ -77,18 +84,31 @@ app.use(errorHandler);
 
 // Socket.IO connection handling
 io.on('connection', (socket) => {
-  logger.info('Client connected:', socket.id);
+  logger.info('Client connected:', {
+    id: socket.id,
+    transport: socket.conn.transport.name,
+    query: socket.handshake.query,
+    headers: socket.handshake.headers.origin
+  });
+
+  // Send connection acknowledgment
+  socket.emit('connect:success', {
+    id: socket.id,
+    transport: socket.conn.transport.name
+  });
 
   // Join room based on session
   socket.on('join:session', (sessionId) => {
     socket.join(`session:${sessionId}`);
     logger.info(`Socket ${socket.id} joined session:${sessionId}`);
+    socket.emit('join:session:success', { sessionId });
   });
 
   // Join conversation room
   socket.on('join:conversation', (conversationId) => {
     socket.join(`conversation:${conversationId}`);
     logger.info(`Socket ${socket.id} joined conversation:${conversationId}`);
+    socket.emit('join:conversation:success', { conversationId });
   });
 
   // Leave conversation room
@@ -98,8 +118,19 @@ io.on('connection', (socket) => {
   });
 
   // Handle disconnect
-  socket.on('disconnect', () => {
-    logger.info('Client disconnected:', socket.id);
+  socket.on('disconnect', (reason) => {
+    logger.info('Client disconnected:', {
+      id: socket.id,
+      reason: reason
+    });
+  });
+
+  // Handle errors
+  socket.on('error', (error) => {
+    logger.error('Socket error:', {
+      id: socket.id,
+      error: error.message
+    });
   });
 });
 

@@ -1,0 +1,63 @@
+MANUAL SETUP WAHA DI DOCKER
+===========================
+
+Jika batch file tidak berjalan, ikuti langkah manual ini:
+
+1. PASTIKAN DOCKER DESKTOP RUNNING
+   - Buka Docker Desktop
+   - Tunggu sampai whale icon di system tray berwarna hijau/putih (tidak merah)
+   - Buka Command Prompt (CMD) as Administrator
+
+2. TEST DOCKER
+   Jalankan di CMD:
+   > docker --version
+   > docker ps
+
+   Jika error, Docker belum siap.
+
+3. HAPUS CONTAINER LAMA (jika ada)
+   > docker stop whatsapp-http-api
+   > docker rm whatsapp-http-api
+
+4. BUAT FOLDER DATA
+   > cd D:\ezyin\Documents\aplikasi umroh
+   > mkdir waha-data
+
+5. PULL IMAGE WAHA
+   > docker pull devlikeapro/whatsapp-http-api:latest
+
+6. RUN CONTAINER WAHA
+   Copy dan paste command ini (SATU BARIS):
+
+   docker run -d --name whatsapp-http-api --restart unless-stopped -p 3000:3000 -v "D:\ezyin\Documents\aplikasi umroh\waha-data:/app/data" -e WHATSAPP_HOOK_URL=http://host.docker.internal:3001/api/webhooks/waha -e WHATSAPP_HOOK_EVENTS=* devlikeapro/whatsapp-http-api:latest
+
+7. CEK STATUS
+   > docker ps
+   
+   Harus muncul container whatsapp-http-api dengan status Up
+
+8. CEK LOGS
+   > docker logs whatsapp-http-api
+
+9. TEST API
+   Buka browser: http://localhost:3000/api/health
+   
+   Harus muncul response JSON
+
+10. BUKA SWAGGER UI
+    http://localhost:3000/swagger
+
+TROUBLESHOOTING:
+- Port 3000 sudah dipakai? 
+  > netstat -ano | findstr :3000
+  Kill process yang pakai port tersebut
+
+- Container error?
+  > docker logs whatsapp-http-api
+  Lihat error message
+
+- Permission denied?
+  Jalankan CMD as Administrator
+
+- Docker daemon not running?
+  Start Docker Desktop dulu

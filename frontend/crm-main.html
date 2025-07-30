@@ -1039,8 +1039,182 @@
     </div>
 
     <script>
+        // API Base URL
+        const API_BASE_URL = 'http://localhost:3001/api';
+
+        // Fetch dashboard data from API
+        async function fetchDashboardData() {
+            try {
+                // Fetch stats
+                const statsResponse = await fetch(`${API_BASE_URL}/dashboard/stats`);
+                const statsData = await statsResponse.json();
+                
+                if (statsData.success) {
+                    updateDashboardStats(statsData.data);
+                }
+
+                // Fetch recent activity
+                const activityResponse = await fetch(`${API_BASE_URL}/dashboard/activity`);
+                const activityData = await activityResponse.json();
+                
+                if (activityData.success) {
+                    updateRecentActivity(activityData.data);
+                }
+
+                // Fetch AI performance
+                const aiResponse = await fetch(`${API_BASE_URL}/dashboard/ai-performance`);
+                const aiData = await aiResponse.json();
+                
+                if (aiData.success) {
+                    updateAIPerformance(aiData.data);
+                }
+
+                // Fetch analytics data
+                const analyticsResponse = await fetch(`${API_BASE_URL}/dashboard/analytics?period=week`);
+                const analyticsData = await analyticsResponse.json();
+                
+                if (analyticsData.success) {
+                    updateConversionChart(analyticsData.data);
+                }
+
+                // Fetch lead sources
+                const leadSourceResponse = await fetch(`${API_BASE_URL}/dashboard/lead-sources`);
+                const leadSourceData = await leadSourceResponse.json();
+                
+                if (leadSourceData.success) {
+                    updateLeadSources(leadSourceData.data);
+                }
+            } catch (error) {
+                console.error('Error fetching dashboard data:', error);
+            }
+        }
+
+        // Update dashboard stats
+        function updateDashboardStats(data) {
+            // Update quick stats
+            const quickStats = document.querySelectorAll('.quick-stat');
+            const statKeys = ['activeChats', 'totalLeads', 'aiResponseRate', 'conversions'];
+            
+            quickStats.forEach((stat, index) => {
+                const key = statKeys[index];
+                if (data[key]) {
+                    const valueEl = stat.querySelector('.quick-stat-value');
+                    const labelEl = stat.querySelector('.quick-stat-label');
+                    
+                    if (key === 'aiResponseRate') {
+                        valueEl.textContent = data[key].value + '%';
+                    } else {
+                        valueEl.textContent = data[key].value.toLocaleString();
+                    }
+                    
+                    if (labelEl) {
+                        labelEl.textContent = data[key].label;
+                    }
+                }
+            });
+
+            // Update main widget values
+            const widgetValue = document.querySelector('.widget-value');
+            if (widgetValue && data.activeChats) {
+                widgetValue.textContent = data.activeChats.value.toLocaleString();
+                
+                // Update trend
+                const trendEl = document.querySelector('.widget-trend');
+                if (trendEl && data.activeChats.trend) {
+                    const trendValue = parseFloat(data.activeChats.trend);
+                    trendEl.innerHTML = `
+                        <span class="material-icons">${trendValue >= 0 ? 'trending_up' : 'trending_down'}</span>
+                        ${trendValue >= 0 ? '+' : ''}${trendValue}% from last week
+                    `;
+                    trendEl.classList.toggle('negative', trendValue < 0);
+                }
+            }
+        }
+
+        // Update recent activity
+        function updateRecentActivity(activities) {
+            const activityFeed = document.querySelector('.activity-feed');
+            if (!activityFeed) return;
+
+            activityFeed.innerHTML = activities.map(activity => `
+                <div class="activity-item">
+                    <div class="activity-avatar">${activity.avatar}</div>
+                    <div class="activity-content">
+                        <div class="activity-title">${activity.title}</div>
+                        <div class="activity-description">${activity.description}</div>
+                    </div>
+                    <div class="activity-time">${activity.time}</div>
+                </div>
+            `).join('');
+        }
+
+        // Update AI performance
+        function updateAIPerformance(data) {
+            const aiWidget = document.querySelector('.stat-widget:nth-child(2)');
+            if (!aiWidget) return;
+
+            // Update AI accuracy
+            const aiValue = aiWidget.querySelector('.widget-value');
+            if (aiValue) {
+                aiValue.textContent = data.accuracy + '%';
+            }
+
+            // Update stat details
+            const statDetails = aiWidget.querySelector('.stat-details');
+            if (statDetails) {
+                statDetails.innerHTML = `
+                    <div class="stat-detail-row">
+                        <span class="stat-detail-label">Avg Response Time</span>
+                        <span class="stat-detail-value">${data.avgResponseTime}s</span>
+                    </div>
+                    <div class="stat-detail-row">
+                        <span class="stat-detail-label">Messages Handled</span>
+                        <span class="stat-detail-value">${data.messagesHandled.toLocaleString()}</span>
+                    </div>
+                    <div class="stat-detail-row">
+                        <span class="stat-detail-label">Auto-resolved</span>
+                        <span class="stat-detail-value">${data.autoResolvedRate}%</span>
+                    </div>
+                `;
+            }
+        }
+
+        // Update lead sources
+        function updateLeadSources(data) {
+            // Update legend values
+            const legendItems = document.querySelectorAll('.legend-item');
+            const sources = ['WhatsApp', 'Website', 'Instagram', 'Facebook', 'Referral'];
+            
+            legendItems.forEach((item, index) => {
+                const source = sources[index];
+                const valueEl = item.querySelector('.legend-value');
+                if (valueEl && data.percentages[source]) {
+                    valueEl.textContent = data.percentages[source] + '%';
+                }
+            });
+
+            // Update total in chart center
+            const totalLeads = data.total;
+            if (totalLeads) {
+                // This will be updated when chart is redrawn
+                window.totalLeadsCount = totalLeads;
+            }
+
+            // Update chart stats
+            const chartStats = document.querySelectorAll('.chart-stat-value');
+            if (chartStats.length >= 3) {
+                chartStats[0].textContent = data.total.toLocaleString();
+                // Keep other values as is for now
+            }
+        }
+
         // Initialize Charts with Futuristic Theme
         document.addEventListener('DOMContentLoaded', function() {
+            // Fetch real data from API
+            fetchDashboardData();
+            
+            // Refresh data every 30 seconds
+            setInterval(fetchDashboardData, 30000);
             // Chart.js Global Configuration
             Chart.defaults.font.family = "'Inter', sans-serif";
             Chart.defaults.color = '#e2e8f0';
@@ -1061,7 +1235,7 @@
             const convGradient1 = createGradient(conversionCtx, 'rgba(59, 130, 246, 0.3)', 'rgba(59, 130, 246, 0.01)');
             const convGradient2 = createGradient(conversionCtx, 'rgba(16, 185, 129, 0.3)', 'rgba(16, 185, 129, 0.01)');
             
-            new Chart(conversionCtx, {
+            window.conversionChart = new Chart(conversionCtx, {
                 type: 'line',
                 data: {
                     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
@@ -1174,6 +1348,16 @@
             // Lead Source Chart - Modern Doughnut with Center Text
             const leadSourceCtx = document.getElementById('leadSourceChart').getContext('2d');
             
+            // Update chart with analytics data
+            function updateConversionChart(data) {
+                if (window.conversionChart && data.labels && data.datasets) {
+                    window.conversionChart.data.labels = data.labels;
+                    window.conversionChart.data.datasets[0].data = data.datasets.messages;
+                    window.conversionChart.data.datasets[1].data = data.datasets.conversions;
+                    window.conversionChart.update();
+                }
+            }
+
             // Plugin for center text
             const centerTextPlugin = {
                 id: 'centerText',
@@ -1189,7 +1373,10 @@
                     // Main number
                     ctx.font = 'bold 28px Inter';
                     ctx.fillStyle = '#ffffff';
-                    ctx.fillText('15.2K', centerX, centerY - 10);
+                    const displayValue = window.totalLeadsCount ? 
+                        (window.totalLeadsCount >= 1000 ? (window.totalLeadsCount / 1000).toFixed(1) + 'K' : window.totalLeadsCount.toString()) : 
+                        '0';
+                    ctx.fillText(displayValue, centerX, centerY - 10);
                     
                     // Label
                     ctx.font = '12px Inter';
@@ -1200,7 +1387,7 @@
                 }
             };
             
-            new Chart(leadSourceCtx, {
+            window.leadSourceChart = new Chart(leadSourceCtx, {
                 type: 'doughnut',
                 data: {
                     labels: ['WhatsApp', 'Website', 'Instagram', 'Facebook', 'Referral'],
@@ -1272,18 +1459,6 @@
                 window.requestAnimationFrame(step);
             };
 
-            // Animate quick stats
-            document.querySelectorAll('.quick-stat-value').forEach((el, index) => {
-                const values = [2847, 15200, 98.7, 342];
-                if (index === 2) {
-                    animateValue(el, 0, values[index], 2000);
-                    setTimeout(() => {
-                        el.innerHTML = '98.7%';
-                    }, 2000);
-                } else {
-                    animateValue(el, 0, values[index], 2000);
-                }
-            });
         });
     </script>
 </body>

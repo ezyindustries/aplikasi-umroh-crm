@@ -2915,21 +2915,40 @@
             const socketUrl = API_CONFIG.baseUrl.replace('/api', '');
             console.log('Connecting to socket:', socketUrl);
             socket = io(socketUrl, {
-                transports: ['websocket', 'polling'],
-                reconnection: true
+                transports: ['polling', 'websocket'], // Start with polling, then upgrade
+                reconnection: true,
+                reconnectionDelay: 1000,
+                reconnectionDelayMax: 5000,
+                reconnectionAttempts: 5,
+                timeout: 20000,
+                autoConnect: true,
+                forceNew: false,
+                multiplex: true,
+                path: '/socket.io/',
+                query: {
+                    sessionId: API_CONFIG.sessionId
+                }
             });
             
             socket.on('connect', () => {
                 console.log('Connected to backend socket');
+                console.log('Socket ID:', socket.id);
+                console.log('Transport:', socket.io.engine.transport.name);
                 initializeSocketListeners();
             });
             
-            socket.on('disconnect', () => {
-                console.log('Disconnected from backend socket');
+            socket.on('disconnect', (reason) => {
+                console.log('Disconnected from backend socket:', reason);
             });
             
             socket.on('connect_error', (error) => {
-                console.error('Socket connection error:', error);
+                console.error('Socket connection error:', error.message);
+                console.error('Error type:', error.type);
+                // If WebSocket fails, Socket.IO will automatically fallback to polling
+            });
+            
+            socket.io.on('upgrade', (transport) => {
+                console.log('Socket transport upgraded to:', transport.name);
             });
         }
         
@@ -3539,8 +3558,18 @@
         
         // Initialize Socket.IO listeners
         function initializeSocketListeners() {
+            // Listen for connection success
+            socket.on('connect:success', (data) => {
+                console.log('Socket connection successful:', data);
+            });
+
             // Join default session room
             socket.emit('join:session', API_CONFIG.sessionId);
+
+            // Listen for join success
+            socket.on('join:session:success', (data) => {
+                console.log('Successfully joined session:', data.sessionId);
+            });
             
             // Listen for QR code
             socket.on('session:qr', (data) => {

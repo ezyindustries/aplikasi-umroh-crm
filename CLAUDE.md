@@ -56,7 +56,7 @@ Aplikasi WhatsApp CRM sederhana yang fokus pada komunikasi dengan customer melal
 - **FOKUS**: Hanya WhatsApp CRM, tidak ada fitur lain
 - **DATABASE**: SQLite only, tidak ada PostgreSQL
 - **FRONTEND**: Hanya 2 file HTML yang disebutkan
-- **BACKEND**: Minimal, hanya untuk WhatsApp
+- **BACKEND**: Minimal, 
 - **NO FEATURES**: Tidak ada manajemen jamaah, paket, pembayaran, dll
 
 ## 8. WAHA Integration

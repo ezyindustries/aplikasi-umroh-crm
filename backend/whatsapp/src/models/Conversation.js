@@ -23,7 +23,7 @@ const Conversation = sequelize.define('Conversation', {
     comment: 'WAHA session ID'
   },
   status: {
-    type: DataTypes.ENUM('active', 'closed', 'archived', 'pending'),
+    type: DataTypes.ENUM('active', 'closed', 'archived', 'pending', 'converted', 'resolved'),
     defaultValue: 'active'
   },
   unreadCount: {
@@ -70,6 +70,12 @@ const Conversation = sequelize.define('Conversation', {
     type: DataTypes.DATE,
     allowNull: true,
     field: 'closed_at'
+  },
+  resolvedBy: {
+    type: DataTypes.ENUM('agent', 'ai', 'customer'),
+    allowNull: true,
+    field: 'resolved_by',
+    comment: 'Who resolved this conversation'
   }
 }, {
   tableName: 'conversations',

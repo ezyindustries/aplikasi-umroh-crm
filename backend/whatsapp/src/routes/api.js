@@ -6,6 +6,7 @@ const sessionController = require('../controllers/SessionController');
 const messageController = require('../controllers/MessageController');
 const contactController = require('../controllers/ContactController');
 const conversationController = require('../controllers/ConversationController');
+const dashboardController = require('../controllers/DashboardController');
 
 // Webhook handler
 const webhookHandler = require('../services/WebhookHandler');
@@ -144,6 +145,39 @@ router.get('/compliance/status', async (req, res) => {
     res.status(500).json({
       success: false,
       error: error.message
+    });
+  }
+});
+
+// Dashboard routes
+router.get('/dashboard/stats', dashboardController.getStats);
+router.get('/dashboard/activity', dashboardController.getRecentActivity);
+router.get('/dashboard/analytics', dashboardController.getConversionAnalytics);
+router.get('/dashboard/lead-sources', dashboardController.getLeadSources);
+router.get('/dashboard/ai-performance', dashboardController.getAIPerformance);
+
+// Test endpoint
+router.get('/dashboard/test', async (req, res) => {
+  try {
+    const { Contact, Conversation, Message } = require('../models');
+    
+    const contactCount = await Contact.count();
+    const conversationCount = await Conversation.count();
+    const messageCount = await Message.count();
+    
+    res.json({
+      success: true,
+      data: {
+        contacts: contactCount,
+        conversations: conversationCount,
+        messages: messageCount
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      stack: error.stack
     });
   }
 });

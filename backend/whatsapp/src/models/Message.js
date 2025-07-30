@@ -123,6 +123,23 @@ const Message = sequelize.define('Message', {
   metadata: {
     type: DataTypes.JSON,
     defaultValue: {}
+  },
+  isAutomated: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    field: 'is_automated',
+    comment: 'Whether message was sent by AI/automation'
+  },
+  responseTime: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    field: 'response_time',
+    comment: 'Response time in milliseconds'
+  },
+  type: {
+    type: DataTypes.ENUM('incoming', 'outgoing'),
+    allowNull: true,
+    comment: 'Message direction type'
   }
 }, {
   tableName: 'messages',
