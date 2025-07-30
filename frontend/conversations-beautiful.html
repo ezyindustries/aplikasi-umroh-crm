@@ -2853,10 +2853,18 @@
                         ...conv.contact,
                         conversations: [conv],
                         lastMessage: conv.messages?.[0],
-                        isWithin24hWindow: conv.isWithin24hWindow
+                        isWithin24hWindow: conv.isWithin24hWindow,
+                        lastMessageAt: conv.lastMessageAt || conv.messages?.[0]?.createdAt || conv.updatedAt
                     }));
                     
-                    console.log('Transformed data:', contactsData);
+                    // Sort by last message time (most recent first)
+                    contactsData.sort((a, b) => {
+                        const timeA = new Date(a.lastMessageAt || 0).getTime();
+                        const timeB = new Date(b.lastMessageAt || 0).getTime();
+                        return timeB - timeA;
+                    });
+                    
+                    console.log('Transformed and sorted data:', contactsData);
                     displayContacts(contactsData);
                     
                     // Show total conversations loaded
