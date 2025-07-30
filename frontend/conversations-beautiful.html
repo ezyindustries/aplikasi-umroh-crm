@@ -3584,14 +3584,29 @@
                         item.style.transform = '';
                     });
                     
+                    // Temporarily disable all animations
+                    contactItem.style.animation = 'none';
+                    contactItem.style.transition = 'none';
+                    contactItem.style.animationDelay = '0ms';
+                    
                     // Move original to top
                     contactsList.insertBefore(contactItem, contactsList.firstChild);
-                    contactItem.style.opacity = '1';
-                    contactItem.style.transition = '';
                     
-                    // Add highlight effect
-                    contactItem.classList.add('highlight');
-                    setTimeout(() => contactItem.classList.remove('highlight'), 1000);
+                    // Force reflow to ensure styles are applied
+                    contactItem.offsetHeight;
+                    
+                    // Restore visibility without animation
+                    contactItem.style.opacity = '1';
+                    
+                    // Re-enable transitions after a frame (but not animations)
+                    requestAnimationFrame(() => {
+                        contactItem.style.transition = '';
+                        // Don't re-enable animation to prevent slide-in
+                        
+                        // Add highlight effect
+                        contactItem.classList.add('highlight');
+                        setTimeout(() => contactItem.classList.remove('highlight'), 1000);
+                    });
                     
                     // Update time
                     const timeElement = contactItem.querySelector('.contact-time');
