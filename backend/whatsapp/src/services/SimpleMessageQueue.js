@@ -56,6 +56,17 @@ class SimpleMessageQueueService {
         direction: 'outbound'
       });
 
+      // Update conversation lastMessageAt
+      const conversation = await Conversation.findByPk(messageData.conversationId);
+      if (conversation) {
+        await conversation.update({
+          lastMessageAt: new Date(),
+          lastMessagePreview: messageData.content ? 
+            messageData.content.substring(0, 100) : 
+            `[${messageData.messageType || 'text'}]`
+        });
+      }
+
       this.outgoingQueue.push({
         id: message.id,
         ...messageData

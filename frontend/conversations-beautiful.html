@@ -2847,15 +2847,21 @@
                 
                 if (result.success) {
                     console.log(`Found ${result.data.length} conversations`);
+                    console.log('Raw conversation data:', result.data);
                     
                     // Transform conversations data to match displayContacts format
-                    const contactsData = result.data.map(conv => ({
-                        ...conv.contact,
-                        conversations: [conv],
-                        lastMessage: conv.messages?.[0],
-                        isWithin24hWindow: conv.isWithin24hWindow,
-                        lastMessageAt: conv.lastMessageAt || conv.messages?.[0]?.createdAt || conv.updatedAt
-                    }));
+                    const contactsData = result.data.map(conv => {
+                        const lastMessageAt = conv.lastMessageAt || conv.messages?.[0]?.createdAt || conv.updatedAt;
+                        console.log(`Contact ${conv.contact.name}: lastMessageAt = ${lastMessageAt}`);
+                        
+                        return {
+                            ...conv.contact,
+                            conversations: [conv],
+                            lastMessage: conv.messages?.[0],
+                            isWithin24hWindow: conv.isWithin24hWindow,
+                            lastMessageAt: lastMessageAt
+                        };
+                    });
                     
                     // Sort by last message time (most recent first)
                     contactsData.sort((a, b) => {
@@ -3480,8 +3486,12 @@
             const allContacts = Array.from(contactsList.querySelectorAll('.contact-item'));
             const currentIndex = allContacts.indexOf(contactItem);
             
+            console.log('Current contact index:', currentIndex);
+            console.log('Total contacts:', allContacts.length);
+            
             // If already at top, just highlight
             if (currentIndex === 0) {
+                console.log('Contact already at top, just highlighting');
                 contactItem.classList.add('highlight');
                 setTimeout(() => contactItem.classList.remove('highlight'), 1000);
                 
