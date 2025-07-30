@@ -3575,9 +3575,22 @@
             socket.on('message:new', (data) => {
                 console.log('=== Socket: New message received ===', data);
                 console.log('Conversation ID from message:', data.conversationId);
+                console.log('Message:', data.message);
                 
                 if (currentConversation && data.conversationId === currentConversation.id) {
-                    displayNewMessage(data.message);
+                    // Check if message already exists to avoid duplicates
+                    const messageId = data.message?.whatsappMessageId || data.message?.id;
+                    const existingMessage = document.querySelector(`[data-message-id="${messageId}"]`);
+                    
+                    if (!existingMessage) {
+                        displayNewMessage(data.message);
+                    } else {
+                        console.log('Message already exists, skipping duplicate');
+                        // Update status if needed
+                        if (data.message?.status) {
+                            updateMessageStatus(messageId, data.message.status);
+                        }
+                    }
                 }
                 
                 // Update contact position with animation and message preview

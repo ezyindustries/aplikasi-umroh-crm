@@ -26,13 +26,22 @@ router.post('/waha', async (req, res) => {
       }
     }
     
-    // Log the event
+    // Log the event with full details
     logger.info(`WAHA Webhook Event: ${event.event}`, {
       session: event.session,
       event: event.event,
       from: event.payload?.from,
-      body: event.payload?.body
+      to: event.payload?.to,
+      body: event.payload?.body,
+      type: event.payload?.type,
+      id: event.payload?.id,
+      timestamp: new Date().toISOString()
     });
+    
+    console.log('=== WEBHOOK RECEIVED ===');
+    console.log('Event:', event.event);
+    console.log('Session:', event.session);
+    console.log('Payload:', JSON.stringify(event.payload, null, 2));
     
     // Emit to frontend for monitoring
     if (global.io) {

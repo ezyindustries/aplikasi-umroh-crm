@@ -75,14 +75,16 @@ class WAHAService extends EventEmitter {
       config: {
         // Webhook configuration
         webhooks: config.webhooks || [{
-          url: `${process.env.APP_URL || 'http://localhost:3001'}/api/webhooks/waha`,
+          url: `${process.env.APP_URL || 'http://host.docker.internal:4000'}/api/webhooks/waha`,
           events: [
             'session.status',
             'message',
+            'message.any',
             'message.ack',
             'message.reaction',
             'message.revoked',
-            'presence.update'
+            'presence.update',
+            'state.change'
           ],
           hmac: {
             key: process.env.WEBHOOK_SECRET || 'your-secret-key'

@@ -124,6 +124,10 @@ global.emitConversationUpdate = emitConversationUpdate;
 // Start server
 const PORT = process.env.PORT || 3001;
 
+// Import and initialize message poller as fallback
+const MessagePoller = require('./src/services/MessagePoller');
+const messagePoller = new MessagePoller();
+
 const startServer = async () => {
   try {
     // Initialize database
@@ -135,6 +139,11 @@ const startServer = async () => {
       logger.info(`WhatsApp CRM Backend running on port ${PORT}`);
       logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
       logger.info(`WAHA URL: ${process.env.WAHA_BASE_URL}`);
+      logger.info(`Webhook endpoint: http://localhost:${PORT}/api/webhooks/waha`);
+      
+      // Start message polling as fallback
+      logger.info('Starting message polling as webhook fallback...');
+      messagePoller.startPolling('default');
     });
   } catch (error) {
     logger.error('Failed to start server:', error);
@@ -166,3 +175,13 @@ process.on('SIGTERM', async () => {
 
 // Start the server
 startServer();
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  logger.info('SIGTERM received, shutting down gracefully...');
+  messagePoller.stopPolling();
+  server.close(() => {
+    logger.info('Server closed');
+    process.exit(0);
+  });
+});
