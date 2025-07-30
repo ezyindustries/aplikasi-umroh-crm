@@ -10,6 +10,9 @@ const conversationController = require('../controllers/ConversationController');
 // Webhook handler
 const webhookHandler = require('../services/WebhookHandler');
 
+// Session manager
+const sessionManager = require('../services/SessionManager');
+
 // Rate limiting - removed global rate limiting to fix message sending
 // const { createRateLimitMiddleware } = require('../config/rateLimiter');
 
@@ -76,6 +79,44 @@ router.post('/conversations/:conversationId/archive', conversationController.arc
 router.post('/conversations/:conversationId/assign', conversationController.assignConversation);
 router.post('/conversations/:conversationId/labels', conversationController.addLabel);
 router.delete('/conversations/:conversationId/labels', conversationController.removeLabel);
+
+// Session management endpoints
+router.post('/sessions/restore', async (req, res) => {
+  try {
+    const { sessionName = 'default' } = req.body;
+    const restored = await sessionManager.startSessionWithRestore(sessionName);
+    
+    res.json({
+      success: restored,
+      message: restored 
+        ? 'Session restored successfully' 
+        : 'Could not restore session, QR scan required',
+      sessionName
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to restore session',
+      error: error.message
+    });
+  }
+});
+
+router.get('/sessions/backups', async (req, res) => {
+  try {
+    const backups = await sessionManager.listBackups();
+    res.json({
+      success: true,
+      backups
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to list session backups',
+      error: error.message
+    });
+  }
+});
 
 // Webhook endpoint moved to separate webhook routes file to avoid duplication
 

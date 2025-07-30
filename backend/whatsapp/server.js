@@ -128,6 +128,9 @@ const PORT = process.env.PORT || 3001;
 const MessagePoller = require('./src/services/MessagePoller');
 const messagePoller = new MessagePoller();
 
+// Import session manager for persistent sessions
+const sessionManager = require('./src/services/SessionManager');
+
 const startServer = async () => {
   try {
     // Initialize database
@@ -135,11 +138,22 @@ const startServer = async () => {
     logger.info('Database initialized successfully');
 
     // Start server
-    server.listen(PORT, () => {
+    server.listen(PORT, async () => {
       logger.info(`WhatsApp CRM Backend running on port ${PORT}`);
       logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
       logger.info(`WAHA URL: ${process.env.WAHA_BASE_URL}`);
       logger.info(`Webhook endpoint: http://localhost:${PORT}/api/webhooks/waha`);
+      
+      // Try to restore session automatically
+      logger.info('🔄 Attempting to restore WhatsApp session...');
+      const sessionRestored = await sessionManager.startSessionWithRestore('default');
+      
+      if (sessionRestored) {
+        logger.info('✅ WhatsApp session restored successfully - No QR scan needed!');
+      } else {
+        logger.warn('⚠️ Could not restore session - QR scan may be required');
+        logger.info('📱 Access http://localhost:3000/dashboard to scan QR code');
+      }
       
       // Start message polling as fallback
       logger.info('Starting message polling as webhook fallback...');

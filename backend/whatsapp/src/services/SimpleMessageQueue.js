@@ -200,7 +200,7 @@ class SimpleMessageQueueService {
         fromNumber: fromNumber,
         toNumber: toNumber,
         messageType: whatsappMessage.type || 'text',
-        content: whatsappMessage.text || whatsappMessage.caption || '',
+        content: whatsappMessage.body || whatsappMessage.text || whatsappMessage.caption || '',
         mediaId: whatsappMessage.mediaId,
         mediaUrl: mediaUrl,
         mediaMimeType: whatsappMessage.mimetype,

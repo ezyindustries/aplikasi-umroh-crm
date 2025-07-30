@@ -1,13 +1,13 @@
 const axios = require('axios');
 const logger = require('../utils/logger');
-const SimpleMessageQueue = require('./SimpleMessageQueue');
+const messageQueue = require('./SimpleMessageQueue');
 
 class MessagePoller {
   constructor() {
     this.polling = false;
     this.lastMessageId = null;
     this.pollInterval = 5000; // 5 seconds
-    this.messageQueue = new SimpleMessageQueue();
+    this.messageQueue = messageQueue;
     this.processedMessages = new Set(); // Track processed message IDs
   }
 
