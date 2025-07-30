@@ -194,6 +194,29 @@
             box-shadow: 0 4px 20px rgba(59, 130, 246, 0.2);
         }
         
+        /* Highlight animation for updated contacts */
+        .contact-item.highlight {
+            animation: contactHighlight 1s ease-out;
+        }
+        
+        @keyframes contactHighlight {
+            0% {
+                background: rgba(59, 130, 246, 0.3);
+                border-color: rgba(59, 130, 246, 0.6);
+                transform: scale(1.02);
+            }
+            50% {
+                background: rgba(59, 130, 246, 0.2);
+                border-color: rgba(59, 130, 246, 0.4);
+                transform: scale(1.01);
+            }
+            100% {
+                background: rgba(71, 85, 105, 0.2);
+                border-color: rgba(71, 85, 105, 0.3);
+                transform: scale(1);
+            }
+        }
+        
         /* Contacts Action Bar */
         .contacts-action-bar {
             padding: 12px 16px;
@@ -3514,105 +3537,59 @@
                 return;
             }
             
-            // Clone the item for smooth animation
-            const contactClone = contactItem.cloneNode(true);
-            contactClone.style.position = 'absolute';
-            contactClone.style.width = contactItem.offsetWidth + 'px';
-            contactClone.style.opacity = '0';
-            contactClone.style.pointerEvents = 'none';
+            // Simple approach: fade out, reorder, fade in
+            const itemHeight = contactItem.offsetHeight + 8; // Include margin
             
-            // Get positions
-            const startRect = contactItem.getBoundingClientRect();
-            const containerRect = contactsList.getBoundingClientRect();
+            // Apply fade out to contact that will move
+            contactItem.style.transition = 'opacity 0.3s ease-out';
+            contactItem.style.opacity = '0.3';
             
-            // Insert clone at the beginning (invisible)
-            contactsList.insertBefore(contactClone, contactsList.firstChild);
-            
-            // Get end position
-            const endRect = contactClone.getBoundingClientRect();
-            
-            // Remove clone temporarily
-            contactClone.remove();
-            
-            // Create moving element
-            const movingItem = contactItem.cloneNode(true);
-            movingItem.style.position = 'fixed';
-            movingItem.style.top = startRect.top + 'px';
-            movingItem.style.left = startRect.left + 'px';
-            movingItem.style.width = startRect.width + 'px';
-            movingItem.style.zIndex = '1000';
-            movingItem.style.transition = 'all 0.6s cubic-bezier(0.4, 0.0, 0.2, 1)';
-            movingItem.style.pointerEvents = 'none';
-            document.body.appendChild(movingItem);
-            
-            // Hide original
-            contactItem.style.opacity = '0';
-            contactItem.style.transition = 'opacity 0.3s ease';
-            
-            // Animate other items sliding down
+            // Smoothly slide other items down
             const itemsToMove = [];
             for (let i = 0; i < currentIndex; i++) {
                 itemsToMove.push(allContacts[i]);
             }
             
-            // Start animations
-            requestAnimationFrame(() => {
-                // Move the flying item to top position
-                movingItem.style.top = endRect.top + 'px';
-                movingItem.style.transform = 'scale(1.05)';
-                movingItem.style.boxShadow = '0 10px 30px rgba(0,0,0,0.3)';
-                
-                // Slide other items down smoothly
-                itemsToMove.forEach((item, index) => {
-                    item.style.transition = 'transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1)';
-                    item.style.transform = 'translateY(' + contactItem.offsetHeight + 'px)';
-                });
+            // Start sliding animation
+            itemsToMove.forEach((item) => {
+                item.style.transition = 'transform 0.5s ease-out';
+                item.style.transform = `translateY(${itemHeight}px)`;
             });
             
-            // Complete the animation
+            // After half the animation, move the DOM element
             setTimeout(() => {
-                // Remove moving element
-                movingItem.style.opacity = '0';
-                movingItem.style.transform = 'scale(1)';
+                // Remove any animation classes
+                contactItem.style.animation = 'none';
+                contactItem.style.animationDelay = '';
                 
+                // Move to top in DOM
+                contactsList.insertBefore(contactItem, contactsList.firstChild);
+                
+                // Start fade in
+                contactItem.style.transition = 'opacity 0.3s ease-in, background-color 0.8s ease';
+                contactItem.style.opacity = '1';
+                
+                // Add temporary highlight
+                contactItem.style.backgroundColor = 'rgba(59, 130, 246, 0.2)';
+                
+                // Reset other items
+                itemsToMove.forEach((item) => {
+                    item.style.transition = '';
+                    item.style.transform = '';
+                });
+                
+                // Update time
+                const timeElement = contactItem.querySelector('.contact-time');
+                if (timeElement) timeElement.textContent = 'Just now';
+                
+                // Remove highlight after animation
                 setTimeout(() => {
-                    movingItem.remove();
-                    
-                    // Reset all transforms
-                    itemsToMove.forEach(item => {
-                        item.style.transition = '';
-                        item.style.transform = '';
-                    });
-                    
-                    // Temporarily disable all animations
-                    contactItem.style.animation = 'none';
-                    contactItem.style.transition = 'none';
-                    contactItem.style.animationDelay = '0ms';
-                    
-                    // Move original to top
-                    contactsList.insertBefore(contactItem, contactsList.firstChild);
-                    
-                    // Force reflow to ensure styles are applied
-                    contactItem.offsetHeight;
-                    
-                    // Restore visibility without animation
-                    contactItem.style.opacity = '1';
-                    
-                    // Re-enable transitions after a frame (but not animations)
-                    requestAnimationFrame(() => {
-                        contactItem.style.transition = '';
-                        // Don't re-enable animation to prevent slide-in
-                        
-                        // Add highlight effect
-                        contactItem.classList.add('highlight');
-                        setTimeout(() => contactItem.classList.remove('highlight'), 1000);
-                    });
-                    
-                    // Update time
-                    const timeElement = contactItem.querySelector('.contact-time');
-                    if (timeElement) timeElement.textContent = 'Just now';
-                }, 100);
-            }, 600);
+                    contactItem.style.transition = '';
+                    contactItem.style.backgroundColor = '';
+                    contactItem.classList.add('highlight');
+                    setTimeout(() => contactItem.classList.remove('highlight'), 1000);
+                }, 800);
+            }, 250);
         }
         
         function getStatusIcon(status) {
