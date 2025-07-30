@@ -2953,6 +2953,10 @@
                 
                 const contactItem = document.createElement('div');
                 contactItem.className = 'contact-item';
+                contactItem.dataset.contactId = contact.id;
+                contactItem.dataset.conversationId = conversation?.id || '';
+                contactItem.dataset.lastActivity = contact.lastMessageAt || '';
+                contactItem.style.animationDelay = `${index * 50}ms`;
                 contactItem.onclick = (e) => {
                     e.stopPropagation();
                     e.preventDefault();
@@ -3002,6 +3006,10 @@
                 
                 const contactItem = document.createElement('div');
                 contactItem.className = 'contact-item';
+                contactItem.dataset.contactId = contact.id;
+                contactItem.dataset.conversationId = conversation?.id || '';
+                contactItem.dataset.lastActivity = contact.lastMessageAt || '';
+                contactItem.style.animationDelay = `${index * 50}ms`;
                 contactItem.onclick = (e) => {
                     e.stopPropagation();
                     e.preventDefault();
@@ -3323,15 +3331,15 @@
                     displayNewMessage(data.message);
                 }
                 
-                // Update contact list
-                loadContacts();
+                // Update contact position with animation
+                updateContactPosition(data.conversationId);
             });
             
             // Listen for conversation updates
             socket.on('conversation:updated', (data) => {
                 console.log('Conversation updated:', data);
-                // Refresh contact list to show unread count
-                loadContacts();
+                // Update contact position with animation
+                updateContactPosition(data.conversationId || data.id);
             });
             
             // Listen for status updates
@@ -3352,8 +3360,8 @@
                     // Update UI accordingly
                 }
                 
-                // Reload contacts to show updated info
-                loadContacts();
+                // Update contact position with animation
+                updateContactPosition(update.conversationId);
             });
         }
         
@@ -3427,6 +3435,71 @@
             if (diff < 86400000) return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
             
             return date.toLocaleDateString();
+        }
+        
+        // Update contact position with smooth animation
+        function updateContactPosition(conversationId) {
+            const contactsList = document.getElementById('contacts-list');
+            if (!contactsList) return;
+            
+            // Find the contact item by conversation ID
+            const contactItem = contactsList.querySelector(`[data-conversation-id="${conversationId}"]`);
+            if (!contactItem) {
+                // If not found, reload contacts
+                loadContacts();
+                return;
+            }
+            
+            // Update last activity time
+            const now = new Date().toISOString();
+            contactItem.dataset.lastActivity = now;
+            
+            // Get all contact items
+            const allContacts = Array.from(contactsList.querySelectorAll('.contact-item'));
+            const currentIndex = allContacts.indexOf(contactItem);
+            
+            // If already at top, just highlight
+            if (currentIndex === 0) {
+                contactItem.classList.add('highlight');
+                setTimeout(() => contactItem.classList.remove('highlight'), 1000);
+                
+                // Update time
+                const timeElement = contactItem.querySelector('.contact-time');
+                if (timeElement) timeElement.textContent = 'Just now';
+                return;
+            }
+            
+            // Calculate position to move to top
+            const itemHeight = contactItem.offsetHeight + 8; // Include margin
+            const moveDistance = currentIndex * itemHeight;
+            
+            // Apply smooth transition
+            contactItem.style.transition = 'transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            contactItem.style.transform = `translateY(-${moveDistance}px)`;
+            
+            // Move other items down
+            for (let i = 0; i < currentIndex; i++) {
+                allContacts[i].style.transition = 'transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                allContacts[i].style.transform = `translateY(${itemHeight}px)`;
+            }
+            
+            // After animation, reorder DOM
+            setTimeout(() => {
+                // Reset transforms
+                contactItem.style.transform = '';
+                allContacts.forEach(item => item.style.transform = '');
+                
+                // Move to top
+                contactsList.insertBefore(contactItem, contactsList.firstChild);
+                
+                // Add highlight effect
+                contactItem.classList.add('highlight');
+                setTimeout(() => contactItem.classList.remove('highlight'), 1000);
+                
+                // Update time
+                const timeElement = contactItem.querySelector('.contact-time');
+                if (timeElement) timeElement.textContent = 'Just now';
+            }, 500);
         }
         
         function getStatusIcon(status) {
