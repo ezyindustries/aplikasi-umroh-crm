@@ -3514,37 +3514,90 @@
                 return;
             }
             
-            // Calculate position to move to top
-            const itemHeight = contactItem.offsetHeight + 8; // Include margin
-            const moveDistance = currentIndex * itemHeight;
+            // Clone the item for smooth animation
+            const contactClone = contactItem.cloneNode(true);
+            contactClone.style.position = 'absolute';
+            contactClone.style.width = contactItem.offsetWidth + 'px';
+            contactClone.style.opacity = '0';
+            contactClone.style.pointerEvents = 'none';
             
-            // Apply smooth transition
-            contactItem.style.transition = 'transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-            contactItem.style.transform = `translateY(-${moveDistance}px)`;
+            // Get positions
+            const startRect = contactItem.getBoundingClientRect();
+            const containerRect = contactsList.getBoundingClientRect();
             
-            // Move other items down
+            // Insert clone at the beginning (invisible)
+            contactsList.insertBefore(contactClone, contactsList.firstChild);
+            
+            // Get end position
+            const endRect = contactClone.getBoundingClientRect();
+            
+            // Remove clone temporarily
+            contactClone.remove();
+            
+            // Create moving element
+            const movingItem = contactItem.cloneNode(true);
+            movingItem.style.position = 'fixed';
+            movingItem.style.top = startRect.top + 'px';
+            movingItem.style.left = startRect.left + 'px';
+            movingItem.style.width = startRect.width + 'px';
+            movingItem.style.zIndex = '1000';
+            movingItem.style.transition = 'all 0.6s cubic-bezier(0.4, 0.0, 0.2, 1)';
+            movingItem.style.pointerEvents = 'none';
+            document.body.appendChild(movingItem);
+            
+            // Hide original
+            contactItem.style.opacity = '0';
+            contactItem.style.transition = 'opacity 0.3s ease';
+            
+            // Animate other items sliding down
+            const itemsToMove = [];
             for (let i = 0; i < currentIndex; i++) {
-                allContacts[i].style.transition = 'transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-                allContacts[i].style.transform = `translateY(${itemHeight}px)`;
+                itemsToMove.push(allContacts[i]);
             }
             
-            // After animation, reorder DOM
+            // Start animations
+            requestAnimationFrame(() => {
+                // Move the flying item to top position
+                movingItem.style.top = endRect.top + 'px';
+                movingItem.style.transform = 'scale(1.05)';
+                movingItem.style.boxShadow = '0 10px 30px rgba(0,0,0,0.3)';
+                
+                // Slide other items down smoothly
+                itemsToMove.forEach((item, index) => {
+                    item.style.transition = 'transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1)';
+                    item.style.transform = 'translateY(' + contactItem.offsetHeight + 'px)';
+                });
+            });
+            
+            // Complete the animation
             setTimeout(() => {
-                // Reset transforms
-                contactItem.style.transform = '';
-                allContacts.forEach(item => item.style.transform = '');
+                // Remove moving element
+                movingItem.style.opacity = '0';
+                movingItem.style.transform = 'scale(1)';
                 
-                // Move to top
-                contactsList.insertBefore(contactItem, contactsList.firstChild);
-                
-                // Add highlight effect
-                contactItem.classList.add('highlight');
-                setTimeout(() => contactItem.classList.remove('highlight'), 1000);
-                
-                // Update time
-                const timeElement = contactItem.querySelector('.contact-time');
-                if (timeElement) timeElement.textContent = 'Just now';
-            }, 500);
+                setTimeout(() => {
+                    movingItem.remove();
+                    
+                    // Reset all transforms
+                    itemsToMove.forEach(item => {
+                        item.style.transition = '';
+                        item.style.transform = '';
+                    });
+                    
+                    // Move original to top
+                    contactsList.insertBefore(contactItem, contactsList.firstChild);
+                    contactItem.style.opacity = '1';
+                    contactItem.style.transition = '';
+                    
+                    // Add highlight effect
+                    contactItem.classList.add('highlight');
+                    setTimeout(() => contactItem.classList.remove('highlight'), 1000);
+                    
+                    // Update time
+                    const timeElement = contactItem.querySelector('.contact-time');
+                    if (timeElement) timeElement.textContent = 'Just now';
+                }, 100);
+            }, 600);
         }
         
         function getStatusIcon(status) {
