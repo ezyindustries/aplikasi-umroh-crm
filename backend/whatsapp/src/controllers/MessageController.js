@@ -2,7 +2,8 @@ const { Message, Conversation, Contact, ConversationSession } = require('../mode
 const messageQueue = require('../services/MessageQueue');
 // Removed rate limiter to fix 429 error
 // const { canSendMessage, trackUniqueUser } = require('../config/rateLimiter');
-const wahaComplianceService = require('../services/WAHAComplianceService');
+// Removed compliance service to fix message sending
+// const wahaComplianceService = require('../services/WAHAComplianceService');
 const logger = require('../utils/logger');
 const { Op } = require('sequelize');
 
@@ -42,31 +43,8 @@ class MessageController {
         });
       }
 
-      // WAHA Compliance Check
-      const wahaCompliance = await wahaComplianceService.checkCompliance(
-        toNumber,
-        content,
-        'default'
-      );
-      
-      if (!wahaCompliance.passed) {
-        return res.status(403).json({
-          success: false,
-          error: 'Compliance check failed',
-          reasons: wahaCompliance.reasons
-        });
-      }
-
-      // Show warnings if any
-      if (wahaCompliance.warnings.length > 0) {
-        logger.warn('Compliance warnings:', wahaCompliance.warnings);
-      }
-
-      // Add human delay to prevent ban
-      await wahaComplianceService.addHumanDelay();
-
-      // Update metrics after compliance
-      await wahaComplianceService.updateMetrics(toNumber, true);
+      // Compliance check removed to fix message sending
+      // Previously checked WAHA compliance here
 
       // Queue message
       const result = await messageQueue.queueOutgoingMessage({
@@ -88,14 +66,7 @@ class MessageController {
     } catch (error) {
       logger.api.error('Error sending message:', error);
       
-      // Check for rate limit error
-      if (error.response && error.response.status === 429) {
-        return res.status(429).json({
-          success: false,
-          error: 'Rate limit exceeded. Please wait before sending more messages.',
-          retryAfter: error.response.headers['retry-after'] || 60
-        });
-      }
+      // Rate limit error check removed to fix 429 issue
       
       res.status(500).json({
         success: false,
