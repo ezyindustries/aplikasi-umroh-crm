@@ -3350,15 +3350,17 @@
                     displayNewMessage(data.message);
                 }
                 
-                // Update contact position with animation
-                updateContactPosition(data.conversationId);
+                // Update contact position with animation and message preview
+                const messageContent = data.message?.content || '';
+                updateContactPosition(data.conversationId, messageContent);
             });
             
             // Listen for conversation updates
             socket.on('conversation:updated', (data) => {
                 console.log('Conversation updated:', data);
                 // Update contact position with animation
-                updateContactPosition(data.conversationId || data.id);
+                const messagePreview = data.conversation?.lastMessagePreview || '';
+                updateContactPosition(data.conversationId || data.id, messagePreview);
             });
             
             // Listen for status updates
@@ -3380,7 +3382,8 @@
                 }
                 
                 // Update contact position with animation
-                updateContactPosition(update.conversationId);
+                const messagePreview = update.lastMessagePreview || '';
+                updateContactPosition(update.conversationId, messagePreview);
             });
         }
         
@@ -3457,9 +3460,10 @@
         }
         
         // Update contact position with smooth animation
-        function updateContactPosition(conversationId) {
+        function updateContactPosition(conversationId, messageContent = null) {
             console.log('=== updateContactPosition called ===');
             console.log('Conversation ID:', conversationId);
+            console.log('Message content:', messageContent);
             
             const contactsList = document.getElementById('contacts-list');
             if (!contactsList) {
@@ -3476,6 +3480,15 @@
                 // If not found, reload contacts
                 loadContacts();
                 return;
+            }
+            
+            // Update message preview if provided
+            if (messageContent) {
+                const messageElement = contactItem.querySelector('.contact-message');
+                if (messageElement) {
+                    messageElement.textContent = messageContent;
+                    console.log('Updated message preview to:', messageContent);
+                }
             }
             
             // Update last activity time
