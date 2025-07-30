@@ -246,10 +246,11 @@ class SimpleMessageQueueService {
 
       await message.update(updateData);
 
-      // Emit to frontend
+      // Emit to frontend with whatsappMessageId for proper matching
       if (global.io) {
         global.io.emit('message:status', {
-          messageId: message.id,
+          messageId: whatsappMessageId,
+          id: message.id,
           whatsappMessageId: whatsappMessageId,
           status: status
         });

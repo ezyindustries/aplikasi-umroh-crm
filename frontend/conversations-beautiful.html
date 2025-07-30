@@ -520,6 +520,33 @@
             justify-content: flex-end;
         }
         
+        /* Message status icons */
+        .message-time .material-icons {
+            font-size: 16px !important;
+            vertical-align: middle;
+        }
+        
+        /* Status icon colors */
+        .message-time .material-icons.pending {
+            color: #64748b; /* Gray for pending */
+        }
+        
+        .message-time .material-icons.sent {
+            color: #64748b; /* Gray for sent */
+        }
+        
+        .message-time .material-icons.delivered {
+            color: #64748b; /* Gray for delivered */
+        }
+        
+        .message-time .material-icons.read {
+            color: #3b82f6; /* Blue for read */
+        }
+        
+        .message-time .material-icons.failed {
+            color: #ef4444; /* Red for failed */
+        }
+        
         /* Chat Input */
         .chat-input-section {
             padding: 20px 24px;
@@ -3097,6 +3124,7 @@
             messages.forEach(message => {
                 const messageDiv = document.createElement('div');
                 messageDiv.className = `message ${message.direction === 'inbound' ? 'received' : 'sent'}`;
+                messageDiv.dataset.messageId = message.whatsappMessageId || message.id;
                 messageDiv.innerHTML = `
                     <div class="message-bubble">
                         <div class="message-text">${message.content}</div>
@@ -3158,17 +3186,24 @@
                     input.style.height = 'auto';
                     
                     // Add optimistic UI update
+                    const tempId = 'temp-' + Date.now();
                     const messageDiv = document.createElement('div');
                     messageDiv.className = 'message sent';
+                    messageDiv.dataset.messageId = tempId;
                     messageDiv.innerHTML = `
                         <div class="message-bubble">
                             <div class="message-text">${message}</div>
                             <div class="message-time">
                                 ${formatTime(new Date())}
-                                <span class="material-icons" style="font-size: 16px; color: #64748b;">schedule</span>
+                                ${getStatusIcon('pending')}
                             </div>
                         </div>
                     `;
+                    
+                    // Store temp ID mapping for later update
+                    if (result.data && result.data.id) {
+                        messageDiv.dataset.messageId = result.data.whatsappMessageId || result.data.id;
+                    }
                     
                     document.getElementById('messages-area').appendChild(messageDiv);
                     document.getElementById('messages-area').scrollTop = document.getElementById('messages-area').scrollHeight;
@@ -3225,17 +3260,14 @@
             
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${message.direction === 'inbound' ? 'received' : 'sent'}`;
-            
-            const statusIcon = message.status === 'sent' ? 'done' : 
-                             message.status === 'delivered' ? 'done_all' : 
-                             message.status === 'read' ? 'done_all' : 'schedule';
+            messageDiv.dataset.messageId = message.whatsappMessageId || message.id;
             
             messageDiv.innerHTML = `
                 <div class="message-bubble">
                     <div class="message-text">${message.content || ''}</div>
                     <div class="message-time">
                         ${formatTime(new Date(message.createdAt))}
-                        ${message.direction === 'outbound' ? `<span class="material-icons" style="font-size: 16px; color: ${message.status === 'read' ? '#3b82f6' : '#64748b'};">${statusIcon}</span>` : ''}
+                        ${message.direction === 'outbound' ? getStatusIcon(message.status) : ''}
                     </div>
                 </div>
             `;
@@ -3345,8 +3377,32 @@
         
         // Update message status
         function updateMessageStatus(messageId, status) {
-            // Find and update message status in UI
-            // This would need message IDs in the DOM for proper implementation
+            console.log('Updating message status:', { messageId, status });
+            
+            // Find message element by ID
+            const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (!messageElement) {
+                console.log('Message element not found for ID:', messageId);
+                return;
+            }
+            
+            // Only update status for sent messages
+            if (!messageElement.classList.contains('sent')) {
+                return;
+            }
+            
+            // Find the time element and update status icon
+            const timeElement = messageElement.querySelector('.message-time');
+            if (timeElement) {
+                // Remove existing status icon
+                const existingIcon = timeElement.querySelector('.material-icons');
+                if (existingIcon) {
+                    existingIcon.remove();
+                }
+                
+                // Add new status icon
+                timeElement.innerHTML = timeElement.textContent.trim() + ' ' + getStatusIcon(status);
+            }
         }
         
         // Helper functions
