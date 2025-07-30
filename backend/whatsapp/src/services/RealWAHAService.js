@@ -75,7 +75,7 @@ class WAHAService extends EventEmitter {
       config: {
         // Webhook configuration
         webhooks: config.webhooks || [{
-          url: `${process.env.APP_URL || 'http://host.docker.internal:4000'}/api/webhooks/waha`,
+          url: `${process.env.APP_URL || 'http://host.docker.internal:3001'}/api/webhooks/waha`,
           events: [
             'session.status',
             'message',

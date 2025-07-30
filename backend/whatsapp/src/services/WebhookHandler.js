@@ -160,7 +160,7 @@ class WebhookHandler {
       // Re-configure webhook to ensure it's working
       try {
         const wahaService = require('./RealWAHAService');
-        const webhookUrl = process.env.WEBHOOK_URL || 'http://host.docker.internal:4000/api/webhooks/waha';
+        const webhookUrl = process.env.WEBHOOK_URL || 'http://host.docker.internal:3001/api/webhooks/waha';
         await wahaService.setWebhook(session, webhookUrl);
         logger.webhook.info('Webhook re-configured successfully after authentication');
       } catch (error) {
