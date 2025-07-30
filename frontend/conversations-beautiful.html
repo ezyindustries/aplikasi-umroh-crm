@@ -2957,6 +2957,8 @@
                 contactItem.dataset.conversationId = conversation?.id || '';
                 contactItem.dataset.lastActivity = contact.lastMessageAt || '';
                 contactItem.style.animationDelay = `${index * 50}ms`;
+                
+                console.log(`Contact item created - ID: ${contact.id}, Conv ID: ${conversation?.id}`);
                 contactItem.onclick = (e) => {
                     e.stopPropagation();
                     e.preventDefault();
@@ -3010,6 +3012,8 @@
                 contactItem.dataset.conversationId = conversation?.id || '';
                 contactItem.dataset.lastActivity = contact.lastMessageAt || '';
                 contactItem.style.animationDelay = `${index * 50}ms`;
+                
+                console.log(`Contact item created - ID: ${contact.id}, Conv ID: ${conversation?.id}`);
                 contactItem.onclick = (e) => {
                     e.stopPropagation();
                     e.preventDefault();
@@ -3325,7 +3329,8 @@
             
             // Listen for new messages
             socket.on('message:new', (data) => {
-                console.log('New message received:', data);
+                console.log('=== Socket: New message received ===', data);
+                console.log('Conversation ID from message:', data.conversationId);
                 
                 if (currentConversation && data.conversationId === currentConversation.id) {
                     displayNewMessage(data.message);
@@ -3439,12 +3444,21 @@
         
         // Update contact position with smooth animation
         function updateContactPosition(conversationId) {
+            console.log('=== updateContactPosition called ===');
+            console.log('Conversation ID:', conversationId);
+            
             const contactsList = document.getElementById('contacts-list');
-            if (!contactsList) return;
+            if (!contactsList) {
+                console.error('Contacts list not found');
+                return;
+            }
             
             // Find the contact item by conversation ID
             const contactItem = contactsList.querySelector(`[data-conversation-id="${conversationId}"]`);
+            console.log('Found contact item:', contactItem);
+            
             if (!contactItem) {
+                console.log('Contact item not found, reloading contacts...');
                 // If not found, reload contacts
                 loadContacts();
                 return;

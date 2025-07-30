@@ -97,6 +97,12 @@ class SimpleMessageQueueService {
           conversationId: message.conversationId,
           message: message.toJSON()
         });
+        
+        // Also emit message:new for consistency
+        global.io.emit('message:new', {
+          conversationId: message.conversationId,
+          message: message.toJSON()
+        });
       }
 
     } catch (error) {
@@ -204,6 +210,8 @@ class SimpleMessageQueueService {
         });
         
         global.io.emit('conversation:updated', {
+          conversationId: conversation.id,
+          id: conversation.id,
           conversation: conversation.toJSON(),
           contact: contact.toJSON()
         });
