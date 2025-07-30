@@ -32,6 +32,30 @@ router.get('/messages/:messageId/status', messageController.getMessageStatus);
 router.post('/messages/:messageId/star', messageController.toggleStar);
 router.get('/messages/queue/status', messageController.getQueueStatus);
 
+// Media endpoint
+router.get('/messages/media/:mediaId', async (req, res) => {
+  try {
+    const { mediaId } = req.params;
+    const wahaService = require('../services/RealWAHAService');
+    
+    // Download media from WAHA
+    const mediaBuffer = await wahaService.downloadMedia(mediaId);
+    
+    // Get message to determine mime type
+    const Message = require('../models/Message');
+    const message = await Message.findOne({ where: { mediaId } });
+    
+    if (message && message.mediaMimeType) {
+      res.set('Content-Type', message.mediaMimeType);
+    }
+    
+    res.send(mediaBuffer);
+  } catch (error) {
+    console.error('Error serving media:', error);
+    res.status(404).json({ error: 'Media not found' });
+  }
+});
+
 // Contact routes
 router.get('/contacts', contactController.getContacts);
 router.get('/contacts/:contactId', contactController.getContact);

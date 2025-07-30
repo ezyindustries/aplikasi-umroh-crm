@@ -186,6 +186,13 @@ class SimpleMessageQueueService {
         });
       }
 
+      // Build media URL if media is present
+      let mediaUrl = null;
+      if (whatsappMessage.mediaId && whatsappMessage.type !== 'text') {
+        // For WAHA, media can be accessed via the files endpoint
+        mediaUrl = `/api/messages/media/${whatsappMessage.mediaId}`;
+      }
+
       // Save message with correct direction based on fromMe
       const message = await Message.create({
         conversationId: conversation.id,
@@ -195,6 +202,9 @@ class SimpleMessageQueueService {
         messageType: whatsappMessage.type || 'text',
         content: whatsappMessage.text || whatsappMessage.caption || '',
         mediaId: whatsappMessage.mediaId,
+        mediaUrl: mediaUrl,
+        mediaMimeType: whatsappMessage.mimetype,
+        mediaSize: whatsappMessage.filesize,
         status: whatsappMessage.fromMe ? 'sent' : 'received',
         direction: whatsappMessage.fromMe ? 'outbound' : 'inbound',
         isForwarded: whatsappMessage.isForwarded || false,
@@ -202,11 +212,26 @@ class SimpleMessageQueueService {
       });
 
       // Update conversation
+      let lastMessagePreview = '';
+      if (message.content) {
+        lastMessagePreview = message.content.substring(0, 100);
+      } else {
+        // Show media type with emoji
+        const mediaTypeEmoji = {
+          'image': '📷 Photo',
+          'video': '🎥 Video',
+          'audio': '🎵 Audio',
+          'document': '📄 Document',
+          'location': '📍 Location',
+          'contact': '👤 Contact',
+          'sticker': '🎨 Sticker'
+        };
+        lastMessagePreview = mediaTypeEmoji[message.messageType] || `[${message.messageType}]`;
+      }
+      
       await conversation.update({
         lastMessageAt: new Date(),
-        lastMessagePreview: message.content ? 
-          message.content.substring(0, 100) : 
-          `[${message.messageType}]`,
+        lastMessagePreview: lastMessagePreview,
         unreadCount: conversation.unreadCount + 1
       });
 

@@ -151,6 +151,7 @@
             flex: 1;
             overflow-y: auto;
             padding: 12px;
+            position: relative;
         }
         
         .contact-item {
@@ -528,6 +529,90 @@
             color: #e2e8f0;
             font-size: 14px;
             line-height: 1.5;
+        }
+        
+        /* Media message styles */
+        .message-media {
+            margin-bottom: 8px;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .message-media img {
+            max-width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            display: block;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .message-media img:hover {
+            transform: scale(1.02);
+        }
+        
+        .message-media-loading {
+            width: 250px;
+            height: 150px;
+            background: linear-gradient(135deg, rgba(71, 85, 105, 0.3) 0%, rgba(71, 85, 105, 0.5) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+        }
+        
+        .message-document {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(71, 85, 105, 0.2);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .message-document:hover {
+            background: rgba(71, 85, 105, 0.3);
+            transform: translateY(-1px);
+        }
+        
+        .document-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(37, 99, 235, 0.2));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .document-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .document-name {
+            color: #e2e8f0;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .document-size {
+            color: #94a3b8;
+            font-size: 12px;
+        }
+        
+        .message-caption {
+            margin-top: 8px;
+            color: #e2e8f0;
+            font-size: 14px;
         }
         
         .message-time {
@@ -3171,19 +3256,7 @@
             messagesArea.innerHTML = '';
             
             messages.forEach(message => {
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${message.direction === 'inbound' ? 'received' : 'sent'}`;
-                messageDiv.dataset.messageId = message.whatsappMessageId || message.id;
-                messageDiv.innerHTML = `
-                    <div class="message-bubble">
-                        <div class="message-text">${message.content}</div>
-                        <div class="message-time">
-                            ${formatTime(message.createdAt)}
-                            ${message.direction === 'outbound' ? getStatusIcon(message.status) : ''}
-                        </div>
-                    </div>
-                `;
-                
+                const messageDiv = createMessageElement(message);
                 messagesArea.appendChild(messageDiv);
             });
             
@@ -3191,6 +3264,153 @@
             
             // Analyze messages for contact info
             analyzeConversation(messages);
+        }
+        
+        // Create message element with media support
+        function createMessageElement(message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${message.direction === 'inbound' ? 'received' : 'sent'}`;
+            messageDiv.dataset.messageId = message.whatsappMessageId || message.id;
+            
+            let messageContent = '';
+            
+            // Handle different message types
+            switch (message.messageType) {
+                case 'image':
+                    messageContent = renderImageMessage(message);
+                    break;
+                case 'video':
+                    messageContent = renderVideoMessage(message);
+                    break;
+                case 'audio':
+                    messageContent = renderAudioMessage(message);
+                    break;
+                case 'document':
+                    messageContent = renderDocumentMessage(message);
+                    break;
+                default:
+                    messageContent = `<div class="message-text">${message.content || ''}</div>`;
+            }
+            
+            messageDiv.innerHTML = `
+                <div class="message-bubble">
+                    ${messageContent}
+                    <div class="message-time">
+                        ${formatTime(message.createdAt)}
+                        ${message.direction === 'outbound' ? getStatusIcon(message.status) : ''}
+                    </div>
+                </div>
+            `;
+            
+            return messageDiv;
+        }
+        
+        // Render image message
+        function renderImageMessage(message) {
+            const imageUrl = message.mediaUrl || '';
+            const caption = message.content || '';
+            
+            return `
+                <div class="message-media">
+                    ${imageUrl ? 
+                        `<img src="${imageUrl}" alt="Image" onclick="openMediaViewer('${imageUrl}')" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'message-media-loading\\'><span class=\\'material-icons\\' style=\\'color: #64748b;\\'>broken_image</span></div>'" />` :
+                        `<div class="message-media-loading">
+                            <span class="material-icons" style="color: #64748b;">image</span>
+                        </div>`
+                    }
+                </div>
+                ${caption ? `<div class="message-caption">${caption}</div>` : ''}
+            `;
+        }
+        
+        // Render video message
+        function renderVideoMessage(message) {
+            const videoUrl = message.mediaUrl || '';
+            const caption = message.content || '';
+            
+            return `
+                <div class="message-media">
+                    ${videoUrl ? 
+                        `<video controls style="max-width: 100%; max-height: 300px; border-radius: 12px;">
+                            <source src="${videoUrl}" type="${message.mediaMimeType || 'video/mp4'}">
+                            Your browser does not support the video tag.
+                        </video>` :
+                        `<div class="message-media-loading">
+                            <span class="material-icons" style="color: #64748b;">videocam</span>
+                        </div>`
+                    }
+                </div>
+                ${caption ? `<div class="message-caption">${caption}</div>` : ''}
+            `;
+        }
+        
+        // Render audio message
+        function renderAudioMessage(message) {
+            const audioUrl = message.mediaUrl || '';
+            
+            return `
+                <div style="padding: 8px;">
+                    ${audioUrl ? 
+                        `<audio controls style="width: 100%; max-width: 300px;">
+                            <source src="${audioUrl}" type="${message.mediaMimeType || 'audio/mpeg'}">
+                            Your browser does not support the audio tag.
+                        </audio>` :
+                        `<div class="message-media-loading" style="width: 200px; height: 60px;">
+                            <span class="material-icons" style="color: #64748b;">audiotrack</span>
+                        </div>`
+                    }
+                </div>
+            `;
+        }
+        
+        // Render document message
+        function renderDocumentMessage(message) {
+            const docUrl = message.mediaUrl || '';
+            const fileName = message.content || 'Document';
+            const fileSize = message.mediaSize ? formatFileSize(message.mediaSize) : '';
+            const fileIcon = getFileIcon(message.mediaMimeType);
+            
+            return `
+                <div class="message-document" ${docUrl ? `onclick="window.open('${docUrl}', '_blank')"` : ''}>
+                    <div class="document-icon">
+                        <span class="material-icons" style="color: #60a5fa; font-size: 24px;">${fileIcon}</span>
+                    </div>
+                    <div class="document-info">
+                        <div class="document-name">${fileName}</div>
+                        ${fileSize ? `<div class="document-size">${fileSize}</div>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Get file icon based on mime type
+        function getFileIcon(mimeType) {
+            if (!mimeType) return 'description';
+            
+            if (mimeType.includes('pdf')) return 'picture_as_pdf';
+            if (mimeType.includes('word') || mimeType.includes('document')) return 'description';
+            if (mimeType.includes('sheet') || mimeType.includes('excel')) return 'table_chart';
+            if (mimeType.includes('presentation') || mimeType.includes('powerpoint')) return 'slideshow';
+            if (mimeType.includes('zip') || mimeType.includes('rar') || mimeType.includes('compressed')) return 'folder_zip';
+            if (mimeType.includes('text')) return 'text_snippet';
+            
+            return 'insert_drive_file';
+        }
+        
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // Open media viewer (for images)
+        function openMediaViewer(url) {
+            window.open(url, '_blank');
         }
         
         // Send message
@@ -3307,20 +3527,7 @@
                 return;
             }
             
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${message.direction === 'inbound' ? 'received' : 'sent'}`;
-            messageDiv.dataset.messageId = message.whatsappMessageId || message.id;
-            
-            messageDiv.innerHTML = `
-                <div class="message-bubble">
-                    <div class="message-text">${message.content || ''}</div>
-                    <div class="message-time">
-                        ${formatTime(new Date(message.createdAt))}
-                        ${message.direction === 'outbound' ? getStatusIcon(message.status) : ''}
-                    </div>
-                </div>
-            `;
-            
+            const messageDiv = createMessageElement(message);
             messagesArea.appendChild(messageDiv);
             messagesArea.scrollTop = messagesArea.scrollHeight;
             
@@ -3537,59 +3744,84 @@
                 return;
             }
             
-            // Simple approach: fade out, reorder, fade in
-            const itemHeight = contactItem.offsetHeight + 8; // Include margin
+            // Calculate positions for smooth animation
+            const contactRect = contactItem.getBoundingClientRect();
+            const containerRect = contactsList.getBoundingClientRect();
+            const startY = contactRect.top - containerRect.top;
             
-            // Apply fade out to contact that will move
-            contactItem.style.transition = 'opacity 0.3s ease-out';
-            contactItem.style.opacity = '0.3';
+            // Clone the contact for smooth animation
+            const clone = contactItem.cloneNode(true);
+            clone.style.position = 'absolute';
+            clone.style.top = startY + 'px';
+            clone.style.left = '0';
+            clone.style.right = '0';
+            clone.style.zIndex = '1000';
+            clone.style.pointerEvents = 'none';
+            clone.style.margin = '0';
             
-            // Smoothly slide other items down
+            // Prepare container and hide original
+            contactsList.style.position = 'relative';
+            contactItem.style.opacity = '0';
+            contactsList.appendChild(clone);
+            
+            // Get contacts that need to move down
             const itemsToMove = [];
+            const itemHeight = contactItem.offsetHeight + 8;
             for (let i = 0; i < currentIndex; i++) {
                 itemsToMove.push(allContacts[i]);
             }
             
-            // Start sliding animation
-            itemsToMove.forEach((item) => {
-                item.style.transition = 'transform 0.5s ease-out';
-                item.style.transform = `translateY(${itemHeight}px)`;
-            });
-            
-            // After half the animation, move the DOM element
-            setTimeout(() => {
-                // Remove any animation classes
-                contactItem.style.animation = 'none';
-                contactItem.style.animationDelay = '';
+            // Use requestAnimationFrame for smooth animation
+            requestAnimationFrame(() => {
+                // Apply smooth cubic-bezier transition
+                const transitionStyle = 'all 0.5s cubic-bezier(0.4, 0.0, 0.2, 1)';
                 
-                // Move to top in DOM
-                contactsList.insertBefore(contactItem, contactsList.firstChild);
+                // Move clone to top
+                clone.style.transition = transitionStyle;
+                clone.style.top = '0px';
                 
-                // Start fade in
-                contactItem.style.transition = 'opacity 0.3s ease-in, background-color 0.8s ease';
-                contactItem.style.opacity = '1';
-                
-                // Add temporary highlight
-                contactItem.style.backgroundColor = 'rgba(59, 130, 246, 0.2)';
-                
-                // Reset other items
-                itemsToMove.forEach((item) => {
-                    item.style.transition = '';
-                    item.style.transform = '';
+                // Move other items down smoothly
+                itemsToMove.forEach((item, index) => {
+                    item.style.transition = transitionStyle;
+                    item.style.transform = `translateY(${itemHeight}px)`;
                 });
                 
-                // Update time
-                const timeElement = contactItem.querySelector('.contact-time');
-                if (timeElement) timeElement.textContent = 'Just now';
-                
-                // Remove highlight after animation
+                // After animation completes
                 setTimeout(() => {
-                    contactItem.style.transition = '';
-                    contactItem.style.backgroundColor = '';
-                    contactItem.classList.add('highlight');
-                    setTimeout(() => contactItem.classList.remove('highlight'), 1000);
-                }, 800);
-            }, 250);
+                    // Move in DOM
+                    contactsList.insertBefore(contactItem, contactsList.firstChild);
+                    
+                    // Show original with fade in
+                    contactItem.style.transition = 'opacity 0.2s ease-in';
+                    contactItem.style.opacity = '1';
+                    
+                    // Remove clone
+                    clone.remove();
+                    
+                    // Reset transforms with no transition
+                    itemsToMove.forEach((item) => {
+                        item.style.transition = 'none';
+                        item.style.transform = '';
+                    });
+                    
+                    // Force reflow to apply changes immediately
+                    contactsList.offsetHeight;
+                    
+                    // Add subtle highlight
+                    contactItem.style.transition = 'background-color 0.8s ease';
+                    contactItem.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+                    
+                    // Update time
+                    const timeElement = contactItem.querySelector('.contact-time');
+                    if (timeElement) timeElement.textContent = 'Just now';
+                    
+                    // Remove highlight after animation
+                    setTimeout(() => {
+                        contactItem.style.transition = '';
+                        contactItem.style.backgroundColor = '';
+                    }, 800);
+                }, 500);
+            });
         }
         
         function getStatusIcon(status) {
