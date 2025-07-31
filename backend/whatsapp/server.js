@@ -38,7 +38,9 @@ global.io = io;
 // Middleware
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
-  contentSecurityPolicy: false
+  contentSecurityPolicy: false,
+  crossOriginOpenerPolicy: false,
+  crossOriginEmbedderPolicy: false
 }));
 app.use(cors({
   origin: function(origin, callback) {
@@ -80,6 +82,14 @@ const webhookRoutes = require('./src/routes/webhooks');
 
 // Webhook routes (must be before main API routes for proper routing)
 app.use('/api/webhooks', webhookRoutes);
+
+// Media-specific CORS middleware
+app.use('/api/messages/media', (req, res, next) => {
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  next();
+});
 
 // API routes
 app.use('/api', apiRoutes);

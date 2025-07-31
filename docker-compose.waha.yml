@@ -1,4 +1,4 @@
-version: '3.8'
+# Docker Compose for WAHA WhatsApp API
 
 services:
   # WAHA WhatsApp API Service
@@ -9,22 +9,28 @@ services:
     environment:
       # WAHA Configuration
       WHATSAPP_RESTART_ALL_SESSIONS: "False"
-      WHATSAPP_FILES_LIFETIME: "180"
+      WHATSAPP_FILES_LIFETIME: "0"  # Changed to 0 to keep files forever
       WHATSAPP_SWAGGER_ENABLED: "True"
       
+      # Media Download Configuration
+      WHATSAPP_DOWNLOAD_MEDIA: "true"
+      WHATSAPP_FILES_MIMETYPES: "audio,image,video,document,application/pdf"
+      WHATSAPP_FILES_FOLDER: "/app/media"
+      
       # Webhook Configuration
-      WHATSAPP_HOOK_URL: "http://backend:3000/api/crm/webhook"
-      WHATSAPP_HOOK_EVENTS: "message,message.ack,state.change,group.join,group.leave"
+      WHATSAPP_HOOK_URL: "http://host.docker.internal:3001/api/webhooks/waha"
+      WHATSAPP_HOOK_EVENTS: "message,message.ack,state.change,group.join,group.leave,media.download"
       
       # API Configuration
       WHATSAPP_API_KEY: "${WAHA_API_KEY:-your-secret-api-key}"
       WHATSAPP_API_HOSTNAME: "0.0.0.0"
+      WAHA_BASE_URL: "http://waha:3000"
       
       # Session Configuration
       WHATSAPP_DEFAULT_SESSION_NAME: "default"
       WHATSAPP_SESSIONS_PATH: "/app/sessions"
     ports:
-      - "${WAHA_PORT:-3001}:3000"
+      - "${WAHA_PORT:-3000}:3000"
     volumes:
       - waha_sessions:/app/sessions
       - waha_media:/app/media

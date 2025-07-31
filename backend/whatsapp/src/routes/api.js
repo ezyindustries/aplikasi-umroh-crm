@@ -186,20 +186,54 @@ router.get('/messages/media/:mediaId', async (req, res) => {
     
     logger.info(`Media request for ID: ${mediaId}`);
     
-    // First try to get from local storage
+    // First try to get from local storage using new media service
+    const mediaDownloadService = require('../services/MediaDownloadService');
+    
     try {
-      const localMedia = await mediaHandler.getMedia(mediaId);
+      const localMedia = await mediaDownloadService.getMediaFile(mediaId);
       logger.info('Serving media from local storage');
+      
+      // Determine content type
+      const ext = require('path').extname(mediaId).toLowerCase();
+      const contentTypeMap = {
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.png': 'image/png',
+        '.gif': 'image/gif',
+        '.webp': 'image/webp',
+        '.mp4': 'video/mp4',
+        '.3gp': 'video/3gpp',
+        '.mp3': 'audio/mpeg',
+        '.ogg': 'audio/ogg',
+        '.pdf': 'application/pdf'
+      };
+      const contentType = contentTypeMap[ext] || 'application/octet-stream';
       
       // Set CORS headers for images
       res.set('Access-Control-Allow-Origin', '*');
       res.set('Access-Control-Allow-Methods', 'GET');
-      res.set('Content-Type', localMedia.mimeType);
+      res.set('Content-Type', contentType);
       res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+      res.set('Cache-Control', 'public, max-age=86400');
       
-      return res.send(localMedia.data);
+      return res.send(localMedia.content);
     } catch (localError) {
-      logger.info('Media not found locally, trying WAHA...');
+      logger.info('Media not found locally, trying legacy media handler...');
+      
+      // Try legacy media handler
+      try {
+        const localMedia = await mediaHandler.getMedia(mediaId);
+        logger.info('Serving media from legacy storage');
+        
+        res.set('Access-Control-Allow-Origin', '*');
+        res.set('Access-Control-Allow-Methods', 'GET');
+        res.set('Content-Type', localMedia.mimeType);
+        res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+        
+        return res.send(localMedia.data);
+      } catch (legacyError) {
+        logger.info('Media not found in legacy storage, trying WAHA...');
+      }
     }
     
     // Try different WAHA endpoints for media

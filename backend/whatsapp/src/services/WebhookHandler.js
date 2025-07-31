@@ -111,10 +111,22 @@ class WebhookHandler {
     });
     
     // Log full payload for debugging media issues
-    if (payload.media) {
-      logger.webhook.info('Media details:', JSON.stringify(payload.media));
+    if (payload.media || payload.type === 'image' || payload.type === 'video') {
+      logger.webhook.info('Media details:', JSON.stringify({
+        media: payload.media,
+        mediaKey: payload.mediaKey,
+        mediaUrl: payload.mediaUrl,
+        type: payload.type,
+        hasFile: !!payload.file,
+        id: payload.id
+      }));
     }
     logger.webhook.debug('Full payload:', JSON.stringify(payload));
+    
+    // If media URL is provided by WAHA, add it to media object
+    if (payload.media && !payload.media.url && payload.mediaUrl) {
+      payload.media.url = payload.mediaUrl;
+    }
 
     // Prepare message data with full media support
     const messageData = {
@@ -127,7 +139,7 @@ class WebhookHandler {
         text: payload.body,
         body: payload.body, // Add body field
         caption: payload.caption,
-        mediaId: payload.media?.id,
+        mediaId: payload.media?.id || payload.mediaKey || payload.id,
         timestamp: payload.timestamp,
         isForwarded: payload.isForwarded || false,
         quotedMessageId: payload.quotedMsgId,

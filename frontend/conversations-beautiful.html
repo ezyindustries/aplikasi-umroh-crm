@@ -471,7 +471,7 @@
             align-items: center;
             position: relative;
             overflow: hidden;
-            min-height: 85px;
+            min-height: 110px;
             box-shadow: 
                 inset 0 1px 0 rgba(148, 163, 184, 0.1),
                 0 4px 20px rgba(0, 0, 0, 0.15);
@@ -583,39 +583,38 @@
         .chat-header-details {
             flex: 1;
             min-width: 0; /* Allow text to truncate */
-            overflow: hidden;
+            overflow: visible;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            min-height: 60px;
         }
         
         .chat-header-details h3 {
             font-size: 18px;
             font-weight: 600;
             color: #f8fafc;
-            margin: 0 0 6px 0;
+            margin: 0 0 8px 0;
             letter-spacing: -0.025em;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            line-height: 1.2;
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
+            line-height: 1.3;
         }
         
         .chat-status {
             font-size: 13px;
             color: #94a3b8;
             display: flex;
-            align-items: center;
-            gap: 8px;
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 4px;
             font-weight: 400;
-            line-height: 1.2;
+            line-height: 1.4;
             margin: 0;
-            padding: 4px 0;
+            padding: 0;
+            overflow: visible;
+            min-height: auto;
         }
         
         .chat-status.online {
@@ -841,7 +840,7 @@
         @media (max-width: 768px) {
             .chat-header {
                 padding: 16px 20px;
-                min-height: 70px;
+                min-height: 95px;
             }
             
             .chat-header-info {
@@ -855,10 +854,12 @@
             
             .chat-header-details h3 {
                 font-size: 15px;
+                margin-bottom: 6px;
             }
             
             .chat-status {
                 font-size: 11px;
+                gap: 2px;
             }
             
             .icon-btn {
@@ -3564,6 +3565,8 @@
         let qrTimer = null;
         let qrCountdown = 60;
         let healthCheckTimer = null;
+        let isLoadingContacts = false;
+        let contactsLoaded = false;
         
         // Socket.IO connection
         function initializeSocket() {
@@ -3612,6 +3615,14 @@
             console.log('=== loadContacts called ===');
             console.log('Filter:', filter);
             console.log('API_CONFIG:', API_CONFIG);
+            
+            // Prevent double loading
+            if (isLoadingContacts) {
+                console.log('Already loading contacts, skipping...');
+                return;
+            }
+            
+            isLoadingContacts = true;
             
             try {
                 // Get conversations instead of just contacts - this includes last message
@@ -3703,6 +3714,9 @@
             } catch (error) {
                 console.error('Error loading contacts:', error);
                 console.error('Stack trace:', error.stack);
+            } finally {
+                isLoadingContacts = false;
+                contactsLoaded = true;
             }
         }
         
@@ -4055,7 +4069,7 @@
                     </div>
                 `;
             } else {
-                // INDIVIDUAL: Show phone + last seen
+                // INDIVIDUAL: Show phone + last seen with better styling
                 let phoneNumber = contact.phoneNumber || contact.phone || contact.id || 'Unknown';
                 
                 // Format phone number for better display
@@ -4070,17 +4084,26 @@
                 
                 const lastSeen = getLastSeenStatus(contact);
                 
-                console.log('Individual contact:', { 
+                console.log('Individual contact header update:', { 
                     originalPhone: contact.phoneNumber,
                     formattedPhone: phoneNumber, 
                     lastSeen,
                     contactData: contact 
                 });
                 
+                // Display phone number and last seen in a simple, visible way
                 statusElement.innerHTML = `
-                    <div class="header-status-content">
-                        <span class="phone-number" title="${phoneNumber}">${phoneNumber}</span>
-                        ${lastSeen ? `<span class="last-seen-badge">${lastSeen}</span>` : ''}
+                    <div style="display: block !important;">
+                        <div style="
+                            font-size: 14px !important;
+                            color: #e2e8f0 !important;
+                            font-weight: 500 !important;
+                            margin-bottom: 2px !important;
+                        ">${phoneNumber}</div>
+                        ${lastSeen ? `<div style="
+                            font-size: 12px !important;
+                            color: #94a3b8 !important;
+                        ">${lastSeen}</div>` : ''}
                     </div>
                 `;
             }
@@ -4154,8 +4177,8 @@
                 contentLength: message.content ? message.content.length : 0
             });
             
-            // Extra check for problematic messages
-            if (!message.content && message.messageType === 'text') {
+            // Extra check for problematic messages - only warn for actual text messages, not media
+            if (!message.content && message.messageType === 'text' && !message.mediaId && !message.mediaUrl) {
                 console.warn('Text message with no content:', message);
             }
             
@@ -4194,10 +4217,31 @@
                 case 'sticker':
                     messageContent = renderStickerMessage(message);
                     break;
+                case 'chat':
+                    // System messages
+                    messageContent = `<div class="message-text" style="color: #64748b; font-style: italic;">[System message]</div>`;
+                    break;
+                case 'e2e_notification':
+                    messageContent = `<div class="message-text" style="color: #64748b; font-style: italic;">🔒 Messages are end-to-end encrypted</div>`;
+                    break;
+                case 'gp2':
+                    messageContent = `<div class="message-text" style="color: #64748b; font-style: italic;">[Group notification]</div>`;
+                    break;
+                case 'pinned_message':
+                    messageContent = `<div class="message-text" style="color: #64748b; font-style: italic;">📌 Pinned message</div>`;
+                    break;
+                case 'revoked':
+                    messageContent = `<div class="message-text" style="color: #64748b; font-style: italic;">🚫 This message was deleted</div>`;
+                    break;
                 default:
                     // For text messages or empty content
                     if (!message.content || message.content.trim() === '') {
-                        messageContent = `<div class="message-text" style="color: #64748b; font-style: italic;">[No message content]</div>`;
+                        // Check if it's a media message without caption
+                        if (message.mediaId || message.mediaUrl) {
+                            messageContent = `<div class="message-text" style="color: #64748b; font-style: italic;">[Media without caption]</div>`;
+                        } else {
+                            messageContent = `<div class="message-text" style="color: #64748b; font-style: italic;">[Empty message]</div>`;
+                        }
                     } else {
                         messageContent = `<div class="message-text">${message.content}</div>`;
                     }
@@ -4843,7 +4887,10 @@
                 console.log('WhatsApp connected:', data);
                 closeQRModal();
                 updateConnectionStatus('connected', data);
-                loadContacts();
+                // Only load contacts if not already loaded
+                if (!contactsLoaded) {
+                    loadContacts();
+                }
             });
             
             // Listen for chats loaded event
@@ -4912,9 +4959,7 @@
                     // Update UI accordingly
                 }
                 
-                // Update contact position with animation
-                const messagePreview = update.lastMessagePreview || '';
-                updateContactPosition(update.conversationId, messagePreview);
+                // Don't update position here - it's already handled by conversation:updated
             });
         }
         

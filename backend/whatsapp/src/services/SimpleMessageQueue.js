@@ -147,12 +147,27 @@ class SimpleMessageQueueService {
     try {
       const { sessionId, message: whatsappMessage } = webhookData;
       
+      // Fix message type based on media presence
+      if (whatsappMessage.media?.mimetype) {
+        const mimeType = whatsappMessage.media.mimetype;
+        if (mimeType.startsWith('image/')) {
+          whatsappMessage.type = 'image';
+        } else if (mimeType.startsWith('video/')) {
+          whatsappMessage.type = 'video';
+        } else if (mimeType.startsWith('audio/')) {
+          whatsappMessage.type = 'audio';
+        } else if (mimeType.includes('pdf') || mimeType.includes('document')) {
+          whatsappMessage.type = 'document';
+        }
+      }
+      
       logger.info('Processing message:', {
         from: whatsappMessage.from,
         to: whatsappMessage.to,
         type: whatsappMessage.type,
         fromMe: whatsappMessage.fromMe,
-        isGroupMessage: whatsappMessage.isGroupMessage
+        isGroupMessage: whatsappMessage.isGroupMessage,
+        hasMimeType: !!whatsappMessage.media?.mimetype
       });
 
       // Handle group messages - check multiple indicators
@@ -226,11 +241,13 @@ class SimpleMessageQueueService {
       let mediaUrl = null;
       let mediaId = null;
       
-      if (whatsappMessage.media) {
-        mediaId = whatsappMessage.media.id || whatsappMessage.id;
+      // Check for media in different ways
+      if (whatsappMessage.media || whatsappMessage.type === 'image' || whatsappMessage.type === 'video' || whatsappMessage.type === 'audio' || whatsappMessage.type === 'document') {
+        // Use message ID as media ID if no specific media ID provided
+        mediaId = whatsappMessage.media?.id || whatsappMessage.mediaId || whatsappMessage.id;
         
         // If we have base64 data, save it to file
-        if (whatsappMessage.media.base64) {
+        if (whatsappMessage.media?.base64) {
           logger.info('Saving base64 media data for message:', mediaId);
           try {
             await mediaHandler.saveBase64Media(
@@ -243,10 +260,14 @@ class SimpleMessageQueueService {
           }
         }
         
+        // Always create media URL for media messages
         mediaUrl = `/api/messages/media/${mediaId}`;
-      } else if (whatsappMessage.mediaId && whatsappMessage.type !== 'text') {
-        mediaId = whatsappMessage.mediaId;
-        mediaUrl = `/api/messages/media/${mediaId}`;
+        logger.info('Media message detected:', {
+          type: whatsappMessage.type,
+          mediaId: mediaId,
+          hasMedia: !!whatsappMessage.media,
+          hasMimeType: !!whatsappMessage.media?.mimetype
+        });
       }
 
       // Save message with correct direction based on fromMe
@@ -281,6 +302,36 @@ class SimpleMessageQueueService {
         isGroupMessage: false,
         groupParticipant: null
       });
+
+      // Download media if present
+      if (mediaId && whatsappMessage.media && whatsappMessage.type !== 'text') {
+        try {
+          const mediaDownloadService = require('./MediaDownloadService');
+          const downloadResult = await mediaDownloadService.downloadAndSaveMedia(
+            whatsappMessage.id,
+            {
+              url: whatsappMessage.media.url || whatsappMessage.mediaUrl,
+              mimetype: whatsappMessage.media.mimetype,
+              filename: whatsappMessage.media.filename || whatsappMessage.fileName
+            }
+          );
+          
+          logger.info('Media downloaded successfully:', {
+            messageId: message.id,
+            filename: downloadResult.filename,
+            size: downloadResult.size
+          });
+          
+          // Update message with local media path
+          await message.update({
+            mediaUrl: `/api/messages/media/${downloadResult.filename}`,
+            fileName: downloadResult.originalFilename
+          });
+        } catch (error) {
+          logger.error('Failed to download media:', error);
+          // Continue processing even if media download fails
+        }
+      }
 
       // Update conversation
       let lastMessagePreview = '';
@@ -555,6 +606,36 @@ class SimpleMessageQueueService {
         groupParticipant: whatsappMessage.groupParticipant || whatsappMessage.author || whatsappMessage.participant || 
                          (whatsappMessage.fromMe ? 'You' : whatsappMessage.from)
       });
+
+      // Download media if present for group messages
+      if (whatsappMessage.mediaId && whatsappMessage.media && whatsappMessage.type !== 'text') {
+        try {
+          const mediaDownloadService = require('./MediaDownloadService');
+          const downloadResult = await mediaDownloadService.downloadAndSaveMedia(
+            whatsappMessage.id,
+            {
+              url: whatsappMessage.media.url || whatsappMessage.mediaUrl,
+              mimetype: whatsappMessage.media.mimetype || whatsappMessage.mimeType,
+              filename: whatsappMessage.media.filename || whatsappMessage.fileName
+            }
+          );
+          
+          logger.info('Group media downloaded successfully:', {
+            messageId: message.id,
+            filename: downloadResult.filename,
+            size: downloadResult.size
+          });
+          
+          // Update message with local media path
+          await message.update({
+            mediaUrl: `/api/messages/media/${downloadResult.filename}`,
+            fileName: downloadResult.originalFilename
+          });
+        } catch (error) {
+          logger.error('Failed to download group media:', error);
+          // Continue processing even if media download fails
+        }
+      }
 
       // Update conversation
       let lastMessagePreview = '';

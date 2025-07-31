@@ -58,3 +58,14 @@ backup/
 # Windows special files
 NUL
 nul
+
+# WhatsApp Export Files
+New folder/
+**/New folder/
+
+# WhatsApp Media Files
+backend/whatsapp/media/
+**/media/images/
+**/media/videos/
+**/media/audio/
+**/media/documents/
