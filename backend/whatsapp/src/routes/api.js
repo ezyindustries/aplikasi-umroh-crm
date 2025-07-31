@@ -7,6 +7,7 @@ const messageController = require('../controllers/MessageController');
 const contactController = require('../controllers/ContactController');
 const conversationController = require('../controllers/ConversationController');
 const dashboardController = require('../controllers/DashboardController');
+const groupController = require('../controllers/GroupController');
 
 // Webhook handler
 const webhookHandler = require('../services/WebhookHandler');
@@ -27,6 +28,7 @@ router.post('/sessions/:sessionId/reconnect', sessionController.reconnect);
 router.post('/sessions/:sessionId/refresh-qr', sessionController.refreshQR);
 router.post('/sessions/:sessionId/load-history', sessionController.loadChatHistory);
 router.get('/sessions/:sessionId/qr', sessionController.getQR);
+router.post('/sessions/:sessionId/sync-group-names', sessionController.syncGroupNames);
 
 // Message routes
 router.post('/messages/send', messageController.sendMessage);
@@ -36,29 +38,7 @@ router.get('/messages/:messageId/status', messageController.getMessageStatus);
 router.post('/messages/:messageId/star', messageController.toggleStar);
 router.get('/messages/queue/status', messageController.getQueueStatus);
 
-// Media endpoint
-router.get('/messages/media/:mediaId', async (req, res) => {
-  try {
-    const { mediaId } = req.params;
-    const wahaService = require('../services/RealWAHAService');
-    
-    // Download media from WAHA
-    const mediaBuffer = await wahaService.downloadMedia(mediaId);
-    
-    // Get message to determine mime type
-    const Message = require('../models/Message');
-    const message = await Message.findOne({ where: { mediaId } });
-    
-    if (message && message.mediaMimeType) {
-      res.set('Content-Type', message.mediaMimeType);
-    }
-    
-    res.send(mediaBuffer);
-  } catch (error) {
-    console.error('Error serving media:', error);
-    res.status(404).json({ error: 'Media not found' });
-  }
-});
+// Media endpoint - removed duplicate, see implementation below
 
 // Contact routes
 router.get('/contacts', contactController.getContacts);
@@ -156,6 +136,20 @@ router.get('/dashboard/analytics', dashboardController.getConversionAnalytics);
 router.get('/dashboard/lead-sources', dashboardController.getLeadSources);
 router.get('/dashboard/ai-performance', dashboardController.getAIPerformance);
 
+// Group routes
+router.get('/groups', groupController.getGroups);
+router.get('/groups/:groupId', groupController.getGroup);
+router.post('/groups', groupController.createGroup);
+router.put('/groups/:groupId', groupController.updateGroup);
+router.post('/groups/:groupId/leave', groupController.leaveGroup);
+router.post('/groups/:groupId/participants/add', groupController.addParticipants);
+router.post('/groups/:groupId/participants/remove', groupController.removeParticipants);
+router.post('/groups/:groupId/admin/promote', groupController.promoteParticipants);
+router.post('/groups/:groupId/admin/demote', groupController.demoteParticipants);
+router.get('/groups/:groupId/messages', groupController.getGroupMessages);
+router.get('/groups/:groupId/invite-link', groupController.getInviteLink);
+router.post('/groups/:groupId/invite-link/revoke', groupController.revokeInviteLink);
+
 // Test endpoint
 router.get('/dashboard/test', async (req, res) => {
   try {
@@ -178,6 +172,124 @@ router.get('/dashboard/test', async (req, res) => {
       success: false,
       error: error.message,
       stack: error.stack
+    });
+  }
+});
+
+// Get media file
+router.get('/messages/media/:mediaId', async (req, res) => {
+  try {
+    const { mediaId } = req.params;
+    const wahaService = require('../services/RealWAHAService');
+    const mediaHandler = require('../services/MediaHandler');
+    const logger = require('../utils/logger');
+    
+    logger.info(`Media request for ID: ${mediaId}`);
+    
+    // First try to get from local storage
+    try {
+      const localMedia = await mediaHandler.getMedia(mediaId);
+      logger.info('Serving media from local storage');
+      
+      // Set CORS headers for images
+      res.set('Access-Control-Allow-Origin', '*');
+      res.set('Access-Control-Allow-Methods', 'GET');
+      res.set('Content-Type', localMedia.mimeType);
+      res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+      
+      return res.send(localMedia.data);
+    } catch (localError) {
+      logger.info('Media not found locally, trying WAHA...');
+    }
+    
+    // Try different WAHA endpoints for media
+    let mediaData = null;
+    
+    // First try the direct download endpoint
+    try {
+      const response = await wahaService.api.get(`/api/default/messages/${mediaId}/download`, {
+        responseType: 'arraybuffer'
+      });
+      
+      mediaData = {
+        buffer: response.data,
+        mimeType: response.headers['content-type'],
+        fileName: response.headers['content-disposition']?.match(/filename="(.+)"/)?.[1]
+      };
+    } catch (error) {
+      logger.warn(`Direct download failed for ${mediaId}, trying files endpoint...`);
+      
+      // Try files endpoint
+      try {
+        const response = await wahaService.api.get(`/api/files/${mediaId}`, {
+          responseType: 'arraybuffer'
+        });
+        
+        mediaData = {
+          buffer: response.data,
+          mimeType: response.headers['content-type']
+        };
+      } catch (fileError) {
+        logger.error(`Files endpoint also failed for ${mediaId}`);
+      }
+    }
+    
+    if (!mediaData || !mediaData.buffer) {
+      logger.error(`No media data found for ${mediaId}`);
+      return res.status(404).json({
+        success: false,
+        error: 'Media not found'
+      });
+    }
+
+    // Set appropriate content type and CORS headers
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET');
+    res.setHeader('Content-Type', mediaData.mimeType || 'application/octet-stream');
+    res.setHeader('Content-Disposition', `inline; filename="${mediaData.fileName || 'media'}"`);
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    
+    // Send the media buffer
+    res.send(Buffer.from(mediaData.buffer));
+    
+  } catch (error) {
+    logger.error('Error fetching media:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Get media by message ID
+router.get('/messages/:messageId/media', async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const { Message, MediaFile } = require('../models');
+    
+    const message = await Message.findByPk(messageId, {
+      include: [{
+        model: MediaFile,
+        as: 'mediaFiles'
+      }]
+    });
+    
+    if (!message || !message.mediaId) {
+      return res.status(404).json({
+        success: false,
+        error: 'Media not found for this message'
+      });
+    }
+    
+    // Redirect to media endpoint
+    res.redirect(`/api/messages/media/${message.mediaId}`);
+    
+  } catch (error) {
+    logger.error('Error fetching message media:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
     });
   }
 });

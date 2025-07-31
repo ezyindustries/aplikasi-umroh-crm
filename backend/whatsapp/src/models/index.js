@@ -5,6 +5,8 @@ const Message = require('./Message');
 const WhatsAppSession = require('./WhatsAppSession');
 const ConversationSession = require('./ConversationSession');
 const MessageTemplate = require('./MessageTemplate');
+const GroupParticipant = require('./GroupParticipant');
+const MediaFile = require('./MediaFile');
 
 // Define associations
 Contact.hasMany(Conversation, { foreignKey: 'contact_id', as: 'conversations' });
@@ -15,6 +17,14 @@ Message.belongsTo(Conversation, { foreignKey: 'conversation_id', as: 'conversati
 
 Conversation.hasMany(ConversationSession, { foreignKey: 'conversation_id', as: 'sessions' });
 ConversationSession.belongsTo(Conversation, { foreignKey: 'conversation_id', as: 'conversation' });
+
+// Group associations
+Contact.hasMany(GroupParticipant, { foreignKey: 'contact_id', as: 'groupParticipations' });
+GroupParticipant.belongsTo(Contact, { foreignKey: 'contact_id', as: 'contact' });
+
+// Media associations
+Message.hasMany(MediaFile, { foreignKey: 'message_id', as: 'mediaFiles' });
+MediaFile.belongsTo(Message, { foreignKey: 'message_id', as: 'message' });
 
 // Sync models with database
 const initDatabase = async () => {
@@ -40,5 +50,7 @@ module.exports = {
   WhatsAppSession,
   ConversationSession,
   MessageTemplate,
+  GroupParticipant,
+  MediaFile,
   initDatabase
 };

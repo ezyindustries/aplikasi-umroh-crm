@@ -1,6 +1,6 @@
 const { Contact, Conversation, Message } = require('../models');
-// Use WhatsAppWebService (WAHA-compatible implementation)
-const whatsappService = require('../services/WhatsAppWebService');
+// Use RealWAHAService for pure WAHA API implementation
+const whatsappService = require('../services/RealWAHAService');
 const logger = require('../utils/logger');
 const { Op } = require('sequelize');
 const sequelize = require('../config/database');

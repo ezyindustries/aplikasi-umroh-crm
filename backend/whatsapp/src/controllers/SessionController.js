@@ -247,6 +247,52 @@ class SessionController {
       });
     }
   }
+
+  // Sync group names from WAHA
+  async syncGroupNames(req, res) {
+    try {
+      const { sessionId = 'default' } = req.params;
+      const { Contact } = require('../models');
+      
+      logger.api.info('Syncing group names for session:', sessionId);
+      
+      // Get all groups from database
+      const groups = await Contact.findAll({
+        where: { isGroup: true }
+      });
+      
+      let updated = 0;
+      let failed = 0;
+      
+      // For each group, try to get latest info from WAHA
+      for (const group of groups) {
+        try {
+          // Skip API call to avoid puppeteer error
+          // Instead, we'll rely on webhook data to update names
+          logger.debug(`Group ${group.groupId} will be updated when next message arrives`);
+        } catch (error) {
+          logger.error(`Failed to update group ${group.groupId}:`, error.message);
+          failed++;
+        }
+      }
+      
+      res.json({
+        success: true,
+        message: 'Group names will be updated as messages arrive',
+        data: {
+          totalGroups: groups.length,
+          updated: updated,
+          failed: failed
+        }
+      });
+    } catch (error) {
+      logger.api.error('Error syncing group names:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
 }
 
 module.exports = new SessionController();

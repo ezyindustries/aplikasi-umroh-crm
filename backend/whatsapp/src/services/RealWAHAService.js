@@ -829,12 +829,36 @@ class WAHAService extends EventEmitter {
   // Get group info (WAHA: GET /api/{session}/groups/{groupId})
   async getGroupInfo(sessionName, groupId) {
     try {
-      const response = await this.api.get(`/api/${sessionName}/groups/${groupId}`);
+      // Clean group ID - remove @g.us if present
+      const cleanGroupId = groupId.replace('@g.us', '');
       
-      return response.data;
+      // Try first with groups endpoint
+      try {
+        const response = await this.api.get(`/api/${sessionName}/groups/${cleanGroupId}`);
+        return response.data;
+      } catch (firstError) {
+        // If fails, try with full group ID
+        if (firstError.response?.status === 404) {
+          const response = await this.api.get(`/api/${sessionName}/groups/${groupId}`);
+          return response.data;
+        }
+        throw firstError;
+      }
     } catch (error) {
-      logger.error('Error getting group info:', error);
-      return null;
+      logger.error('Error getting group info:', {
+        status: error.response?.status,
+        message: error.message,
+        data: error.response?.data
+      });
+      
+      // Return basic info from database if API fails
+      return {
+        id: groupId,
+        name: null,
+        subject: null,
+        description: null,
+        participants: []
+      };
     }
   }
   
@@ -1284,6 +1308,28 @@ class WAHAService extends EventEmitter {
     return whatsappId.split('@')[0];
   }
 
+  // Get media file from WAHA
+  async getMedia(sessionName = 'default', mediaId) {
+    try {
+      logger.info(`Fetching media ${mediaId} for session ${sessionName}`);
+      
+      // WAHA media download endpoint
+      const response = await this.api.get(`/api/sessions/${sessionName}/messages/${mediaId}/download`, {
+        responseType: 'arraybuffer'
+      });
+      
+      return {
+        buffer: response.data,
+        mimeType: response.headers['content-type'],
+        fileName: response.headers['content-disposition']?.match(/filename="(.+)"/)?.[1]
+      };
+    } catch (error) {
+      logger.error('Error fetching media:', error.response?.status, error.message);
+      return null;
+    }
+  }
+
+
   async handleWebhook(event) {
     try {
       logger.info('WAHA webhook received:', {
@@ -1300,6 +1346,135 @@ class WAHAService extends EventEmitter {
       logger.error('Error handling WAHA webhook:', error);
       throw error;
     }
+  }
+
+  // Group Management Methods
+
+  // Create a new group
+  async createGroup(sessionName, data) {
+    try {
+      const response = await this.api.post(`/api/${sessionName}/groups`, data);
+      return { success: true, data: response.data };
+    } catch (error) {
+      logger.error('Error creating group:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Get all groups
+  async getGroups(sessionName) {
+    try {
+      const response = await this.api.get(`/api/${sessionName}/groups`);
+      return { success: true, data: response.data };
+    } catch (error) {
+      logger.error('Error getting groups:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Update group info
+  async updateGroupInfo(sessionName, groupId, updates) {
+    try {
+      const response = await this.api.put(`/api/${sessionName}/groups/${groupId}`, updates);
+      return { success: true, data: response.data };
+    } catch (error) {
+      logger.error('Error updating group info:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Add participants to group
+  async addGroupParticipants(sessionName, groupId, participants) {
+    try {
+      const response = await this.api.post(`/api/${sessionName}/groups/${groupId}/participants/add`, {
+        participants
+      });
+      return { success: true, data: response.data };
+    } catch (error) {
+      logger.error('Error adding group participants:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Remove participants from group
+  async removeGroupParticipants(sessionName, groupId, participants) {
+    try {
+      const response = await this.api.post(`/api/${sessionName}/groups/${groupId}/participants/remove`, {
+        participants
+      });
+      return { success: true, data: response.data };
+    } catch (error) {
+      logger.error('Error removing group participants:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Promote participants to admin
+  async promoteGroupParticipants(sessionName, groupId, participants) {
+    try {
+      const response = await this.api.post(`/api/${sessionName}/groups/${groupId}/admin/promote`, {
+        participants
+      });
+      return { success: true, data: response.data };
+    } catch (error) {
+      logger.error('Error promoting participants:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Demote participants from admin
+  async demoteGroupParticipants(sessionName, groupId, participants) {
+    try {
+      const response = await this.api.post(`/api/${sessionName}/groups/${groupId}/admin/demote`, {
+        participants
+      });
+      return { success: true, data: response.data };
+    } catch (error) {
+      logger.error('Error demoting participants:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Leave group
+  async leaveGroup(sessionName, groupId) {
+    try {
+      const response = await this.api.post(`/api/${sessionName}/groups/${groupId}/leave`);
+      return { success: true, data: response.data };
+    } catch (error) {
+      logger.error('Error leaving group:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Get group invite link
+  async getGroupInviteLink(sessionName, groupId) {
+    try {
+      const response = await this.api.get(`/api/${sessionName}/groups/${groupId}/invite-code`);
+      return { success: true, data: response.data };
+    } catch (error) {
+      logger.error('Error getting invite link:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Revoke group invite link
+  async revokeGroupInviteLink(sessionName, groupId) {
+    try {
+      const response = await this.api.post(`/api/${sessionName}/groups/${groupId}/invite-code/revoke`);
+      return { success: true, data: response.data };
+    } catch (error) {
+      logger.error('Error revoking invite link:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Send message to group
+  async sendGroupMessage(sessionName, groupId, message) {
+    // Groups use the same send message endpoint, just with @g.us suffix
+    return this.sendMessage(sessionName, {
+      ...message,
+      to: groupId.includes('@g.us') ? groupId : groupId + '@g.us'
+    });
   }
 }
 

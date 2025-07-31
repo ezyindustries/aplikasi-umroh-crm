@@ -132,6 +132,17 @@
             font-size: 13px;
             cursor: pointer;
             transition: all 0.3s ease;
+            position: relative;
+            user-select: none;
+            -webkit-user-select: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        /* Make entire tab clickable including child elements */
+        .filter-tab * {
+            pointer-events: none;
         }
         
         .filter-tab.active {
@@ -144,6 +155,71 @@
         .filter-tab:hover {
             background: rgba(71, 85, 105, 0.3);
             color: #e2e8f0;
+        }
+        
+        .filter-count {
+            font-size: 11px;
+            font-weight: 600;
+            opacity: 0.8;
+            margin-left: 4px;
+        }
+        
+        .filter-tab.active .filter-count {
+            opacity: 1;
+            color: #c4b5fd;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 400px;
+            padding: 40px;
+        }
+        
+        .empty-state-content {
+            text-align: center;
+            max-width: 300px;
+        }
+        
+        .empty-state-icon {
+            font-size: 48px;
+            color: #64748b;
+            margin-bottom: 16px;
+            opacity: 0.6;
+        }
+        
+        .empty-state-title {
+            color: #e2e8f0;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        
+        .empty-state-message {
+            color: #94a3b8;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+        
+        .clear-search-btn-empty {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .clear-search-btn-empty:hover {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
         }
         
         /* Contact List */
@@ -382,83 +458,449 @@
         }
         
         .chat-header {
-            padding: 20px 24px;
-            background: rgba(30, 41, 59, 0.6);
+            padding: 24px;
+            background: 
+                linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.9) 50%, rgba(51, 65, 85, 0.85) 100%),
+                radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+            backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid rgba(148, 163, 184, 0.1);
             border-bottom: 1px solid rgba(71, 85, 105, 0.3);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: relative;
+            overflow: hidden;
+            min-height: 85px;
+            box-shadow: 
+                inset 0 1px 0 rgba(148, 163, 184, 0.1),
+                0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .chat-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(59, 130, 246, 0.6) 20%, 
+                rgba(139, 92, 246, 0.6) 50%,
+                rgba(16, 185, 129, 0.6) 80%, 
+                transparent 100%);
+            animation: shimmer 4s ease-in-out infinite;
+        }
+        
+        .chat-header::after {
+            content: '';
+            position: absolute;
+            top: -100%;
+            left: -100%;
+            width: 300%;
+            height: 300%;
+            background: conic-gradient(from 0deg, transparent 0deg, rgba(59, 130, 246, 0.03) 90deg, transparent 180deg);
+            animation: rotate-gradient 20s linear infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes shimmer {
+            0%, 100% { transform: translateX(-100%) scaleX(0); }
+            50% { transform: translateX(100%) scaleX(1); }
+        }
+        
+        @keyframes rotate-gradient {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
         
         .chat-header-info {
             display: flex;
             align-items: center;
             gap: 16px;
+            flex: 1;
+            min-width: 0;
+            max-width: calc(100% - 180px); /* Leave space for action buttons */
+            overflow: hidden;
         }
         
         .chat-header-avatar {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #f59e0b, #d97706);
+            width: 54px;
+            height: 54px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 600;
             color: white;
-            font-size: 18px;
-            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+            font-size: 22px;
+            box-shadow: 
+                0 12px 28px rgba(59, 130, 246, 0.4),
+                inset 0 2px 4px rgba(255, 255, 255, 0.15),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .chat-header-avatar.group-avatar {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 50%, #6d28d9 100%);
+            box-shadow: 
+                0 12px 28px rgba(139, 92, 246, 0.4),
+                inset 0 2px 4px rgba(255, 255, 255, 0.15),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .chat-header-avatar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2) 0%, transparent 60%);
+            border-radius: inherit;
+        }
+        
+        .chat-header-avatar::after {
+            content: '';
+            position: absolute;
+            top: -100%;
+            left: -100%;
+            width: 300%;
+            height: 300%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: avatar-shine 4s ease-in-out infinite;
+        }
+        
+        @keyframes avatar-shine {
+            0%, 100% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            50% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+        
+        .chat-header-details {
+            flex: 1;
+            min-width: 0; /* Allow text to truncate */
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         
         .chat-header-details h3 {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 600;
-            color: #e2e8f0;
-            margin-bottom: 4px;
+            color: #f8fafc;
+            margin: 0 0 6px 0;
+            letter-spacing: -0.025em;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.2;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
         
         .chat-status {
             font-size: 13px;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 400;
+            line-height: 1.2;
+            margin: 0;
+            padding: 4px 0;
+        }
+        
+        .chat-status.online {
             color: #10b981;
+        }
+        
+        .status-indicator {
             display: flex;
             align-items: center;
             gap: 6px;
+            font-size: 12px;
+        }
+        
+        .status-indicator.online {
+            color: #10b981;
+        }
+        
+        .status-indicator.offline {
+            color: #64748b;
+        }
+        
+        .status-indicator.recently {
+            color: #f59e0b;
+        }
+        
+        /* === CLEAN CHAT HEADER STATUS STYLES === */
+        
+        .header-status-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            width: 100%;
+            min-height: 24px;
+            overflow: hidden;
+        }
+        
+        /* Individual Contact Styles */
+        .phone-number {
+            font-size: 14px;
+            color: #e2e8f0;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 0.025em;
+            flex: 1;
+            min-width: 120px; /* Minimum width to show phone numbers */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px; /* Prevent too much space taken */
+        }
+        
+        .last-seen-badge {
+            font-size: 11px;
+            color: #f1f5f9;
+            background: linear-gradient(145deg, rgba(59, 130, 246, 0.25), rgba(37, 99, 235, 0.2));
+            backdrop-filter: blur(12px);
+            padding: 4px 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            font-weight: 600;
+            white-space: nowrap;
+            flex-shrink: 0;
+            min-width: fit-content;
+            box-shadow: 
+                inset 0 1px 0 rgba(248, 250, 252, 0.15),
+                0 3px 8px rgba(59, 130, 246, 0.15);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Group Contact Styles */
+        .status-icon {
+            font-size: 16px;
+            color: #8b5cf6;
+            margin-right: 4px;
+        }
+        
+        .status-text {
+            font-size: 13px;
+            color: #c4b5fd;
+            font-weight: 500;
+            background: rgba(139, 92, 246, 0.15);
+            backdrop-filter: blur(8px);
+            padding: 2px 8px;
+            border-radius: 8px;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            box-shadow: inset 0 1px 0 rgba(196, 181, 253, 0.1);
         }
         
         .status-dot {
-            width: 8px;
-            height: 8px;
-            background: #10b981;
+            width: 10px;
+            height: 10px;
+            background: linear-gradient(135deg, #10b981, #059669);
             border-radius: 50%;
-            animation: pulse 2s infinite;
-            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2), 0 0 10px rgba(16, 185, 129, 0.4);
+            animation: pulse-glow 2s ease-in-out infinite;
+            box-shadow: 
+                0 0 0 2px rgba(16, 185, 129, 0.3), 
+                0 0 12px rgba(16, 185, 129, 0.6),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .status-dot.offline {
+            background: linear-gradient(135deg, #64748b, #475569);
+            box-shadow: 
+                0 0 0 2px rgba(100, 116, 139, 0.3), 
+                0 0 8px rgba(100, 116, 139, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            animation: none;
+        }
+        
+        .status-dot.recently {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            box-shadow: 
+                0 0 0 2px rgba(245, 158, 11, 0.3), 
+                0 0 10px rgba(245, 158, 11, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            animation: pulse-warning 3s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { 
+                box-shadow: 
+                    0 0 0 2px rgba(16, 185, 129, 0.3), 
+                    0 0 12px rgba(16, 185, 129, 0.6),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            }
+            50% { 
+                box-shadow: 
+                    0 0 0 4px rgba(16, 185, 129, 0.4), 
+                    0 0 20px rgba(16, 185, 129, 0.8),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            }
+        }
+        
+        @keyframes pulse-warning {
+            0%, 100% { 
+                box-shadow: 
+                    0 0 0 2px rgba(245, 158, 11, 0.3), 
+                    0 0 10px rgba(245, 158, 11, 0.5),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            }
+            50% { 
+                box-shadow: 
+                    0 0 0 3px rgba(245, 158, 11, 0.4), 
+                    0 0 15px rgba(245, 158, 11, 0.7),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            }
         }
         
         .chat-header-actions {
             display: flex;
-            gap: 12px;
+            gap: 8px;
+            flex-shrink: 0;
+            align-items: center;
         }
         
         .icon-btn {
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             border-radius: 10px;
-            background: rgba(71, 85, 105, 0.3);
-            border: 1px solid rgba(71, 85, 105, 0.4);
+            background: linear-gradient(145deg, rgba(71, 85, 105, 0.4), rgba(51, 65, 85, 0.3));
+            border: 1px solid rgba(100, 116, 139, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            color: #cbd5e1;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        
+        .icon-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, transparent 70%);
             transition: all 0.3s ease;
-            color: #e2e8f0;
+            transform: translate(-50%, -50%);
         }
         
         .icon-btn:hover {
-            background: rgba(59, 130, 246, 0.3);
+            background: linear-gradient(145deg, rgba(59, 130, 246, 0.3), rgba(37, 99, 235, 0.2));
             border-color: rgba(59, 130, 246, 0.5);
-            color: #60a5fa;
+            color: #f8fafc;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            box-shadow: 
+                0 8px 20px rgba(59, 130, 246, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        .icon-btn:hover::before {
+            width: 100px;
+            height: 100px;
+        }
+        
+        .icon-btn:active {
+            transform: translateY(0);
+            box-shadow: 
+                0 4px 12px rgba(59, 130, 246, 0.2),
+                inset 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        
+        .icon-btn.group-manage-btn {
+            background: linear-gradient(145deg, rgba(139, 92, 246, 0.3), rgba(124, 58, 237, 0.2));
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+        
+        .icon-btn.group-manage-btn:hover {
+            background: linear-gradient(145deg, rgba(139, 92, 246, 0.4), rgba(124, 58, 237, 0.3));
+            border-color: rgba(139, 92, 246, 0.5);
+            box-shadow: 
+                0 8px 20px rgba(139, 92, 246, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Responsive adjustments for mobile */
+        @media (max-width: 768px) {
+            .chat-header {
+                padding: 16px 20px;
+                min-height: 70px;
+            }
+            
+            .chat-header-info {
+                max-width: calc(100% - 150px);
+            }
+            
+            .chat-header-avatar {
+                width: 42px;
+                height: 42px;
+            }
+            
+            .chat-header-details h3 {
+                font-size: 15px;
+            }
+            
+            .chat-status {
+                font-size: 11px;
+            }
+            
+            .icon-btn {
+                width: 32px;
+                height: 32px;
+            }
+            
+            .chat-header-actions {
+                gap: 6px;
+            }
+            
+            .group-member-count {
+                font-size: 10px;
+                padding: 1px 4px;
+            }
+            
+            .group-id-display {
+                font-size: 9px;
+                max-width: 80px;
+            }
+            
+            .header-status-content {
+                gap: 8px;
+                min-height: 20px;
+            }
+            
+            .phone-number {
+                font-size: 13px;
+                min-width: 100px;
+                max-width: 140px;
+            }
+            
+            .last-seen-badge {
+                font-size: 10px;
+                padding: 3px 8px;
+                border-radius: 10px;
+            }
+            
+            .status-text {
+                font-size: 12px;
+                padding: 1px 6px;
+            }
         }
         
         .icon-btn:nth-child(1):hover {
@@ -550,6 +992,8 @@
         
         .message-media img:hover {
             transform: scale(1.02);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            filter: brightness(1.05);
         }
         
         .message-media-loading {
@@ -1899,9 +2343,230 @@
             50% { transform: scale(1.2); }
             100% { transform: scale(1); }
         }
+        
+        /* Image Modal Styles */
+        .image-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            backdrop-filter: blur(10px);
+        }
+        
+        .image-modal.show {
+            opacity: 1;
+        }
+        
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            max-width: 90vw;
+            max-height: 90vh;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        .image-modal.show .modal-content {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+        
+        .modal-image {
+            max-width: 100%;
+            max-height: 90vh;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            object-fit: contain;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10001;
+        }
+        
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+        
+        .modal-close span {
+            color: white;
+            font-size: 28px;
+        }
+        
+        .modal-controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            padding: 15px 25px;
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 50px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .image-modal.show .modal-controls {
+            opacity: 1;
+            transition-delay: 0.2s;
+        }
+        
+        .modal-btn {
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .modal-btn span {
+            color: white;
+            font-size: 24px;
+        }
+        
+        .modal-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 18px;
+            display: none;
+        }
+        
+        .modal-loading.show {
+            display: block;
+        }
+        
+        .modal-loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-left: 10px;
+            border: 2px solid white;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Zoom controls */
+        .zoom-level {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 25px;
+            color: white;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .image-modal.show .zoom-level {
+            opacity: 1;
+            transition-delay: 0.2s;
+        }
+        
+        /* Image container for panning */
+        .modal-image-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            cursor: grab;
+        }
+        
+        .modal-image-container.grabbing {
+            cursor: grabbing;
+        }
+        
+        .modal-image-container img {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: transform 0.3s ease;
+        }
     </style>
 </head>
 <body>
+    <!-- Image Modal -->
+    <div class="image-modal" id="imageModal">
+        <div class="modal-close" onclick="closeImageModal()">
+            <span class="material-icons">close</span>
+        </div>
+        
+        <div class="zoom-level" id="zoomLevel">100%</div>
+        
+        <div class="modal-loading" id="modalLoading">Loading image</div>
+        
+        <div class="modal-content">
+            <div class="modal-image-container" id="imageContainer">
+                <img class="modal-image" id="modalImage" alt="Full resolution image">
+            </div>
+        </div>
+        
+        <div class="modal-controls">
+            <div class="modal-btn" onclick="zoomOut()" title="Zoom Out">
+                <span class="material-icons">zoom_out</span>
+            </div>
+            <div class="modal-btn" onclick="resetZoom()" title="Reset Zoom">
+                <span class="material-icons">fit_screen</span>
+            </div>
+            <div class="modal-btn" onclick="zoomIn()" title="Zoom In">
+                <span class="material-icons">zoom_in</span>
+            </div>
+            <div class="modal-btn" onclick="downloadImage()" title="Download">
+                <span class="material-icons">download</span>
+            </div>
+            <div class="modal-btn" onclick="rotateImage()" title="Rotate">
+                <span class="material-icons">rotate_right</span>
+            </div>
+        </div>
+    </div>
     <div class="app-container">
         <!-- Main Header -->
         <div class="header">
@@ -1965,9 +2630,9 @@
                         <input type="text" placeholder="Search contacts..." id="search-contacts">
                     </div>
                     <div class="filter-tabs">
-                        <div class="filter-tab active" onclick="filterContacts('all')">All</div>
-                        <div class="filter-tab" onclick="filterContacts('unread')">Unread</div>
-                        <div class="filter-tab" onclick="filterContacts('groups')">Groups</div>
+                        <div class="filter-tab active" onclick="filterContacts('all', this)">All</div>
+                        <div class="filter-tab" onclick="filterContacts('unread', this)">Unread</div>
+                        <div class="filter-tab" onclick="filterContacts('groups', this)">Groups</div>
                     </div>
                 </div>
                 
@@ -1977,7 +2642,7 @@
                         <span class="material-icons">history</span>
                         <span>Load Chat History</span>
                     </button>
-                    <button class="refresh-contacts-btn" onclick="loadContacts()" title="Refresh contacts">
+                    <button class="refresh-contacts-btn" onclick="loadContacts('all')" title="Refresh contacts">
                         <span class="material-icons">refresh</span>
                     </button>
                 </div>
@@ -2872,16 +3537,6 @@
             }, 5000);
         }
 
-        function filterContacts(filter) {
-            // Update active tab
-            document.querySelectorAll('.filter-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            // Filter logic here
-            console.log('Filtering by:', filter);
-        }
 
         // Removed duplicate sendMessage function - using async version below
 
@@ -2953,7 +3608,7 @@
         }
         
         // Load contacts
-        async function loadContacts(filter = 'all') {
+        async function loadContacts(filter = 'all', searchTerm = '') {
             console.log('=== loadContacts called ===');
             console.log('Filter:', filter);
             console.log('API_CONFIG:', API_CONFIG);
@@ -2963,6 +3618,13 @@
                 let url = `${API_CONFIG.baseUrl}/conversations?status=active&limit=50`;
                 if (filter === 'unread') {
                     url += '&hasUnread=true';
+                } else if (filter === 'groups') {
+                    url += '&isGroup=true';
+                }
+                
+                // Add search parameter if provided
+                if (searchTerm && searchTerm.trim().length > 0) {
+                    url += `&search=${encodeURIComponent(searchTerm.trim())}`;
                 }
                 
                 console.log('Fetching from URL:', url);
@@ -2986,19 +3648,47 @@
                             conversations: [conv],
                             lastMessage: conv.messages?.[0],
                             isWithin24hWindow: conv.isWithin24hWindow,
-                            lastMessageAt: lastMessageAt
+                            lastMessageAt: lastMessageAt,
+                            unreadCount: conv.unreadCount || 0
                         };
                     });
                     
+                    // Apply client-side filtering if backend doesn't support it
+                    let filteredData = contactsData;
+                    
+                    // Apply search filter client-side if needed
+                    if (searchTerm && searchTerm.trim().length > 0) {
+                        const search = searchTerm.toLowerCase().trim();
+                        filteredData = filteredData.filter(contact => {
+                            const name = (contact.name || '').toLowerCase();
+                            const phoneNumber = (contact.phoneNumber || '').toLowerCase();
+                            const lastMessageText = (contact.lastMessage?.body || '').toLowerCase();
+                            
+                            return name.includes(search) || 
+                                   phoneNumber.includes(search) || 
+                                   lastMessageText.includes(search);
+                        });
+                    }
+                    
+                    // Apply filter-specific logic client-side
+                    if (filter === 'unread') {
+                        filteredData = filteredData.filter(contact => contact.unreadCount > 0);
+                    } else if (filter === 'groups') {
+                        filteredData = filteredData.filter(contact => contact.isGroup === true);
+                    }
+                    
                     // Sort by last message time (most recent first)
-                    contactsData.sort((a, b) => {
+                    filteredData.sort((a, b) => {
                         const timeA = new Date(a.lastMessageAt || 0).getTime();
                         const timeB = new Date(b.lastMessageAt || 0).getTime();
                         return timeB - timeA;
                     });
                     
-                    console.log('Transformed and sorted data:', contactsData);
-                    displayContacts(contactsData);
+                    console.log('Transformed, filtered and sorted data:', filteredData);
+                    displayContacts(filteredData);
+                    
+                    // Update filter tab counts
+                    updateFilterTabCounts(contactsData);
                     
                     // Show total conversations loaded
                     console.log(`Loaded ${result.data.length} conversations (Total: ${result.pagination.total})`);
@@ -3087,7 +3777,7 @@
             const contactsList = document.getElementById('contacts-list');
             const loadMoreBtn = document.getElementById('load-more-btn');
             
-            contacts.forEach(contact => {
+            contacts.forEach((contact, index) => {
                 const conversation = contact.conversations?.[0];
                 const lastMessage = conversation?.messages?.[0];
                 const unreadCount = conversation?.unreadCount || 0;
@@ -3106,11 +3796,40 @@
                     selectContact(contact, conversation, contactItem);
                 };
                 
+                // Check if it's a group chat
+                const isGroup = contact.isGroup || false;
+                const groupIcon = isGroup ? 'group' : 'person';
+                const avatarBg = isGroup ? 'linear-gradient(135deg, #8b5cf6, #7c3aed)' : 'linear-gradient(135deg, #3b82f6, #2563eb)';
+                
+                // Debug group info
+                if (isGroup) {
+                    console.log('Group info:', {
+                        name: contact.name,
+                        groupName: contact.groupName,
+                        phoneNumber: contact.phoneNumber,
+                        groupId: contact.groupId
+                    });
+                }
+                
                 contactItem.innerHTML = `
-                    <div class="contact-avatar">${getInitials(contact.name || contact.phoneNumber)}</div>
+                    <div class="contact-avatar" style="background: ${avatarBg}">
+                        ${isGroup ? 
+                            `<span class="material-icons" style="color: white; font-size: 24px;">${groupIcon}</span>` : 
+                            getInitials(contact.name || contact.phoneNumber)
+                        }
+                    </div>
                     <div class="contact-info">
-                        <div class="contact-name">${contact.name || contact.phoneNumber}</div>
-                        <div class="contact-message">${lastMessage?.content || 'No messages yet'}</div>
+                        <div class="contact-name" style="display: flex; align-items: center; gap: 6px;">
+                            ${contact.name || contact.groupName || contact.phoneNumber}
+                            ${isGroup ? `<span style="color: #94a3b8; font-size: 12px;">(${contact.participantCount || 0} members)</span>` : ''}
+                        </div>
+                        <div class="contact-message">
+                            ${lastMessage?.isGroupMessage && lastMessage?.groupParticipant ? 
+                                `<span style="color: #60a5fa;">${formatSenderName(lastMessage.groupParticipant)}:</span> ` : 
+                                ''
+                            }
+                            ${getMessagePreview(lastMessage)}
+                        </div>
                     </div>
                     <div class="contact-meta">
                         <div class="contact-time">${formatTime(lastMessage?.createdAt)}</div>
@@ -3141,6 +3860,34 @@
             console.log('Clearing contacts list...');
             contactsList.innerHTML = '';
             
+            if (contacts.length === 0) {
+                // Show empty state message
+                const emptyState = document.createElement('div');
+                emptyState.className = 'empty-state';
+                emptyState.innerHTML = `
+                    <div class="empty-state-content">
+                        <span class="material-icons empty-state-icon">search_off</span>
+                        <h3 class="empty-state-title">No contacts found</h3>
+                        <p class="empty-state-message">
+                            ${currentSearchTerm ? 
+                                `No contacts match your search for "${currentSearchTerm}"` : 
+                                currentFilter === 'unread' ? 
+                                    'No unread conversations found' :
+                                    currentFilter === 'groups' ?
+                                        'No group conversations found' :
+                                        'No contacts available'
+                            }
+                        </p>
+                        ${currentSearchTerm ? 
+                            '<button class="clear-search-btn-empty" onclick="clearSearch()">Clear Search</button>' : 
+                            ''
+                        }
+                    </div>
+                `;
+                contactsList.appendChild(emptyState);
+                return;
+            }
+            
             contacts.forEach((contact, index) => {
                 console.log(`Processing contact ${index}:`, contact);
                 const conversation = contact.conversations?.[0];
@@ -3161,11 +3908,40 @@
                     selectContact(contact, conversation, contactItem);
                 };
                 
+                // Check if it's a group chat
+                const isGroup = contact.isGroup || false;
+                const groupIcon = isGroup ? 'group' : 'person';
+                const avatarBg = isGroup ? 'linear-gradient(135deg, #8b5cf6, #7c3aed)' : 'linear-gradient(135deg, #3b82f6, #2563eb)';
+                
+                // Debug group info
+                if (isGroup) {
+                    console.log('Group info:', {
+                        name: contact.name,
+                        groupName: contact.groupName,
+                        phoneNumber: contact.phoneNumber,
+                        groupId: contact.groupId
+                    });
+                }
+                
                 contactItem.innerHTML = `
-                    <div class="contact-avatar">${getInitials(contact.name || contact.phoneNumber)}</div>
+                    <div class="contact-avatar" style="background: ${avatarBg}">
+                        ${isGroup ? 
+                            `<span class="material-icons" style="color: white; font-size: 24px;">${groupIcon}</span>` : 
+                            getInitials(contact.name || contact.phoneNumber)
+                        }
+                    </div>
                     <div class="contact-info">
-                        <div class="contact-name">${contact.name || contact.phoneNumber}</div>
-                        <div class="contact-message">${lastMessage?.content || 'No messages yet'}</div>
+                        <div class="contact-name" style="display: flex; align-items: center; gap: 6px;">
+                            ${contact.name || contact.groupName || contact.phoneNumber}
+                            ${isGroup ? `<span style="color: #94a3b8; font-size: 12px;">(${contact.participantCount || 0} members)</span>` : ''}
+                        </div>
+                        <div class="contact-message">
+                            ${lastMessage?.isGroupMessage && lastMessage?.groupParticipant ? 
+                                `<span style="color: #60a5fa;">${formatSenderName(lastMessage.groupParticipant)}:</span> ` : 
+                                ''
+                            }
+                            ${getMessagePreview(lastMessage)}
+                        </div>
                     </div>
                     <div class="contact-meta">
                         <div class="contact-time">${formatTime(lastMessage?.createdAt)}</div>
@@ -3218,16 +3994,96 @@
             }
         }
         
-        // Update chat header
+        // Update chat header - FRESH START
         function updateChatHeader(contact) {
-            document.querySelector('.chat-header-avatar').textContent = getInitials(contact.name || contact.phoneNumber);
-            document.querySelector('.chat-header-details h3').textContent = contact.name || contact.phoneNumber;
-            document.querySelector('.info-name').textContent = contact.name || contact.phoneNumber;
-            document.querySelector('.info-phone').textContent = contact.phoneNumber;
-            document.querySelector('.info-avatar').textContent = getInitials(contact.name || contact.phoneNumber);
+            console.log('=== CHAT HEADER UPDATE ===');
+            console.log('Contact data:', contact);
             
-            // Update contact info panel
-            updateContactInfoPanel(contact);
+            const isGroup = contact.isGroup || false;
+            
+            // 1. Update Avatar
+            updateHeaderAvatar(contact, isGroup);
+            
+            // 2. Update Title
+            updateHeaderTitle(contact, isGroup);
+            
+            // 3. Update Status/Info Line
+            updateHeaderStatus(contact, isGroup);
+        }
+        
+        function updateHeaderAvatar(contact, isGroup) {
+            const avatarElement = document.querySelector('.chat-header-avatar');
+            if (!avatarElement) return;
+            
+            avatarElement.className = `chat-header-avatar ${isGroup ? 'group-avatar' : ''}`;
+            
+            if (isGroup) {
+                avatarElement.innerHTML = '<span class="material-icons">group</span>';
+            } else {
+                avatarElement.textContent = getInitials(contact.name || contact.phoneNumber || 'U');
+            }
+        }
+        
+        function updateHeaderTitle(contact, isGroup) {
+            const titleElement = document.querySelector('.chat-header-details h3');
+            if (!titleElement) return;
+            
+            let title;
+            if (isGroup) {
+                title = contact.groupName || contact.name || 'WhatsApp Group';
+            } else {
+                title = contact.name || contact.phoneNumber || 'WhatsApp Contact';
+            }
+            
+            titleElement.textContent = title;
+            console.log('Title set to:', title);
+        }
+        
+        function updateHeaderStatus(contact, isGroup) {
+            const statusElement = document.querySelector('.chat-header-details .chat-status');
+            if (!statusElement) return;
+            
+            statusElement.className = 'chat-status';
+            
+            if (isGroup) {
+                // GROUP: Show member count
+                const memberCount = contact.participantCount || 0;
+                statusElement.innerHTML = `
+                    <div class="header-status-content">
+                        <span class="material-icons status-icon">people</span>
+                        <span class="status-text">${memberCount} members</span>
+                    </div>
+                `;
+            } else {
+                // INDIVIDUAL: Show phone + last seen
+                let phoneNumber = contact.phoneNumber || contact.phone || contact.id || 'Unknown';
+                
+                // Format phone number for better display
+                if (phoneNumber && phoneNumber !== 'Unknown') {
+                    // Clean up phone number
+                    phoneNumber = phoneNumber.replace('@c.us', '').replace('@s.whatsapp.net', '');
+                    // Add + if it starts with digits and doesn't have +
+                    if (/^\d+$/.test(phoneNumber) && !phoneNumber.startsWith('+')) {
+                        phoneNumber = '+' + phoneNumber;
+                    }
+                }
+                
+                const lastSeen = getLastSeenStatus(contact);
+                
+                console.log('Individual contact:', { 
+                    originalPhone: contact.phoneNumber,
+                    formattedPhone: phoneNumber, 
+                    lastSeen,
+                    contactData: contact 
+                });
+                
+                statusElement.innerHTML = `
+                    <div class="header-status-content">
+                        <span class="phone-number" title="${phoneNumber}">${phoneNumber}</span>
+                        ${lastSeen ? `<span class="last-seen-badge">${lastSeen}</span>` : ''}
+                    </div>
+                `;
+            }
         }
         
         // Create new conversation
@@ -3287,13 +4143,35 @@
         
         // Create message element with media support
         function createMessageElement(message) {
+            // Debug log
+            console.log('Creating message:', {
+                id: message.id,
+                type: message.messageType,
+                mediaId: message.mediaId,
+                mediaUrl: message.mediaUrl,
+                content: message.content,
+                hasContent: !!message.content,
+                contentLength: message.content ? message.content.length : 0
+            });
+            
+            // Extra check for problematic messages
+            if (!message.content && message.messageType === 'text') {
+                console.warn('Text message with no content:', message);
+            }
+            
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${message.direction === 'inbound' ? 'received' : 'sent'}`;
             messageDiv.dataset.messageId = message.whatsappMessageId || message.id;
             
             let messageContent = '';
             
-            // Handle different message types
+            // Handle different message types - also check for 'chat' type with media
+            if (message.messageType === 'chat' && message.mediaId) {
+                // Force to image type if has mediaId but type is chat
+                console.log('Converting chat with mediaId to image type');
+                message.messageType = 'image';
+            }
+            
             switch (message.messageType) {
                 case 'image':
                     messageContent = renderImageMessage(message);
@@ -3307,12 +4185,44 @@
                 case 'document':
                     messageContent = renderDocumentMessage(message);
                     break;
+                case 'location':
+                    messageContent = renderLocationMessage(message);
+                    break;
+                case 'contact':
+                    messageContent = renderContactMessage(message);
+                    break;
+                case 'sticker':
+                    messageContent = renderStickerMessage(message);
+                    break;
                 default:
-                    messageContent = `<div class="message-text">${message.content || ''}</div>`;
+                    // For text messages or empty content
+                    if (!message.content || message.content.trim() === '') {
+                        messageContent = `<div class="message-text" style="color: #64748b; font-style: italic;">[No message content]</div>`;
+                    } else {
+                        messageContent = `<div class="message-text">${message.content}</div>`;
+                    }
+            }
+            
+            // Add group participant name for group messages
+            let participantName = '';
+            if (message.isGroupMessage && message.groupParticipant && message.direction === 'inbound') {
+                // Extract phone number or name
+                let senderDisplay = message.groupParticipant;
+                if (senderDisplay.includes('@')) {
+                    senderDisplay = senderDisplay.split('@')[0];
+                }
+                // Format phone number if it's just numbers
+                if (/^\d+$/.test(senderDisplay)) {
+                    senderDisplay = '+' + senderDisplay;
+                }
+                participantName = `<div class="message-participant" style="color: #60a5fa; font-size: 12px; margin-bottom: 4px; font-weight: 500;">
+                    ${senderDisplay}
+                </div>`;
             }
             
             messageDiv.innerHTML = `
                 <div class="message-bubble">
+                    ${participantName}
                     ${messageContent}
                     <div class="message-time">
                         ${formatTime(message.createdAt)}
@@ -3326,15 +4236,28 @@
         
         // Render image message
         function renderImageMessage(message) {
-            const imageUrl = message.mediaUrl || '';
-            const caption = message.content || '';
+            // Build media URL - use backend endpoint for WAHA media
+            let imageUrl = message.mediaUrl || (message.mediaId ? `${API_CONFIG.baseUrl}/messages/media/${message.mediaId}` : '');
+            
+            // If mediaUrl is relative, prepend the base URL (without /api)
+            if (imageUrl && imageUrl.startsWith('/')) {
+                // Remove /api from baseUrl and append the mediaUrl
+                const baseUrl = API_CONFIG.baseUrl.replace(/\/api$/, '');
+                imageUrl = baseUrl + imageUrl;
+            }
+            
+            const thumbnailUrl = message.thumbnailUrl || imageUrl;
+            const caption = message.mediaCaption || message.content || '';
             
             return `
                 <div class="message-media">
                     ${imageUrl ? 
-                        `<img src="${imageUrl}" alt="Image" onclick="openMediaViewer('${imageUrl}')" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'message-media-loading\\'><span class=\\'material-icons\\' style=\\'color: #64748b;\\'>broken_image</span></div>'" />` :
+                        `<img src="${thumbnailUrl}" alt="Image" onclick="openMediaViewer('${imageUrl}')" 
+                            loading="lazy"
+                            onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'message-media-loading\\'><span class=\\'material-icons\\' style=\\'color: #64748b;\\'>broken_image</span></div>'" />` :
                         `<div class="message-media-loading">
                             <span class="material-icons" style="color: #64748b;">image</span>
+                            <div style="color: #64748b; font-size: 12px; margin-top: 8px;">Loading image...</div>
                         </div>`
                     }
                 </div>
@@ -3344,18 +4267,39 @@
         
         // Render video message
         function renderVideoMessage(message) {
-            const videoUrl = message.mediaUrl || '';
-            const caption = message.content || '';
+            let videoUrl = message.mediaUrl || (message.mediaId ? `${API_CONFIG.baseUrl}/messages/media/${message.mediaId}` : '');
+            
+            // If mediaUrl is relative, prepend the base URL (without /api)
+            if (videoUrl && videoUrl.startsWith('/')) {
+                // Remove /api from baseUrl and append the mediaUrl
+                const baseUrl = API_CONFIG.baseUrl.replace(/\/api$/, '');
+                videoUrl = baseUrl + videoUrl;
+            }
+            
+            const thumbnailUrl = message.thumbnailUrl || '';
+            const caption = message.mediaCaption || message.content || '';
+            const duration = message.mediaDuration ? formatDuration(message.mediaDuration) : '';
             
             return `
                 <div class="message-media">
                     ${videoUrl ? 
-                        `<video controls style="max-width: 100%; max-height: 300px; border-radius: 12px;">
-                            <source src="${videoUrl}" type="${message.mediaMimeType || 'video/mp4'}">
-                            Your browser does not support the video tag.
-                        </video>` :
+                        `<div class="video-container" style="position: relative;">
+                            ${thumbnailUrl ? 
+                                `<img src="${thumbnailUrl}" alt="Video thumbnail" style="max-width: 100%; max-height: 300px; border-radius: 12px; cursor: pointer;" 
+                                    onclick="playVideo(this, '${videoUrl}')" />
+                                <div class="play-button" onclick="playVideo(this.previousElementSibling, '${videoUrl}')" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.7); border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                                    <span class="material-icons" style="color: white; font-size: 32px;">play_arrow</span>
+                                </div>` :
+                                `<video controls style="max-width: 100%; max-height: 300px; border-radius: 12px;">
+                                    <source src="${videoUrl}" type="${message.mediaMimeType || 'video/mp4'}">
+                                    Your browser does not support the video tag.
+                                </video>`
+                            }
+                            ${duration ? `<div class="video-duration" style="position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.7); color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px;">${duration}</div>` : ''}
+                        </div>` :
                         `<div class="message-media-loading">
                             <span class="material-icons" style="color: #64748b;">videocam</span>
+                            <div style="color: #64748b; font-size: 12px; margin-top: 8px;">Loading video...</div>
                         </div>`
                     }
                 </div>
@@ -3365,39 +4309,59 @@
         
         // Render audio message
         function renderAudioMessage(message) {
-            const audioUrl = message.mediaUrl || '';
+            const audioUrl = message.mediaUrl || (message.mediaId ? `${API_CONFIG.baseUrl}/messages/media/${message.mediaId}` : '');
+            const duration = message.mediaDuration ? formatDuration(message.mediaDuration) : '';
             
             return `
                 <div style="padding: 8px;">
-                    ${audioUrl ? 
-                        `<audio controls style="width: 100%; max-width: 300px;">
-                            <source src="${audioUrl}" type="${message.mediaMimeType || 'audio/mpeg'}">
-                            Your browser does not support the audio tag.
-                        </audio>` :
-                        `<div class="message-media-loading" style="width: 200px; height: 60px;">
-                            <span class="material-icons" style="color: #64748b;">audiotrack</span>
-                        </div>`
-                    }
+                    <div class="message-audio" style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(59, 130, 246, 0.1); border-radius: 12px;">
+                        <div class="audio-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
+                            <span class="material-icons" style="color: white;">headset</span>
+                        </div>
+                        ${audioUrl ? 
+                            `<div style="flex: 1;">
+                                <audio controls style="width: 100%; max-width: 300px;">
+                                    <source src="${audioUrl}" type="${message.mediaMimeType || 'audio/mpeg'}">
+                                    Your browser does not support the audio tag.
+                                </audio>
+                                ${duration ? `<div style="color: #94a3b8; font-size: 12px; margin-top: 4px;">Duration: ${duration}</div>` : ''}
+                            </div>` :
+                            `<div class="message-media-loading" style="flex: 1; text-align: center;">
+                                <span class="material-icons" style="color: #64748b;">audiotrack</span>
+                                <div style="color: #64748b; font-size: 12px;">Loading audio...</div>
+                            </div>`
+                        }
+                    </div>
                 </div>
             `;
         }
         
         // Render document message
         function renderDocumentMessage(message) {
-            const docUrl = message.mediaUrl || '';
-            const fileName = message.content || 'Document';
+            let docUrl = message.mediaUrl || (message.mediaId ? `${API_CONFIG.baseUrl}/messages/media/${message.mediaId}` : '');
+            
+            // If mediaUrl is relative, prepend the base URL (without /api)
+            if (docUrl && docUrl.startsWith('/')) {
+                // Remove /api from baseUrl and append the mediaUrl
+                const baseUrl = API_CONFIG.baseUrl.replace(/\/api$/, '');
+                docUrl = baseUrl + docUrl;
+            }
+            
+            const fileName = message.fileName || message.content || 'Document';
             const fileSize = message.mediaSize ? formatFileSize(message.mediaSize) : '';
             const fileIcon = getFileIcon(message.mediaMimeType);
             
             return `
-                <div class="message-document" ${docUrl ? `onclick="window.open('${docUrl}', '_blank')"` : ''}>
-                    <div class="document-icon">
-                        <span class="material-icons" style="color: #60a5fa; font-size: 24px;">${fileIcon}</span>
+                <div class="message-document" ${docUrl ? `onclick="window.open('${docUrl}', '_blank')"` : ''} 
+                    style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(71, 85, 105, 0.2); border-radius: 12px; cursor: pointer; transition: all 0.3s ease;">
+                    <div class="document-icon" style="background: linear-gradient(135deg, #60a5fa, #3b82f6); border-radius: 12px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;">
+                        <span class="material-icons" style="color: white; font-size: 24px;">${fileIcon}</span>
                     </div>
-                    <div class="document-info">
-                        <div class="document-name">${fileName}</div>
-                        ${fileSize ? `<div class="document-size">${fileSize}</div>` : ''}
+                    <div class="document-info" style="flex: 1;">
+                        <div class="document-name" style="color: #e2e8f0; font-weight: 500; word-break: break-word;">${fileName}</div>
+                        ${fileSize ? `<div class="document-size" style="color: #94a3b8; font-size: 12px; margin-top: 2px;">${fileSize}</div>` : ''}
                     </div>
+                    <span class="material-icons" style="color: #64748b;">download</span>
                 </div>
             `;
         }
@@ -3426,11 +4390,306 @@
             
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
+
+        // Format duration for audio/video
+        function formatDuration(seconds) {
+            if (!seconds) return '';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Render location message
+        function renderLocationMessage(message) {
+            const lat = message.locationLatitude;
+            const lng = message.locationLongitude;
+            const name = message.locationName || 'Location';
+            const address = message.locationAddress || '';
+            
+            if (!lat || !lng) {
+                return `<div class="message-text">📍 Location</div>`;
+            }
+            
+            const mapUrl = `https://maps.google.com/maps?q=${lat},${lng}`;
+            const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=15&size=300x200&markers=color:red%7C${lat},${lng}&key=YOUR_API_KEY`;
+            
+            return `
+                <div class="message-location" onclick="window.open('${mapUrl}', '_blank')" style="cursor: pointer;">
+                    <div class="location-preview" style="width: 280px; height: 150px; background: #1e293b; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+                        <span class="material-icons" style="font-size: 48px; color: #64748b;">location_on</span>
+                    </div>
+                    <div class="location-info" style="padding: 8px;">
+                        <div style="color: #e2e8f0; font-weight: 500;">${name}</div>
+                        ${address ? `<div style="color: #94a3b8; font-size: 12px; margin-top: 4px;">${address}</div>` : ''}
+                        <div style="color: #60a5fa; font-size: 12px; margin-top: 4px;">Tap to open in maps</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Render contact message
+        function renderContactMessage(message) {
+            const vcard = message.contactVcard || '';
+            const contactName = message.content || 'Contact';
+            
+            return `
+                <div class="message-contact" style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(16, 185, 129, 0.1); border-radius: 12px;">
+                    <div class="contact-avatar" style="background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;">
+                        <span class="material-icons" style="color: white;">person</span>
+                    </div>
+                    <div class="contact-info" style="flex: 1;">
+                        <div style="color: #e2e8f0; font-weight: 500;">${contactName}</div>
+                        <div style="color: #94a3b8; font-size: 12px; margin-top: 2px;">Contact Card</div>
+                    </div>
+                    ${vcard ? `<span class="material-icons" style="color: #64748b; cursor: pointer;" onclick="downloadVCard('${btoa(vcard)}', '${contactName}')">download</span>` : ''}
+                </div>
+            `;
+        }
+
+        // Render sticker message
+        function renderStickerMessage(message) {
+            const stickerUrl = message.mediaUrl || (message.mediaId ? `${API_CONFIG.baseUrl}/messages/media/${message.mediaId}` : '');
+            
+            return `
+                <div class="message-sticker">
+                    ${stickerUrl ? 
+                        `<img src="${stickerUrl}" alt="Sticker" style="max-width: 150px; max-height: 150px;" />` :
+                        `<div class="message-media-loading" style="width: 150px; height: 150px; display: flex; align-items: center; justify-content: center;">
+                            <span class="material-icons" style="color: #64748b;">emoji_emotions</span>
+                        </div>`
+                    }
+                </div>
+            `;
+        }
+
+        // Helper function to play video
+        function playVideo(thumbnail, videoUrl) {
+            const container = thumbnail.parentElement;
+            container.innerHTML = `
+                <video controls autoplay style="max-width: 100%; max-height: 300px; border-radius: 12px;">
+                    <source src="${videoUrl}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            `;
+        }
+
+        // Helper function to download vCard
+        function downloadVCard(encodedVcard, name) {
+            const vcard = atob(encodedVcard);
+            const blob = new Blob([vcard], { type: 'text/vcard' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${name}.vcf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
         
         // Open media viewer (for images)
+        // Image Modal Variables
+        let currentZoom = 1;
+        let currentRotation = 0;
+        let imageUrl = '';
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+        let translateX = 0;
+        let translateY = 0;
+        
         function openMediaViewer(url) {
-            window.open(url, '_blank');
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            const loading = document.getElementById('modalLoading');
+            const container = document.getElementById('imageContainer');
+            
+            // Reset states
+            currentZoom = 1;
+            currentRotation = 0;
+            translateX = 0;
+            translateY = 0;
+            imageUrl = url;
+            
+            // Show modal with animation
+            modal.style.display = 'block';
+            loading.classList.add('show');
+            
+            // Force reflow
+            modal.offsetHeight;
+            
+            // Add show class for animation
+            modal.classList.add('show');
+            
+            // Create new image to load full resolution
+            const img = new Image();
+            img.onload = function() {
+                modalImage.src = url;
+                loading.classList.remove('show');
+                updateImageTransform();
+            };
+            
+            img.onerror = function() {
+                loading.textContent = 'Failed to load image';
+                setTimeout(() => closeImageModal(), 2000);
+            };
+            
+            img.src = url;
+            
+            // Add mouse events for panning
+            container.addEventListener('mousedown', startDrag);
+            container.addEventListener('mousemove', drag);
+            container.addEventListener('mouseup', endDrag);
+            container.addEventListener('mouseleave', endDrag);
+            
+            // Add touch events for mobile
+            container.addEventListener('touchstart', startDrag);
+            container.addEventListener('touchmove', drag);
+            container.addEventListener('touchend', endDrag);
+            
+            // Add wheel event for zoom
+            container.addEventListener('wheel', handleWheel);
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', handleKeyPress);
         }
+        
+        function closeImageModal() {
+            const modal = document.getElementById('imageModal');
+            const container = document.getElementById('imageContainer');
+            
+            modal.classList.remove('show');
+            
+            // Remove event listeners
+            container.removeEventListener('mousedown', startDrag);
+            container.removeEventListener('mousemove', drag);
+            container.removeEventListener('mouseup', endDrag);
+            container.removeEventListener('mouseleave', endDrag);
+            container.removeEventListener('touchstart', startDrag);
+            container.removeEventListener('touchmove', drag);
+            container.removeEventListener('touchend', endDrag);
+            container.removeEventListener('wheel', handleWheel);
+            document.removeEventListener('keydown', handleKeyPress);
+            
+            setTimeout(() => {
+                modal.style.display = 'none';
+                document.getElementById('modalImage').src = '';
+            }, 300);
+        }
+        
+        function zoomIn() {
+            currentZoom = Math.min(currentZoom * 1.2, 5);
+            updateImageTransform();
+        }
+        
+        function zoomOut() {
+            currentZoom = Math.max(currentZoom / 1.2, 0.5);
+            updateImageTransform();
+        }
+        
+        function resetZoom() {
+            currentZoom = 1;
+            currentRotation = 0;
+            translateX = 0;
+            translateY = 0;
+            updateImageTransform();
+        }
+        
+        function rotateImage() {
+            currentRotation += 90;
+            updateImageTransform();
+        }
+        
+        function updateImageTransform() {
+            const modalImage = document.getElementById('modalImage');
+            const zoomLevel = document.getElementById('zoomLevel');
+            
+            modalImage.style.transform = `translate(-50%, -50%) scale(${currentZoom}) rotate(${currentRotation}deg) translate(${translateX}px, ${translateY}px)`;
+            zoomLevel.textContent = Math.round(currentZoom * 100) + '%';
+        }
+        
+        function downloadImage() {
+            const link = document.createElement('a');
+            link.href = imageUrl;
+            link.download = 'whatsapp-image-' + new Date().getTime() + '.jpg';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        function startDrag(e) {
+            if (currentZoom <= 1) return;
+            
+            isDragging = true;
+            document.getElementById('imageContainer').classList.add('grabbing');
+            
+            startX = (e.type === 'mousedown' ? e.clientX : e.touches[0].clientX) - translateX;
+            startY = (e.type === 'mousedown' ? e.clientY : e.touches[0].clientY) - translateY;
+            
+            e.preventDefault();
+        }
+        
+        function drag(e) {
+            if (!isDragging) return;
+            
+            e.preventDefault();
+            const currentX = e.type === 'mousemove' ? e.clientX : e.touches[0].clientX;
+            const currentY = e.type === 'mousemove' ? e.clientY : e.touches[0].clientY;
+            
+            translateX = currentX - startX;
+            translateY = currentY - startY;
+            
+            updateImageTransform();
+        }
+        
+        function endDrag() {
+            isDragging = false;
+            document.getElementById('imageContainer').classList.remove('grabbing');
+        }
+        
+        function handleWheel(e) {
+            e.preventDefault();
+            
+            if (e.deltaY < 0) {
+                zoomIn();
+            } else {
+                zoomOut();
+            }
+        }
+        
+        function handleKeyPress(e) {
+            switch(e.key) {
+                case 'Escape':
+                    closeImageModal();
+                    break;
+                case '+':
+                case '=':
+                    zoomIn();
+                    break;
+                case '-':
+                case '_':
+                    zoomOut();
+                    break;
+                case '0':
+                    resetZoom();
+                    break;
+                case 'r':
+                case 'R':
+                    rotateImage();
+                    break;
+                case 'd':
+                case 'D':
+                    downloadImage();
+                    break;
+            }
+        }
+        
+        // Click outside to close
+        document.getElementById('imageModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeImageModal();
+            }
+        });
         
         // Send message
         async function sendMessage() {
@@ -3659,23 +4918,7 @@
             });
         }
         
-        // Display new message
-        function displayNewMessage(message) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${message.direction === 'inbound' ? 'received' : 'sent'}`;
-            messageDiv.innerHTML = `
-                <div class="message-bubble">
-                    <div class="message-text">${message.content}</div>
-                    <div class="message-time">
-                        ${formatTime(message.createdAt)}
-                        ${message.direction === 'outbound' ? getStatusIcon(message.status) : ''}
-                    </div>
-                </div>
-            `;
-            
-            document.getElementById('messages-area').appendChild(messageDiv);
-            document.getElementById('messages-area').scrollTop = document.getElementById('messages-area').scrollHeight;
-        }
+        // Remove duplicate displayNewMessage function - use the one above that calls createMessageElement
         
         // Update message status
         function updateMessageStatus(messageId, status) {
@@ -3717,6 +4960,83 @@
             return name.substring(0, 2).toUpperCase();
         }
         
+        function formatSenderName(participant) {
+            if (!participant) return '';
+            // Remove @c.us or @s.whatsapp.net
+            let name = participant.split('@')[0];
+            // Format phone number if it's just digits
+            if (/^\d+$/.test(name)) {
+                name = '+' + name;
+            }
+            return name;
+        }
+
+        // Get online status for contact
+        function getOnlineStatus(contact) {
+            // Generate mock status for demo purposes if no lastSeen data
+            if (!contact.lastSeen) {
+                // Generate random status based on contact ID for consistent behavior
+                const hash = contact.id ? contact.id.split('').reduce((a, b) => {
+                    a = ((a << 5) - a) + b.charCodeAt(0);
+                    return a & a;
+                }, 0) : 0;
+                const randomStatus = Math.abs(hash) % 3;
+                return ['online', 'recently', 'offline'][randomStatus];
+            }
+            
+            const lastSeenTime = new Date(contact.lastSeen);
+            const now = new Date();
+            const diffMinutes = (now - lastSeenTime) / (1000 * 60);
+            
+            if (diffMinutes < 5) return 'online';
+            if (diffMinutes < 60) return 'recently';
+            return 'offline';
+        }
+
+        // Get last seen status text
+        function getLastSeenStatus(contact) {
+            // If no real lastSeen data, generate mock data for demo
+            if (!contact.lastSeen) {
+                const hash = contact.id ? contact.id.split('').reduce((a, b) => {
+                    a = ((a << 5) - a) + b.charCodeAt(0);
+                    return a & a;
+                }, 0) : 0;
+                const randomMinutes = Math.abs(hash) % 1440; // Random within 24 hours
+                
+                // Always show last seen for demo purposes (except for very recent)
+                if (randomMinutes < 2) return null; // Only skip for very recent
+                if (randomMinutes < 60) return `${Math.max(randomMinutes, 2)}m ago`;
+                if (randomMinutes < 1440) return `${Math.floor(randomMinutes / 60)}h ago`;
+                return 'Yesterday';
+            }
+            
+            const lastSeenTime = new Date(contact.lastSeen);
+            const now = new Date();
+            const diffMinutes = (now - lastSeenTime) / (1000 * 60);
+            const diffHours = diffMinutes / 60;
+            const diffDays = diffHours / 24;
+            
+            if (diffMinutes < 5) return null; // Don't show for online users
+            if (diffMinutes < 60) return `${Math.floor(diffMinutes)}m ago`;
+            if (diffHours < 24) return `${Math.floor(diffHours)}h ago`;
+            if (diffDays < 7) return `${Math.floor(diffDays)}d ago`;
+            
+            return lastSeenTime.toLocaleDateString();
+        }
+
+        // Get status text based on status class
+        function getStatusText(contact, statusClass) {
+            switch (statusClass) {
+                case 'online':
+                    return 'Online';
+                case 'recently':
+                    return 'Recently active';
+                case 'offline':
+                default:
+                    return contact.phoneNumber || 'Offline';
+            }
+        }
+        
         function formatTime(timestamp) {
             if (!timestamp) return '';
             
@@ -3748,9 +5068,8 @@
             console.log('Found contact item:', contactItem);
             
             if (!contactItem) {
-                console.log('Contact item not found, reloading contacts...');
-                // If not found, reload contacts
-                loadContacts();
+                console.log('Contact item not found, not reloading to avoid duplicates');
+                // Don't reload automatically to avoid duplicate contacts
                 return;
             }
             
@@ -3876,6 +5195,28 @@
             };
             
             return icons[status] || '';
+        }
+
+        // Get message preview for contact list
+        function getMessagePreview(message) {
+            if (!message) return 'No messages yet';
+            
+            if (message.content) {
+                return message.content;
+            }
+            
+            // Show media type with emoji
+            const mediaTypeEmoji = {
+                'image': '📷 Photo',
+                'video': '🎥 Video',
+                'audio': '🎵 Audio',
+                'document': '📄 Document',
+                'location': '📍 Location',
+                'contact': '👤 Contact',
+                'sticker': '🎨 Sticker'
+            };
+            
+            return mediaTypeEmoji[message.messageType] || `[${message.messageType || 'Message'}]`;
         }
         
         // Update contact info panel
@@ -4054,20 +5395,8 @@
             return date.toLocaleDateString('id-ID', options);
         }
         
-        // Load WhatsApp History
-        async function loadWhatsAppHistory() {
-            const btn = event.target.closest('.load-history-btn');
-            if (!btn) return;
-            
-            console.log('Load history - Connection state:', connectionState);
-            
-            // Check if WhatsApp is connected
-            if (connectionState.status !== 'connected' && connectionState.status !== 'WORKING' && connectionState.status !== 'authenticated') {
-                console.error('WhatsApp not connected. Current status:', connectionState.status);
-                showNotification('WhatsApp belum terhubung. Silakan hubungkan terlebih dahulu.', 'error');
-                return;
-            }
-            
+        // Handle history button click - this was the missing function wrapper
+        async function handleHistoryButtonClick(btn) {
             // Show loading state
             btn.classList.add('loading');
             btn.disabled = true;
@@ -4341,16 +5670,28 @@
             lastStatus = connectionState.status;
         }, 1000);
 
+        // Global variables for filter and search state
+        let currentFilter = 'all';
+        let currentSearchTerm = '';
+
         // Update filter contacts function
-        function filterContacts(filter) {
+        function filterContacts(filter, element) {
             // Update active tab
             document.querySelectorAll('.filter-tab').forEach(tab => {
                 tab.classList.remove('active');
             });
-            event.target.classList.add('active');
             
-            // Load contacts with filter
-            loadContacts(filter);
+            // Find the filter tab element (in case a child element was clicked)
+            const filterTab = element ? (element.closest('.filter-tab') || element) : event.target.closest('.filter-tab');
+            if (filterTab) {
+                filterTab.classList.add('active');
+            }
+            
+            // Update current filter state
+            currentFilter = filter;
+            
+            // Load contacts with current filter and search term
+            loadContacts(filter, currentSearchTerm);
         }
         
         // Sync contacts from WhatsApp
@@ -4381,16 +5722,208 @@
         }
         
         // Search contacts
+        let searchTimeout;
         document.getElementById('search-contacts').addEventListener('input', function(e) {
-            const search = e.target.value;
-            if (search.length > 2 || search.length === 0) {
-                loadContacts('all');
+            const searchValue = e.target.value;
+            currentSearchTerm = searchValue;
+            
+            // Clear previous timeout
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
             }
+            
+            // Debounce search to avoid too many API calls
+            searchTimeout = setTimeout(() => {
+                // Search with minimum 0 characters (immediate search) or when cleared
+                if (searchValue.length >= 2 || searchValue.length === 0) {
+                    loadContacts(currentFilter, searchValue);
+                }
+            }, 300); // 300ms debounce
+        });
+        
+        // Handle search input focus and blur for better UX
+        document.getElementById('search-contacts').addEventListener('focus', function(e) {
+            e.target.parentElement.style.borderColor = '#3b82f6';
+            e.target.parentElement.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+        });
+        
+        document.getElementById('search-contacts').addEventListener('blur', function(e) {
+            e.target.parentElement.style.borderColor = 'rgba(71, 85, 105, 0.3)';
+            e.target.parentElement.style.boxShadow = 'none';
+        });
+        
+        // Update filter tab counts
+        function updateFilterTabCounts(allContactsData) {
+            const allCount = allContactsData.length;
+            const unreadCount = allContactsData.filter(contact => contact.unreadCount > 0).length;
+            const groupsCount = allContactsData.filter(contact => contact.isGroup === true).length;
+            
+            // Update tab text with counts
+            const tabs = document.querySelectorAll('.filter-tab');
+            tabs.forEach(tab => {
+                const filterType = tab.onclick.toString().match(/filterContacts\('(\w+)'\)/)?.[1];
+                let count;
+                
+                switch(filterType) {
+                    case 'all':
+                        count = allCount;
+                        break;
+                    case 'unread':
+                        count = unreadCount;
+                        break;
+                    case 'groups':
+                        count = groupsCount;
+                        break;
+                    default:
+                        count = 0;
+                }
+                
+                // Add count badge to tab
+                const originalText = tab.textContent.split(' (')[0]; // Remove existing count
+                tab.innerHTML = `${originalText} ${count > 0 ? `<span class="filter-count">(${count})</span>` : ''}`;
+            });
+        }
+        
+        // Clear search function
+        function clearSearch() {
+            const searchInput = document.getElementById('search-contacts');
+            searchInput.value = '';
+            currentSearchTerm = '';
+            loadContacts(currentFilter, '');
+        }
+        
+        // Add clear search button functionality and keyboard shortcuts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add clear button to search input if it doesn't exist
+            const searchContainer = document.querySelector('.contacts-search');
+            const searchInput = document.getElementById('search-contacts');
+            
+            if (searchContainer && !searchContainer.querySelector('.clear-search-btn')) {
+                const clearBtn = document.createElement('span');
+                clearBtn.className = 'material-icons clear-search-btn';
+                clearBtn.textContent = 'clear';
+                clearBtn.style.cssText = `
+                    position: absolute;
+                    right: 12px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    cursor: pointer;
+                    color: #64748b;
+                    font-size: 18px;
+                    opacity: 0;
+                    transition: opacity 0.3s ease;
+                `;
+                clearBtn.onclick = clearSearch;
+                
+                // Make search container relative
+                searchContainer.style.position = 'relative';
+                searchContainer.appendChild(clearBtn);
+                
+                // Show/hide clear button based on input content
+                searchInput.addEventListener('input', function() {
+                    clearBtn.style.opacity = this.value.length > 0 ? '1' : '0';
+                });
+            }
+            
+            // Add keyboard shortcuts for filters
+            document.addEventListener('keydown', function(e) {
+                // Only activate shortcuts if search input is not focused
+                if (document.activeElement !== searchInput) {
+                    if (e.ctrlKey || e.metaKey) {
+                        switch(e.key) {
+                            case '1':
+                                e.preventDefault();
+                                filterContacts('all', document.querySelector('.filter-tab[onclick*="all"]'));
+                                break;
+                            case '2':
+                                e.preventDefault();
+                                filterContacts('unread', document.querySelector('.filter-tab[onclick*="unread"]'));
+                                break;
+                            case '3':
+                                e.preventDefault();
+                                filterContacts('groups', document.querySelector('.filter-tab[onclick*="groups"]'));
+                                break;
+                            case 'f':
+                            case 'F':
+                                e.preventDefault();
+                                searchInput.focus();
+                                break;
+                        }
+                    }
+                    // ESC to clear search
+                    if (e.key === 'Escape' && currentSearchTerm) {
+                        clearSearch();
+                    }
+                }
+            });
         });
         
         // Placeholder functions for future implementation
         function searchInChat() { 
             alert('Search in chat feature coming soon!');
+        }
+        
+        // Open group management page
+        function openGroupManagement(groupId) {
+            if (!groupId) {
+                showNotification('Group ID not found', 'error');
+                return;
+            }
+            // Open in new tab/window
+            window.open(`group-management.html?groupId=${encodeURIComponent(groupId)}`, '_blank');
+        }
+        
+        // Load WhatsApp chat history
+        async function loadWhatsAppHistory() {
+            const statusEl = document.getElementById('whatsappStatus');
+            const statusText = statusEl?.querySelector('.status-text');
+            const historyBtn = document.querySelector('.load-history-btn');
+            
+            // Check if connected
+            if (connectionState.status !== 'connected' && connectionState.status !== 'WORKING') {
+                showNotification('Please connect WhatsApp first', 'warning');
+                return;
+            }
+            
+            // Show loading state
+            if (historyBtn) {
+                historyBtn.classList.add('loading');
+                historyBtn.innerHTML = '<span class="material-icons">hourglass_empty</span><span>Loading...</span>';
+            }
+            
+            if (statusText) {
+                statusText.textContent = 'Loading chats...';
+            }
+            
+            showNotification('Loading chat history from WhatsApp...', 'info');
+            
+            try {
+                const response = await fetch(`${API_CONFIG.baseUrl}/sessions/${API_CONFIG.sessionId}/load-history`, {
+                    method: 'POST'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Chat history is being loaded. This may take a few moments...', 'success');
+                    if (statusText) {
+                        statusText.textContent = 'Connected';
+                    }
+                    // Reload contacts after a delay
+                    setTimeout(() => loadContacts('all'), 3000);
+                } else {
+                    showNotification('Failed to load chat history: ' + (result.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                console.error('Error loading chat history:', error);
+                showNotification('Error loading chat history', 'error');
+            } finally {
+                // Reset button state
+                if (historyBtn) {
+                    historyBtn.classList.remove('loading');
+                    historyBtn.innerHTML = '<span class="material-icons">history</span><span>Load Chat History</span>';
+                }
+            }
         }
         
         function makeCall() { 
@@ -4744,8 +6277,8 @@
             // Check initial connection status
             checkConnectionStatus();
             
-            // Load contacts
-            loadContacts();
+            // Load contacts with initial filter
+            loadContacts(currentFilter, currentSearchTerm);
             
             // Start compliance monitoring
             startComplianceMonitoring();

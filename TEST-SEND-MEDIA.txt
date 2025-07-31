@@ -1,0 +1,49 @@
+LANGKAH TEST MEDIA MESSAGES
+===========================
+
+1. RESTART BACKEND
+   - Stop backend (Ctrl+C di window backend)
+   - Start lagi: cd backend\whatsapp && npm start
+
+2. KIRIM MEDIA DARI WHATSAPP
+   - Buka WhatsApp di HP
+   - Kirim GAMBAR BARU (jangan yang sudah pernah dikirim)
+   - Tunggu beberapa detik
+
+3. CEK CONSOLE BACKEND
+   Backend akan log:
+   === WEBHOOK MESSAGE RECEIVED ===
+   Processing message: {
+     type: 'image',  // <-- Harus 'image' bukan 'chat'
+     hasMedia: true,
+     mediaId: 'xxx'
+   }
+
+4. CEK DATABASE
+   Jalankan: cd backend\whatsapp && node check-media-db.js
+   
+   Seharusnya ada message dengan:
+   - Type: image
+   - Media ID: (bukan NULL)
+
+5. CEK DI WEB INTERFACE
+   Buka: http://localhost:8080/conversations-beautiful.html
+   - Gambar seharusnya muncul di chat
+
+TROUBLESHOOTING
+===============
+Jika masih tidak muncul:
+
+1. Cek apakah webhook benar-benar diterima:
+   - Lihat console backend saat kirim gambar
+   - Harus ada log "WEBHOOK MESSAGE RECEIVED"
+
+2. Jika tidak ada webhook:
+   - Jalankan UPDATE-WEBHOOK.bat
+   - Atau manual:
+     curl -X POST http://localhost:3000/api/sessions/default/webhook \
+       -H "Content-Type: application/json" \
+       -d "{\"url\": \"http://host.docker.internal:3001/api/webhooks/waha\", \"events\": [\"message\", \"message.any\"]}"
+
+3. Test dengan debug page:
+   http://localhost:8080/debug-media.html

@@ -1,0 +1,55 @@
+MANUAL SYSTEM CHECK
+===================
+
+Buka Command Prompt (CMD) dan jalankan perintah-perintah ini satu per satu:
+
+1. CEK DOCKER
+   docker --version
+   docker ps
+
+2. CEK WAHA CONTAINER
+   docker ps | findstr whatsapp
+
+3. CEK WAHA API
+   curl http://localhost:3000/api/health
+
+4. CEK BACKEND
+   curl http://localhost:3001/api/health
+
+5. CEK WHATSAPP SESSION
+   curl http://localhost:3000/api/sessions
+
+6. CEK DATABASE
+   cd D:\ezyin\Documents\aplikasi umroh\backend\whatsapp
+   dir data\whatsapp-crm.db
+
+CARA START MANUAL:
+==================
+
+1. START DOCKER WAHA (jika belum jalan)
+   docker start whatsapp-http-api
+
+2. START BACKEND
+   - Buka CMD baru
+   - cd D:\ezyin\Documents\aplikasi umroh\backend\whatsapp
+   - npm start
+
+3. START FRONTEND
+   - Buka CMD baru
+   - cd D:\ezyin\Documents\aplikasi umroh\frontend
+   - python -m http.server 8080
+
+4. SETUP WHATSAPP
+   - Buka browser: http://localhost:3000/api/sessions/start
+   - Method: POST
+   - Body: {"name": "default"}
+   
+   Atau gunakan curl:
+   curl -X POST http://localhost:3000/api/sessions/start -H "Content-Type: application/json" -d "{\"name\": \"default\"}"
+
+5. LIHAT QR CODE
+   - Buka browser: http://localhost:3000/api/sessions/default/qr
+   - Scan dengan WhatsApp
+
+6. SET WEBHOOK
+   curl -X POST http://localhost:3000/api/sessions/default/webhook -H "Content-Type: application/json" -d "{\"url\": \"http://host.docker.internal:3001/api/webhooks/waha\", \"events\": [\"message\", \"message.any\", \"message.ack\"]}"

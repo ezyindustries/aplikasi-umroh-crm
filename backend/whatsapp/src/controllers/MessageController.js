@@ -98,12 +98,23 @@ class MessageController {
           'isStarred',
           'fromNumber',
           'toNumber',
+          'mediaId',
           'mediaUrl',
+          'mediaMimeType',
+          'mediaSize',
+          'fileName',
           'sentAt',
           'deliveredAt',
           'readAt'
         ]
       });
+      
+      // Debug: Log first message to check fields
+      if (messages.length > 0) {
+        const firstMsg = messages[0];
+        console.log('First message mediaId:', firstMsg.mediaId);
+        console.log('First message dataValues keys:', Object.keys(firstMsg.dataValues));
+      }
 
       // Mark messages as read
       await Message.update(

@@ -38,10 +38,30 @@ router.post('/waha', async (req, res) => {
       timestamp: new Date().toISOString()
     });
     
-    console.log('=== WEBHOOK RECEIVED ===');
+    console.log('\n=== WEBHOOK RECEIVED ===');
+    console.log('Time:', new Date().toISOString());
     console.log('Event:', event.event);
     console.log('Session:', event.session);
-    console.log('Payload:', JSON.stringify(event.payload, null, 2));
+    
+    // Special logging for messages
+    if (event.event === 'message' && event.payload) {
+      console.log('Message Type:', event.payload.type);
+      console.log('From:', event.payload.from);
+      console.log('To:', event.payload.to);
+      console.log('Has Media:', !!event.payload.media);
+      
+      if (event.payload.media) {
+        console.log('=== MEDIA DETECTED ===');
+        console.log('Media ID:', event.payload.media.id);
+        console.log('Mimetype:', event.payload.media.mimetype);
+        console.log('Filename:', event.payload.media.filename);
+        console.log('Size:', event.payload.media.filesize);
+        console.log('URL:', event.payload.media.url);
+      }
+    }
+    
+    console.log('Full Payload:', JSON.stringify(event.payload, null, 2));
+    console.log('========================\n');
     
     // Emit to frontend for monitoring
     if (global.io) {

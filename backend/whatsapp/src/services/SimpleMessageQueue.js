@@ -1,6 +1,7 @@
 const { Message, ConversationSession, Contact, Conversation } = require('../models');
 const whatsappService = require('./RealWAHAService');
 const logger = require('../utils/logger');
+const mediaHandler = require('./MediaHandler');
 
 class SimpleMessageQueueService {
   constructor() {
@@ -150,8 +151,31 @@ class SimpleMessageQueueService {
         from: whatsappMessage.from,
         to: whatsappMessage.to,
         type: whatsappMessage.type,
-        fromMe: whatsappMessage.fromMe
+        fromMe: whatsappMessage.fromMe,
+        isGroupMessage: whatsappMessage.isGroupMessage
       });
+
+      // Handle group messages - check multiple indicators
+      const isGroupMessage = whatsappMessage.isGroupMessage || 
+                           whatsappMessage.isGroupMsg ||
+                           whatsappMessage.from?.includes('@g.us') ||
+                           whatsappMessage.to?.includes('@g.us') ||
+                           whatsappMessage.chatId?.includes('@g.us');
+                           
+      if (isGroupMessage) {
+        // Set groupId if not present
+        if (!whatsappMessage.groupId) {
+          whatsappMessage.groupId = whatsappMessage.chatId || 
+                                   (whatsappMessage.from?.includes('@g.us') ? whatsappMessage.from : whatsappMessage.to);
+        }
+        // Set groupParticipant for incoming messages
+        if (!whatsappMessage.groupParticipant && !whatsappMessage.fromMe && whatsappMessage.from?.includes('@g.us')) {
+          // Extract participant from author or from field
+          whatsappMessage.groupParticipant = whatsappMessage.author || whatsappMessage.participant;
+        }
+        whatsappMessage.isGroupMessage = true;
+        return await this.handleGroupMessage(webhookData);
+      }
 
       // Parse phone numbers
       const fromNumber = whatsappService.parsePhoneNumber(whatsappMessage.from);
@@ -169,7 +193,8 @@ class SimpleMessageQueueService {
         contact = await Contact.create({
           phoneNumber: contactNumber,
           name: whatsappMessage.pushname || contactNumber,
-          source: 'whatsapp'
+          source: 'whatsapp',
+          isGroup: false
         });
       }
 
@@ -182,15 +207,46 @@ class SimpleMessageQueueService {
         conversation = await Conversation.create({
           contactId: contact.id,
           sessionId: sessionId || 'default',
-          status: 'active'
+          status: 'active',
+          isGroup: false
         });
+      }
+
+      // Check if message already exists to avoid duplicates
+      const existingMessage = await Message.findOne({
+        where: { whatsappMessageId: whatsappMessage.id }
+      });
+
+      if (existingMessage) {
+        logger.info(`Message ${whatsappMessage.id} already exists, skipping...`);
+        return existingMessage;
       }
 
       // Build media URL if media is present
       let mediaUrl = null;
-      if (whatsappMessage.mediaId && whatsappMessage.type !== 'text') {
-        // For WAHA, media can be accessed via the files endpoint
-        mediaUrl = `/api/messages/media/${whatsappMessage.mediaId}`;
+      let mediaId = null;
+      
+      if (whatsappMessage.media) {
+        mediaId = whatsappMessage.media.id || whatsappMessage.id;
+        
+        // If we have base64 data, save it to file
+        if (whatsappMessage.media.base64) {
+          logger.info('Saving base64 media data for message:', mediaId);
+          try {
+            await mediaHandler.saveBase64Media(
+              whatsappMessage.media.base64,
+              whatsappMessage.media.mimetype || 'image/jpeg',
+              mediaId
+            );
+          } catch (error) {
+            logger.error('Error saving media:', error);
+          }
+        }
+        
+        mediaUrl = `/api/messages/media/${mediaId}`;
+      } else if (whatsappMessage.mediaId && whatsappMessage.type !== 'text') {
+        mediaId = whatsappMessage.mediaId;
+        mediaUrl = `/api/messages/media/${mediaId}`;
       }
 
       // Save message with correct direction based on fromMe
@@ -201,14 +257,29 @@ class SimpleMessageQueueService {
         toNumber: toNumber,
         messageType: whatsappMessage.type || 'text',
         content: whatsappMessage.body || whatsappMessage.text || whatsappMessage.caption || '',
-        mediaId: whatsappMessage.mediaId,
+        mediaId: mediaId,
         mediaUrl: mediaUrl,
-        mediaMimeType: whatsappMessage.mimetype,
-        mediaSize: whatsappMessage.filesize,
+        mediaMimeType: whatsappMessage.media?.mimetype || whatsappMessage.mimeType || whatsappMessage.mimetype,
+        mediaSize: whatsappMessage.media?.filesize || whatsappMessage.fileSize || whatsappMessage.filesize,
         status: whatsappMessage.fromMe ? 'sent' : 'received',
         direction: whatsappMessage.fromMe ? 'outbound' : 'inbound',
         isForwarded: whatsappMessage.isForwarded || false,
-        quotedMessageId: whatsappMessage.quotedMessageId
+        quotedMessageId: whatsappMessage.quotedMessageId,
+        // New media fields
+        fileName: whatsappMessage.fileName,
+        thumbnailUrl: whatsappMessage.thumbnailUrl,
+        mediaCaption: whatsappMessage.caption,
+        mediaDuration: whatsappMessage.mediaDuration,
+        // Location fields
+        locationLatitude: whatsappMessage.latitude,
+        locationLongitude: whatsappMessage.longitude,
+        locationName: whatsappMessage.locationName,
+        locationAddress: whatsappMessage.locationAddress,
+        // Contact fields
+        contactVcard: whatsappMessage.vcard,
+        // Group fields (false for individual chats)
+        isGroupMessage: false,
+        groupParticipant: null
       });
 
       // Update conversation
@@ -324,6 +395,212 @@ class SimpleMessageQueueService {
         active: this.processing ? 1 : 0
       }
     };
+  }
+
+  // Handle group message
+  async handleGroupMessage(webhookData) {
+    try {
+      const { sessionId, message: whatsappMessage } = webhookData;
+      const { GroupParticipant } = require('../models');
+      
+      logger.info('Processing group message:', {
+        groupId: whatsappMessage.groupId,
+        from: whatsappMessage.from,
+        participant: whatsappMessage.groupParticipant,
+        type: whatsappMessage.type
+      });
+
+      // Parse group ID
+      const groupId = whatsappMessage.groupId;
+      const groupIdClean = whatsappService.parsePhoneNumber(groupId);
+
+      // Find or create group contact
+      let groupContact = await Contact.findOne({
+        where: { groupId: groupId }
+      });
+
+      if (!groupContact) {
+        // Extract group name from webhook message data
+        // WAHA often includes group info in the message payload
+        const groupName = whatsappMessage.chatName || 
+                         whatsappMessage._data?.notifyName || 
+                         whatsappMessage.chat?.name ||
+                         whatsappMessage.chat?.subject ||
+                         `Group ${groupIdClean}`;
+        
+        logger.info('Creating group contact with name:', groupName);
+
+        groupContact = await Contact.create({
+          phoneNumber: groupIdClean, // Use group ID as phone number
+          name: groupName,
+          groupName: groupName,
+          groupDescription: whatsappMessage.chat?.description || '',
+          isGroup: true,
+          groupId: groupId,
+          participantCount: whatsappMessage.chat?.participantCount || 0,
+          source: 'whatsapp'
+        });
+      } else {
+        // Update group info if we have new data from webhook
+        const newGroupName = whatsappMessage.chatName || 
+                           whatsappMessage._data?.notifyName || 
+                           whatsappMessage.chat?.name ||
+                           whatsappMessage.chat?.subject;
+        
+        if (newGroupName && (groupContact.name === groupIdClean || 
+            groupContact.name.startsWith('Group ') || 
+            !groupContact.groupName)) {
+          logger.info('Updating group name from webhook data:', newGroupName);
+          await groupContact.update({
+            name: newGroupName,
+            groupName: newGroupName,
+            groupDescription: whatsappMessage.chat?.description || groupContact.groupDescription,
+            participantCount: whatsappMessage.chat?.participantCount || groupContact.participantCount
+          });
+        }
+      }
+
+      // Find or create conversation for group
+      let conversation = await Conversation.findOne({
+        where: { contactId: groupContact.id }
+      });
+
+      if (!conversation) {
+        conversation = await Conversation.create({
+          contactId: groupContact.id,
+          sessionId: sessionId || 'default',
+          status: 'active',
+          isGroup: true,
+          groupId: groupId
+        });
+      }
+
+      // If it's not from us, track the participant
+      if (!whatsappMessage.fromMe && whatsappMessage.groupParticipant) {
+        const participantNumber = whatsappService.parsePhoneNumber(whatsappMessage.groupParticipant);
+        
+        // Find or create participant contact
+        let participantContact = await Contact.findOne({
+          where: { phoneNumber: participantNumber }
+        });
+
+        if (!participantContact) {
+          participantContact = await Contact.create({
+            phoneNumber: participantNumber,
+            name: whatsappMessage.pushname || participantNumber,
+            source: 'whatsapp',
+            isGroup: false
+          });
+        }
+
+        // Track group participation
+        await GroupParticipant.findOrCreate({
+          where: {
+            groupId: groupId,
+            phoneNumber: participantNumber
+          },
+          defaults: {
+            contactId: participantContact.id,
+            isAdmin: false
+          }
+        });
+      }
+
+      // Check if message already exists to avoid duplicates
+      const existingMessage = await Message.findOne({
+        where: { whatsappMessageId: whatsappMessage.id }
+      });
+      
+      if (existingMessage) {
+        logger.info(`Group message ${whatsappMessage.id} already exists, skipping...`);
+        return existingMessage;
+      }
+
+      // Build media URL if media is present
+      let mediaUrl = null;
+      if (whatsappMessage.mediaId && whatsappMessage.type !== 'text') {
+        mediaUrl = `/api/messages/media/${whatsappMessage.mediaId}`;
+      }
+
+      // Save group message
+      const message = await Message.create({
+        conversationId: conversation.id,
+        whatsappMessageId: whatsappMessage.id,
+        fromNumber: whatsappMessage.groupParticipant || whatsappMessage.from,
+        toNumber: groupId,
+        messageType: whatsappMessage.type || 'text',
+        content: whatsappMessage.body || whatsappMessage.text || whatsappMessage.caption || '',
+        mediaId: whatsappMessage.mediaId,
+        mediaUrl: whatsappMessage.mediaUrl || mediaUrl,
+        mediaMimeType: whatsappMessage.mimeType || whatsappMessage.mimetype,
+        mediaSize: whatsappMessage.fileSize || whatsappMessage.filesize,
+        status: whatsappMessage.fromMe ? 'sent' : 'received',
+        direction: whatsappMessage.fromMe ? 'outbound' : 'inbound',
+        isForwarded: whatsappMessage.isForwarded || false,
+        quotedMessageId: whatsappMessage.quotedMessageId,
+        // Media fields
+        fileName: whatsappMessage.fileName,
+        thumbnailUrl: whatsappMessage.thumbnailUrl,
+        mediaCaption: whatsappMessage.caption,
+        mediaDuration: whatsappMessage.mediaDuration,
+        // Location fields
+        locationLatitude: whatsappMessage.latitude,
+        locationLongitude: whatsappMessage.longitude,
+        locationName: whatsappMessage.locationName,
+        locationAddress: whatsappMessage.locationAddress,
+        // Contact fields
+        contactVcard: whatsappMessage.vcard,
+        // Group fields
+        isGroupMessage: true,
+        groupParticipant: whatsappMessage.groupParticipant || whatsappMessage.author || whatsappMessage.participant || 
+                         (whatsappMessage.fromMe ? 'You' : whatsappMessage.from)
+      });
+
+      // Update conversation
+      let lastMessagePreview = '';
+      if (message.content) {
+        lastMessagePreview = message.content.substring(0, 100);
+      } else {
+        const mediaTypeEmoji = {
+          'image': '📷 Photo',
+          'video': '🎥 Video',
+          'audio': '🎵 Audio',
+          'document': '📄 Document',
+          'location': '📍 Location',
+          'contact': '👤 Contact',
+          'sticker': '🎨 Sticker'
+        };
+        lastMessagePreview = mediaTypeEmoji[message.messageType] || `[${message.messageType}]`;
+      }
+      
+      await conversation.update({
+        lastMessageAt: new Date(),
+        lastMessagePreview: lastMessagePreview,
+        unreadCount: conversation.unreadCount + 1
+      });
+
+      // Emit to frontend
+      if (global.io) {
+        global.io.emit('message:new', {
+          conversationId: conversation.id,
+          message: message.toJSON()
+        });
+        
+        global.io.emit('conversation:updated', {
+          conversationId: conversation.id,
+          id: conversation.id,
+          conversation: conversation.toJSON(),
+          contact: groupContact.toJSON()
+        });
+      }
+
+      logger.info('Group message processed:', message.id);
+      return { success: true, messageId: message.id };
+
+    } catch (error) {
+      logger.error('Error processing group message:', error);
+      throw error;
+    }
   }
 }
 

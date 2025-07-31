@@ -46,6 +46,17 @@ const Conversation = sequelize.define('Conversation', {
     defaultValue: {},
     comment: 'Additional conversation data'
   },
+  // Group chat fields
+  isGroup: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    field: 'is_group'
+  },
+  groupId: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'group_id'
+  },
   labels: {
     type: DataTypes.JSON,
     defaultValue: [],
@@ -76,7 +87,7 @@ const Conversation = sequelize.define('Conversation', {
     allowNull: true,
     field: 'resolved_by',
     comment: 'Who resolved this conversation'
-  }
+  },
 }, {
   tableName: 'conversations',
   indexes: [

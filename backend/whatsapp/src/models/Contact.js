@@ -12,7 +12,19 @@ const Contact = sequelize.define('Contact', {
     allowNull: false,
     unique: true,
     validate: {
-      is: /^\+?[1-9]\d{1,14}$/ // E.164 format
+      is: function(value) {
+        // Allow E.164 format for regular contacts
+        const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+        // Allow group ID format (numbers-numbers)
+        const groupRegex = /^\d+-\d+$/;
+        // Allow simple group ID format
+        const simpleGroupRegex = /^[a-zA-Z0-9-]+$/;
+        
+        if (phoneRegex.test(value) || groupRegex.test(value) || simpleGroupRegex.test(value)) {
+          return true;
+        }
+        throw new Error('Invalid phone number format');
+      }
     },
     field: 'phone_number'
   },
@@ -69,6 +81,33 @@ const Contact = sequelize.define('Contact', {
     allowNull: true,
     field: 'assigned_to',
     comment: 'Agent assigned to this contact'
+  },
+  // Group chat fields
+  isGroup: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    field: 'is_group'
+  },
+  groupId: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'group_id',
+    comment: 'WhatsApp group ID'
+  },
+  groupName: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'group_name'
+  },
+  groupDescription: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    field: 'group_description'
+  },
+  participantCount: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    field: 'participant_count'
   }
 }, {
   tableName: 'contacts',

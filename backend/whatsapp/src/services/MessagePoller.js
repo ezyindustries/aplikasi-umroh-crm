@@ -7,7 +7,7 @@ class MessagePoller {
     this.polling = false;
     this.lastMessageId = null;
     this.pollInterval = 5000; // 5 seconds
-    this.messageQueue = messageQueue;
+    this.messageQueue = messageQueue; // Use the imported instance directly
     this.processedMessages = new Set(); // Track processed message IDs
   }
 
@@ -41,12 +41,12 @@ class MessagePoller {
       });
 
       if (response.data && Array.isArray(response.data)) {
-        // Process personal chats only (not groups)
-        const personalChats = response.data.filter(chat => 
-          chat.id._serialized && chat.id._serialized.includes('@c.us')
+        // Process all chats (both personal and groups)
+        const allChats = response.data.filter(chat => 
+          chat.id._serialized && (chat.id._serialized.includes('@c.us') || chat.id._serialized.includes('@g.us'))
         );
         
-        for (const chat of personalChats) {
+        for (const chat of allChats) {
           if (!chat.lastMessage) continue;
           
           const chatId = chat.id._serialized;
@@ -68,12 +68,45 @@ class MessagePoller {
                     id: messageId,
                     from: message.from,
                     body: message.body,
+                    type: message.type,
+                    hasMedia: !!message.media,
+                    mediaInfo: message.media ? {
+                      id: message.media.id,
+                      mimetype: message.media.mimetype,
+                      filename: message.media.filename
+                    } : null,
                     timestamp: new Date(message.timestamp * 1000).toLocaleString()
                   });
 
                   // Mark as processed
                   this.processedMessages.add(messageId);
 
+                  // Check if this is a media message from WAHA
+                  let mediaData = undefined;
+                  if (message._data && message._data.type === 'image' && message._data.body) {
+                    // WAHA returns image data in body as base64
+                    mediaData = {
+                      id: messageId,
+                      mimetype: message._data.mimetype || 'image/jpeg',
+                      filename: message._data.filename || 'image.jpg',
+                      filesize: message._data.size,
+                      base64: message._data.body,
+                      directPath: message._data.directPath,
+                      url: message._data.deprecatedMms3Url
+                    };
+                  } else if (message.media) {
+                    mediaData = {
+                      id: message.media.id || messageId,
+                      mimetype: message.media.mimetype || message.mimetype,
+                      filename: message.media.filename || message.filename,
+                      filesize: message.media.filesize || message.size,
+                      url: message.media.url
+                    };
+                  }
+                  
+                  // Check if this is a group message
+                  const isGroupMessage = chatId.includes('@g.us');
+                  
                   // Process as webhook event
                   const webhookEvent = {
                     event: 'message',
@@ -81,11 +114,16 @@ class MessagePoller {
                     payload: {
                       id: messageId,
                       from: message.from,
-                      to: message.to || '628113032232@c.us', // Our number
-                      body: message.body || '',
-                      type: message.type || 'chat',
+                      to: message.to || (isGroupMessage ? chatId : '628113032232@c.us'),
+                      body: message._data && message._data.type === 'image' ? '' : (message.body || ''),
+                      type: message._data?.type || message.type || 'chat',
                       timestamp: message.timestamp,
-                      fromMe: false
+                      fromMe: false,
+                      media: mediaData,
+                      // Add group information if it's a group message
+                      chatId: isGroupMessage ? chatId : undefined,
+                      author: isGroupMessage ? message.author : undefined,
+                      isGroupMsg: isGroupMessage
                     }
                   };
 

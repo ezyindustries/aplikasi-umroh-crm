@@ -36,7 +36,10 @@ const io = socketIO(server, {
 global.io = io;
 
 // Middleware
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: false
+}));
 app.use(cors({
   origin: function(origin, callback) {
     // Allow requests with no origin (file://, mobile apps, etc)
@@ -45,7 +48,10 @@ app.use(cors({
     // Allow all origins for development
     return callback(null, true);
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Disposition', 'Content-Type']
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));

@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Management - WhatsApp CRM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #475569 75%, #64748b 100%);
+            color: #e2e8f0;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Glass morphism container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.85));
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px 30px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            box-shadow: 
+                inset 0 1px 0 rgba(71, 85, 105, 0.4),
+                0 20px 40px rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6, #10b981, #8b5cf6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Main content */
+        .main-content {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 24px;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Groups list */
+        .groups-panel {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.75));
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            box-shadow: 
+                inset 0 1px 0 rgba(71, 85, 105, 0.4),
+                0 20px 40px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .groups-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+        }
+
+        .search-box input {
+            flex: 1;
+            background: none;
+            border: none;
+            color: #e2e8f0;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .search-box input::placeholder {
+            color: #64748b;
+        }
+
+        .create-group-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .create-group-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        }
+
+        .groups-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .group-item {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .group-item:hover {
+            background: rgba(51, 65, 85, 0.5);
+            transform: translateX(4px);
+        }
+
+        .group-item.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+
+        .group-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .group-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .group-name {
+            font-weight: 600;
+            color: #e2e8f0;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .group-meta {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        /* Group details panel */
+        .group-details {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.75));
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            box-shadow: 
+                inset 0 1px 0 rgba(71, 85, 105, 0.4),
+                0 20px 40px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .details-header {
+            padding: 24px;
+            background: rgba(30, 41, 59, 0.5);
+            border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+        }
+
+        .details-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #64748b;
+        }
+
+        .empty-state .material-icons {
+            font-size: 80px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+            padding-bottom: 16px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 12px;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .tab:hover {
+            background: rgba(51, 65, 85, 0.5);
+            color: #e2e8f0;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border-color: transparent;
+        }
+
+        /* Tab content */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Info section */
+        .info-section {
+            margin-bottom: 32px;
+        }
+
+        .info-section h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #cbd5e1;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(71, 85, 105, 0.2);
+        }
+
+        .info-label {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .info-value {
+            color: #e2e8f0;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Participants list */
+        .participants-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .add-participant-btn {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .add-participant-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .participant-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+
+        .participant-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .participant-info {
+            flex: 1;
+        }
+
+        .participant-name {
+            font-weight: 500;
+            color: #e2e8f0;
+            margin-bottom: 2px;
+        }
+
+        .participant-phone {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .participant-role {
+            padding: 4px 12px;
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 20px;
+            font-size: 12px;
+            color: #10b981;
+            font-weight: 500;
+        }
+
+        .participant-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            background: rgba(30, 41, 59, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background: rgba(51, 65, 85, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .action-btn.danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+
+        /* Settings section */
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+
+        .setting-info {
+            flex: 1;
+        }
+
+        .setting-title {
+            font-weight: 500;
+            color: #e2e8f0;
+            margin-bottom: 4px;
+        }
+
+        .setting-description {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        /* Toggle switch */
+        .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 24px;
+            background: rgba(71, 85, 105, 0.5);
+            border-radius: 24px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .toggle-switch.active {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(24px);
+        }
+
+        /* Actions bar */
+        .actions-bar {
+            padding: 20px 24px;
+            background: rgba(30, 41, 59, 0.5);
+            border-top: 1px solid rgba(71, 85, 105, 0.3);
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(71, 85, 105, 0.3);
+            color: #e2e8f0;
+            border: 1px solid rgba(71, 85, 105, 0.5);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(71, 85, 105, 0.5);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.show {
+            opacity: 1;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.98), rgba(15, 23, 42, 0.95));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .modal.show .modal-content {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .modal-header {
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+
+        .modal-body {
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #cbd5e1;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 10px;
+            color: #e2e8f0;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: rgba(59, 130, 246, 0.5);
+            background: rgba(15, 23, 42, 0.7);
+        }
+
+        .form-control::placeholder {
+            color: #64748b;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        /* Loading spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(71, 85, 105, 0.5);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(100, 116, 139, 0.5);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .groups-panel {
+                display: none;
+            }
+
+            .container {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                <span class="material-icons">groups</span>
+                Group Management
+            </h1>
+            <button class="btn btn-primary" onclick="openCreateGroupModal()">
+                <span class="material-icons">add</span>
+                Create New Group
+            </button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Groups List Panel -->
+            <div class="groups-panel">
+                <div class="groups-header">
+                    <div class="search-box">
+                        <span class="material-icons" style="color: #64748b;">search</span>
+                        <input type="text" id="groupSearch" placeholder="Search groups..." onkeyup="filterGroups()">
+                    </div>
+                </div>
+                <div class="groups-list" id="groupsList">
+                    <!-- Groups will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Group Details Panel -->
+            <div class="group-details" id="groupDetails">
+                <div class="empty-state" id="emptyState">
+                    <span class="material-icons">groups</span>
+                    <p>Select a group to view details</p>
+                </div>
+                
+                <div id="detailsContent" style="display: none;">
+                    <div class="details-header">
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            <div class="group-avatar" style="width: 60px; height: 60px;">
+                                <span class="material-icons" style="font-size: 32px;">group</span>
+                            </div>
+                            <div>
+                                <h2 id="groupName" style="font-size: 24px; margin-bottom: 4px;"></h2>
+                                <p id="groupMeta" style="color: #94a3b8;"></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="details-content">
+                        <!-- Tabs -->
+                        <div class="tabs">
+                            <div class="tab active" onclick="switchTab('info')">Info</div>
+                            <div class="tab" onclick="switchTab('participants')">Participants</div>
+                            <div class="tab" onclick="switchTab('settings')">Settings</div>
+                        </div>
+
+                        <!-- Info Tab -->
+                        <div class="tab-content active" id="infoTab">
+                            <div class="info-section">
+                                <h3>Group Information</h3>
+                                <div class="info-item">
+                                    <span class="info-label">Group ID</span>
+                                    <span class="info-value" id="infoGroupId"></span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Created</span>
+                                    <span class="info-value" id="infoCreated"></span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Description</span>
+                                    <span class="info-value" id="infoDescription">No description</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Total Messages</span>
+                                    <span class="info-value" id="infoMessages">0</span>
+                                </div>
+                            </div>
+
+                            <div class="info-section">
+                                <h3>Invite Link</h3>
+                                <div style="display: flex; gap: 12px; align-items: center;">
+                                    <input type="text" id="inviteLink" class="form-control" readonly>
+                                    <button class="btn btn-secondary" onclick="copyInviteLink()">
+                                        <span class="material-icons">content_copy</span>
+                                    </button>
+                                    <button class="btn btn-secondary" onclick="revokeInviteLink()">
+                                        <span class="material-icons">refresh</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Participants Tab -->
+                        <div class="tab-content" id="participantsTab">
+                            <div class="participants-header">
+                                <h3>Participants</h3>
+                                <button class="add-participant-btn" onclick="openAddParticipantModal()">
+                                    <span class="material-icons" style="font-size: 18px;">person_add</span>
+                                    Add Participant
+                                </button>
+                            </div>
+                            <div id="participantsList">
+                                <!-- Participants will be loaded here -->
+                            </div>
+                        </div>
+
+                        <!-- Settings Tab -->
+                        <div class="tab-content" id="settingsTab">
+                            <div class="info-section">
+                                <h3>Group Settings</h3>
+                                
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <div class="setting-title">Edit Group Info</div>
+                                        <div class="setting-description">Only admins can edit group info</div>
+                                    </div>
+                                    <div class="toggle-switch" id="adminOnlyInfo" onclick="toggleSetting('adminOnlyInfo')">
+                                        <div class="toggle-slider"></div>
+                                    </div>
+                                </div>
+
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <div class="setting-title">Send Messages</div>
+                                        <div class="setting-description">Only admins can send messages</div>
+                                    </div>
+                                    <div class="toggle-switch" id="adminOnlyMessages" onclick="toggleSetting('adminOnlyMessages')">
+                                        <div class="toggle-slider"></div>
+                                    </div>
+                                </div>
+
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <div class="setting-title">Approve New Members</div>
+                                        <div class="setting-description">Admin approval required for new members</div>
+                                    </div>
+                                    <div class="toggle-switch" id="approvalRequired" onclick="toggleSetting('approvalRequired')">
+                                        <div class="toggle-slider"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="actions-bar">
+                        <button class="btn btn-secondary" onclick="editGroup()">
+                            <span class="material-icons">edit</span>
+                            Edit Group
+                        </button>
+                        <button class="btn btn-danger" onclick="leaveGroup()">
+                            <span class="material-icons">exit_to_app</span>
+                            Leave Group
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Group Modal -->
+    <div class="modal" id="createGroupModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Create New Group</h3>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Group Name</label>
+                    <input type="text" id="newGroupName" class="form-control" placeholder="Enter group name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description (Optional)</label>
+                    <textarea id="newGroupDescription" class="form-control" placeholder="Enter group description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Add Participants</label>
+                    <input type="text" id="participantSearch" class="form-control" placeholder="Search contacts to add...">
+                    <div id="selectedParticipants" style="margin-top: 12px;">
+                        <!-- Selected participants will be shown here -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('createGroupModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="createGroup()">
+                    <span class="material-icons">add</span>
+                    Create Group
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Participant Modal -->
+    <div class="modal" id="addParticipantModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Add Participants</h3>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Search Contacts</label>
+                    <input type="text" id="addParticipantSearch" class="form-control" placeholder="Search contacts to add...">
+                </div>
+                <div id="contactsList" style="max-height: 300px; overflow-y: auto;">
+                    <!-- Contacts will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('addParticipantModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="addSelectedParticipants()">
+                    <span class="material-icons">person_add</span>
+                    Add Selected
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_BASE = 'http://localhost:3001/api';
+        let currentGroup = null;
+        let allGroups = [];
+        let selectedParticipants = new Set();
+        let selectedContacts = new Set();
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if groupId is provided in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const groupId = urlParams.get('groupId');
+            
+            if (groupId) {
+                // Load and select specific group
+                loadGroups().then(() => {
+                    // Find and select the group
+                    const groupItem = document.querySelector(`[data-group-id="${groupId}"]`);
+                    if (groupItem) {
+                        groupItem.click();
+                    }
+                });
+            } else {
+                loadGroups();
+            }
+        });
+
+        // Load groups
+        async function loadGroups() {
+            try {
+                const response = await fetch(`${API_BASE}/groups`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    allGroups = data.data;
+                    displayGroups(allGroups);
+                    return allGroups;
+                }
+            } catch (error) {
+                console.error('Error loading groups:', error);
+                return [];
+            }
+        }
+
+        // Display groups
+        function displayGroups(groups) {
+            const groupsList = document.getElementById('groupsList');
+            groupsList.innerHTML = '';
+
+            if (groups.length === 0) {
+                groupsList.innerHTML = `
+                    <div class="empty-state" style="padding: 40px; text-align: center;">
+                        <span class="material-icons" style="font-size: 48px; opacity: 0.5;">groups_off</span>
+                        <p style="margin-top: 12px;">No groups found</p>
+                    </div>
+                `;
+                return;
+            }
+
+            groups.forEach(group => {
+                const groupItem = document.createElement('div');
+                groupItem.className = 'group-item';
+                groupItem.dataset.groupId = group.groupId || group.id;
+                groupItem.onclick = () => selectGroup(group);
+                
+                groupItem.innerHTML = `
+                    <div class="group-avatar">
+                        <span class="material-icons">group</span>
+                    </div>
+                    <div class="group-info">
+                        <div class="group-name">${group.name || group.phoneNumber}</div>
+                        <div class="group-meta">${group.participantCount || 0} members</div>
+                    </div>
+                `;
+                
+                groupsList.appendChild(groupItem);
+            });
+        }
+
+        // Filter groups
+        function filterGroups() {
+            const searchTerm = document.getElementById('groupSearch').value.toLowerCase();
+            const filtered = allGroups.filter(group => 
+                (group.name || group.phoneNumber).toLowerCase().includes(searchTerm)
+            );
+            displayGroups(filtered);
+        }
+
+        // Select group
+        async function selectGroup(group) {
+            currentGroup = group;
+            
+            // Update UI
+            document.querySelectorAll('.group-item').forEach(item => item.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('detailsContent').style.display = 'block';
+            
+            // Update header
+            document.getElementById('groupName').textContent = group.name || group.phoneNumber;
+            document.getElementById('groupMeta').textContent = `${group.participantCount || 0} members`;
+            
+            // Load group details
+            await loadGroupDetails(group.groupId);
+        }
+
+        // Load group details
+        async function loadGroupDetails(groupId) {
+            try {
+                const response = await fetch(`${API_BASE}/groups/${groupId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const group = data.data;
+                    
+                    // Update info tab
+                    document.getElementById('infoGroupId').textContent = group.groupId;
+                    document.getElementById('infoCreated').textContent = new Date(group.createdAt).toLocaleDateString();
+                    document.getElementById('infoDescription').textContent = group.groupDescription || 'No description';
+                    
+                    // Load participants
+                    displayParticipants(group.participants || []);
+                    
+                    // Load invite link
+                    loadInviteLink(groupId);
+                }
+            } catch (error) {
+                console.error('Error loading group details:', error);
+            }
+        }
+
+        // Display participants
+        function displayParticipants(participants) {
+            const participantsList = document.getElementById('participantsList');
+            participantsList.innerHTML = '';
+
+            participants.forEach(participant => {
+                const contact = participant.contact || {};
+                const participantItem = document.createElement('div');
+                participantItem.className = 'participant-item';
+                
+                participantItem.innerHTML = `
+                    <div class="participant-avatar">
+                        ${getInitials(contact.name || participant.phoneNumber)}
+                    </div>
+                    <div class="participant-info">
+                        <div class="participant-name">${contact.name || participant.phoneNumber}</div>
+                        <div class="participant-phone">${participant.phoneNumber}</div>
+                    </div>
+                    ${participant.isAdmin ? '<div class="participant-role">Admin</div>' : ''}
+                    <div class="participant-actions">
+                        ${participant.isAdmin ? 
+                            `<button class="action-btn" onclick="demoteParticipant('${participant.phoneNumber}')" title="Demote from admin">
+                                <span class="material-icons" style="font-size: 18px;">remove_moderator</span>
+                            </button>` :
+                            `<button class="action-btn" onclick="promoteParticipant('${participant.phoneNumber}')" title="Promote to admin">
+                                <span class="material-icons" style="font-size: 18px;">admin_panel_settings</span>
+                            </button>`
+                        }
+                        <button class="action-btn danger" onclick="removeParticipant('${participant.phoneNumber}')" title="Remove from group">
+                            <span class="material-icons" style="font-size: 18px;">remove_circle</span>
+                        </button>
+                    </div>
+                `;
+                
+                participantsList.appendChild(participantItem);
+            });
+        }
+
+        // Load invite link
+        async function loadInviteLink(groupId) {
+            try {
+                const response = await fetch(`${API_BASE}/groups/${groupId}/invite-link`);
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    document.getElementById('inviteLink').value = data.data.link || data.data;
+                }
+            } catch (error) {
+                console.error('Error loading invite link:', error);
+            }
+        }
+
+        // Switch tabs
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        }
+
+        // Toggle settings
+        function toggleSetting(settingId) {
+            const toggle = document.getElementById(settingId);
+            toggle.classList.toggle('active');
+            
+            // TODO: Save setting to backend
+        }
+
+        // Modal functions
+        function openCreateGroupModal() {
+            document.getElementById('createGroupModal').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('createGroupModal').classList.add('show');
+            }, 10);
+        }
+
+        function openAddParticipantModal() {
+            document.getElementById('addParticipantModal').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('addParticipantModal').classList.add('show');
+            }, 10);
+            loadContacts();
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+
+        // Create group
+        async function createGroup() {
+            const name = document.getElementById('newGroupName').value;
+            const description = document.getElementById('newGroupDescription').value;
+            
+            if (!name) {
+                alert('Please enter a group name');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/groups`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name,
+                        description,
+                        participants: Array.from(selectedParticipants)
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    closeModal('createGroupModal');
+                    loadGroups();
+                    alert('Group created successfully!');
+                } else {
+                    alert('Failed to create group: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error creating group:', error);
+                alert('Failed to create group');
+            }
+        }
+
+        // Participant actions
+        async function promoteParticipant(phoneNumber) {
+            if (!currentGroup) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/groups/${currentGroup.groupId}/admin/promote`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        participants: [phoneNumber.replace('@c.us', '')]
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    loadGroupDetails(currentGroup.groupId);
+                } else {
+                    alert('Failed to promote participant: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error promoting participant:', error);
+            }
+        }
+
+        async function demoteParticipant(phoneNumber) {
+            if (!currentGroup) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/groups/${currentGroup.groupId}/admin/demote`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        participants: [phoneNumber.replace('@c.us', '')]
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    loadGroupDetails(currentGroup.groupId);
+                } else {
+                    alert('Failed to demote participant: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error demoting participant:', error);
+            }
+        }
+
+        async function removeParticipant(phoneNumber) {
+            if (!currentGroup) return;
+            
+            if (!confirm('Are you sure you want to remove this participant?')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/groups/${currentGroup.groupId}/participants/remove`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        participants: [phoneNumber.replace('@c.us', '')]
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    loadGroupDetails(currentGroup.groupId);
+                } else {
+                    alert('Failed to remove participant: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error removing participant:', error);
+            }
+        }
+
+        // Group actions
+        async function editGroup() {
+            // TODO: Implement edit group modal
+            alert('Edit group feature coming soon!');
+        }
+
+        async function leaveGroup() {
+            if (!currentGroup) return;
+            
+            if (!confirm('Are you sure you want to leave this group?')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/groups/${currentGroup.groupId}/leave`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    loadGroups();
+                    document.getElementById('emptyState').style.display = 'block';
+                    document.getElementById('detailsContent').style.display = 'none';
+                    alert('Left group successfully');
+                } else {
+                    alert('Failed to leave group: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error leaving group:', error);
+            }
+        }
+
+        // Invite link functions
+        function copyInviteLink() {
+            const inviteLink = document.getElementById('inviteLink');
+            inviteLink.select();
+            document.execCommand('copy');
+            alert('Invite link copied to clipboard!');
+        }
+
+        async function revokeInviteLink() {
+            if (!currentGroup) return;
+            
+            if (!confirm('Are you sure you want to revoke the invite link?')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/groups/${currentGroup.groupId}/invite-link/revoke`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    loadInviteLink(currentGroup.groupId);
+                    alert('Invite link revoked successfully');
+                } else {
+                    alert('Failed to revoke invite link: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error revoking invite link:', error);
+            }
+        }
+
+        // Load contacts for adding to group
+        async function loadContacts() {
+            try {
+                const response = await fetch(`${API_BASE}/contacts`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayContactsList(data.data.filter(c => !c.isGroup));
+                }
+            } catch (error) {
+                console.error('Error loading contacts:', error);
+            }
+        }
+
+        function displayContactsList(contacts) {
+            const contactsList = document.getElementById('contactsList');
+            contactsList.innerHTML = '';
+
+            contacts.forEach(contact => {
+                const contactItem = document.createElement('div');
+                contactItem.className = 'participant-item';
+                contactItem.style.cursor = 'pointer';
+                contactItem.onclick = () => toggleContactSelection(contact);
+                
+                contactItem.innerHTML = `
+                    <input type="checkbox" id="contact_${contact.id}" ${selectedContacts.has(contact.phoneNumber) ? 'checked' : ''}>
+                    <div class="participant-avatar">
+                        ${getInitials(contact.name || contact.phoneNumber)}
+                    </div>
+                    <div class="participant-info">
+                        <div class="participant-name">${contact.name || contact.phoneNumber}</div>
+                        <div class="participant-phone">${contact.phoneNumber}</div>
+                    </div>
+                `;
+                
+                contactsList.appendChild(contactItem);
+            });
+        }
+
+        function toggleContactSelection(contact) {
+            if (selectedContacts.has(contact.phoneNumber)) {
+                selectedContacts.delete(contact.phoneNumber);
+            } else {
+                selectedContacts.add(contact.phoneNumber);
+            }
+            document.getElementById(`contact_${contact.id}`).checked = selectedContacts.has(contact.phoneNumber);
+        }
+
+        async function addSelectedParticipants() {
+            if (!currentGroup || selectedContacts.size === 0) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/groups/${currentGroup.groupId}/participants/add`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        participants: Array.from(selectedContacts)
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    closeModal('addParticipantModal');
+                    loadGroupDetails(currentGroup.groupId);
+                    selectedContacts.clear();
+                } else {
+                    alert('Failed to add participants: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error adding participants:', error);
+            }
+        }
+
+        // Helper functions
+        function getInitials(name) {
+            if (!name) return '?';
+            const parts = name.split(' ');
+            if (parts.length >= 2) {
+                return parts[0][0] + parts[1][0];
+            }
+            return name.substring(0, 2).toUpperCase();
+        }
+
+        // Close modals on click outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('show');
+                setTimeout(() => {
+                    event.target.style.display = 'none';
+                }, 300);
+            }
+        }
+    </script>
+</body>
+</html>

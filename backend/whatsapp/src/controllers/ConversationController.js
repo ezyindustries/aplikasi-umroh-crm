@@ -11,6 +11,7 @@ class ConversationController {
         priority,
         assignedTo,
         hasUnread,
+        isGroup,
         limit = 20, 
         offset = 0 
       } = req.query;
@@ -29,13 +30,19 @@ class ConversationController {
         whereClause.unreadCount = { [Op.gt]: 0 };
       }
 
+      if (isGroup === 'true') {
+        whereClause.isGroup = true;
+      } else if (isGroup === 'false') {
+        whereClause.isGroup = false;
+      }
+
       const conversations = await Conversation.findAll({
         where: whereClause,
         include: [
           {
             model: Contact,
             as: 'contact',
-            attributes: ['id', 'name', 'phoneNumber', 'profilePicture', 'lastSeen']
+            attributes: ['id', 'name', 'phoneNumber', 'profilePicture', 'lastSeen', 'isGroup', 'groupId', 'groupDescription', 'participantCount']
           },
           {
             model: Message,

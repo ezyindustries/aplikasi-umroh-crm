@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Media Messages</title>
+    <style>
+        body {
+            background: #0f172a;
+            color: #e2e8f0;
+            font-family: monospace;
+            padding: 20px;
+        }
+        .message {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .media {
+            background: rgba(59, 130, 246, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 8px;
+        }
+        img {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 8px;
+            margin-top: 8px;
+        }
+        .error {
+            color: #ef4444;
+        }
+        .success {
+            color: #10b981;
+        }
+    </style>
+</head>
+<body>
+    <h1>Debug Media Messages</h1>
+    <div id="status">Loading...</div>
+    <div id="messages"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:3001/api';
+        
+        async function debugMedia() {
+            const statusEl = document.getElementById('status');
+            const messagesEl = document.getElementById('messages');
+            
+            try {
+                // Get conversations
+                statusEl.textContent = 'Fetching conversations...';
+                const convResponse = await fetch(`${API_BASE}/conversations`);
+                const convData = await convResponse.json();
+                
+                if (!convData.data || convData.data.length === 0) {
+                    statusEl.textContent = 'No conversations found';
+                    return;
+                }
+                
+                const convId = convData.data[0].id;
+                statusEl.textContent = `Fetching messages for conversation ${convId}...`;
+                
+                // Get messages
+                const msgResponse = await fetch(`${API_BASE}/messages/${convId}`);
+                const msgData = await msgResponse.json();
+                
+                const mediaMessages = msgData.data.filter(m => m.messageType !== 'text');
+                statusEl.innerHTML = `<span class="success">Found ${mediaMessages.length} media messages</span>`;
+                
+                // Display each media message
+                for (const msg of mediaMessages) {
+                    const msgDiv = document.createElement('div');
+                    msgDiv.className = 'message';
+                    
+                    msgDiv.innerHTML = `
+                        <div><strong>Message ID:</strong> ${msg.id}</div>
+                        <div><strong>Type:</strong> ${msg.messageType}</div>
+                        <div><strong>Direction:</strong> ${msg.direction}</div>
+                        <div><strong>Media ID:</strong> ${msg.mediaId || 'null'}</div>
+                        <div><strong>Media URL:</strong> ${msg.mediaUrl || 'null'}</div>
+                        <div><strong>Thumbnail URL:</strong> ${msg.thumbnailUrl || 'null'}</div>
+                        <div><strong>File Name:</strong> ${msg.fileName || 'null'}</div>
+                        <div class="media" id="media-${msg.id}">Testing media download...</div>
+                    `;
+                    
+                    messagesEl.appendChild(msgDiv);
+                    
+                    // Test media download
+                    if (msg.mediaId) {
+                        const mediaDiv = document.getElementById(`media-${msg.id}`);
+                        const mediaUrl = `${API_BASE}/messages/media/${msg.mediaId}`;
+                        
+                        try {
+                            const mediaResponse = await fetch(mediaUrl);
+                            
+                            if (mediaResponse.ok) {
+                                const contentType = mediaResponse.headers.get('content-type');
+                                mediaDiv.innerHTML = `
+                                    <div class="success">✓ Media accessible</div>
+                                    <div>Content-Type: ${contentType}</div>
+                                    <div>URL: ${mediaUrl}</div>
+                                `;
+                                
+                                if (contentType && contentType.startsWith('image/')) {
+                                    const img = document.createElement('img');
+                                    img.src = mediaUrl;
+                                    img.onerror = () => {
+                                        mediaDiv.innerHTML += '<div class="error">Image failed to load</div>';
+                                    };
+                                    img.onload = () => {
+                                        mediaDiv.innerHTML += '<div class="success">Image loaded successfully</div>';
+                                    };
+                                    mediaDiv.appendChild(img);
+                                }
+                            } else {
+                                mediaDiv.innerHTML = `<div class="error">✗ Media download failed: ${mediaResponse.status} ${mediaResponse.statusText}</div>`;
+                                const errorText = await mediaResponse.text();
+                                mediaDiv.innerHTML += `<div class="error">Error: ${errorText}</div>`;
+                            }
+                        } catch (error) {
+                            mediaDiv.innerHTML = `<div class="error">✗ Network error: ${error.message}</div>`;
+                        }
+                    } else {
+                        document.getElementById(`media-${msg.id}`).innerHTML = '<div class="error">No media ID</div>';
+                    }
+                }
+                
+            } catch (error) {
+                statusEl.innerHTML = `<span class="error">Error: ${error.message}</span>`;
+                console.error(error);
+            }
+        }
+        
+        // Run debug
+        debugMedia();
+    </script>
+</body>
+</html>

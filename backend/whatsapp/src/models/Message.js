@@ -140,6 +140,67 @@ const Message = sequelize.define('Message', {
     type: DataTypes.ENUM('incoming', 'outgoing'),
     allowNull: true,
     comment: 'Message direction type'
+  },
+  // Additional media fields
+  fileName: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'file_name'
+  },
+  thumbnailUrl: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    field: 'thumbnail_url'
+  },
+  mediaCaption: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    field: 'media_caption'
+  },
+  mediaDuration: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    field: 'media_duration',
+    comment: 'Duration in seconds for audio/video'
+  },
+  // Location fields
+  locationLatitude: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+    field: 'location_latitude'
+  },
+  locationLongitude: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+    field: 'location_longitude'
+  },
+  locationName: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'location_name'
+  },
+  locationAddress: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    field: 'location_address'
+  },
+  // Contact fields
+  contactVcard: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    field: 'contact_vcard'
+  },
+  // Group fields
+  isGroupMessage: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    field: 'is_group_message'
+  },
+  groupParticipant: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'group_participant',
+    comment: 'Phone number of group participant who sent the message'
   }
 }, {
   tableName: 'messages',

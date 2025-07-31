@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Media Display</title>
+</head>
+<body>
+    <h1>Testing Media Display</h1>
+    <p>Instructions:</p>
+    <ol>
+        <li>Open the conversations page: <a href="http://localhost:8080/conversations-beautiful.html" target="_blank">http://localhost:8080/conversations-beautiful.html</a></li>
+        <li>Send an image from WhatsApp to the connected number</li>
+        <li>Check if the image appears in the chat</li>
+        <li>Open browser console (F12) to see any errors</li>
+    </ol>
+    
+    <h2>Expected Results:</h2>
+    <ul>
+        <li>✅ Message should show with type "image"</li>
+        <li>✅ Media URL should be generated</li>
+        <li>✅ Image should display in the chat</li>
+    </ul>
+    
+    <h2>Troubleshooting:</h2>
+    <ul>
+        <li>Check backend console for "Media message with base64 data detected"</li>
+        <li>Check if media file is saved in backend/whatsapp/media/</li>
+        <li>Check network tab for /api/messages/media/ requests</li>
+    </ul>
+</body>
+</html>
