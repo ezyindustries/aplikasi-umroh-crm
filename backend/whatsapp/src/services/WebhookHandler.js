@@ -257,28 +257,41 @@ class WebhookHandler {
     });
 
     try {
+      // Extract numeric ID from group.id if it includes @g.us
+      const groupIdFull = payload.group.id;
+      const numericGroupId = groupIdFull.replace('@g.us', '');
+      
       // Create or update group contact
-      const [groupContact] = await Contact.findOrCreate({
-        where: { phoneNumber: payload.group.id },
+      const [groupContact, created] = await Contact.findOrCreate({
+        where: { phoneNumber: numericGroupId },
         defaults: {
           name: payload.group.subject || 'Unknown Group',
           isGroup: true,
-          groupId: payload.group.id,
-          groupName: payload.group.subject,
-          groupDescription: payload.group.description,
-          participantCount: payload.group.participants?.length || 0,
+          groupId: numericGroupId,
           status: 'active',
-          source: 'whatsapp'
+          source: 'whatsapp',
+          metadata: {
+            groupName: payload.group.subject,
+            waGroupId: groupIdFull,
+            groupDescription: payload.group.description,
+            participantCount: payload.group.participants?.length || 0,
+            createdAt: new Date()
+          }
         }
       });
 
       // Update if exists
-      if (groupContact) {
+      if (!created && groupContact) {
         await groupContact.update({
           name: payload.group.subject || groupContact.name,
-          groupName: payload.group.subject,
-          groupDescription: payload.group.description,
-          participantCount: payload.group.participants?.length || 0
+          metadata: {
+            ...groupContact.metadata,
+            groupName: payload.group.subject,
+            waGroupId: groupIdFull,
+            groupDescription: payload.group.description,
+            participantCount: payload.group.participants?.length || 0,
+            lastUpdated: new Date()
+          }
         });
       }
 

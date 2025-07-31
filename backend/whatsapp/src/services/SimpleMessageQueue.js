@@ -484,12 +484,17 @@ class SimpleMessageQueueService {
         groupContact = await Contact.create({
           phoneNumber: groupIdClean, // Use group ID as phone number
           name: groupName,
-          groupName: groupName,
-          groupDescription: whatsappMessage.chat?.description || '',
           isGroup: true,
-          groupId: groupId,
-          participantCount: whatsappMessage.chat?.participantCount || 0,
-          source: 'whatsapp'
+          groupId: groupIdClean,
+          source: 'whatsapp',
+          metadata: {
+            groupName: groupName,
+            waGroupId: groupId,
+            groupDescription: whatsappMessage.chat?.description || '',
+            participantCount: whatsappMessage.chat?.participantCount || 0,
+            createdFrom: 'message-handler',
+            createdAt: new Date()
+          }
         });
       } else {
         // Update group info if we have new data from webhook
@@ -500,13 +505,18 @@ class SimpleMessageQueueService {
         
         if (newGroupName && (groupContact.name === groupIdClean || 
             groupContact.name.startsWith('Group ') || 
-            !groupContact.groupName)) {
+            !groupContact.metadata?.groupName)) {
           logger.info('Updating group name from webhook data:', newGroupName);
           await groupContact.update({
             name: newGroupName,
-            groupName: newGroupName,
-            groupDescription: whatsappMessage.chat?.description || groupContact.groupDescription,
-            participantCount: whatsappMessage.chat?.participantCount || groupContact.participantCount
+            metadata: {
+              ...groupContact.metadata,
+              groupName: newGroupName,
+              waGroupId: groupId,
+              groupDescription: whatsappMessage.chat?.description || groupContact.metadata?.groupDescription,
+              participantCount: whatsappMessage.chat?.participantCount || groupContact.metadata?.participantCount,
+              lastUpdated: new Date()
+            }
           });
         }
       }
