@@ -326,45 +326,223 @@
 
         .quick-stats {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            margin-bottom: 32px;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
             margin-top: 8px;
         }
 
         .quick-stat {
-            background: linear-gradient(145deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.6));
-            backdrop-filter: blur(10px);
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.75));
+            backdrop-filter: blur(20px);
             border: 1px solid rgba(71, 85, 105, 0.3);
             border-radius: 16px;
-            padding: 20px;
-            text-align: center;
-            transition: all 0.3s ease;
+            padding: 16px;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             min-height: 100px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 8px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                0 10px 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .quick-stat::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, var(--stat-color) 0%, transparent 70%);
+            opacity: 0.1;
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        .quick-stat::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, transparent 0%, var(--stat-color) 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
         }
 
         .quick-stat:hover {
-            background: rgba(30, 41, 59, 0.8);
-            border-color: rgba(59, 130, 246, 0.4);
-            transform: translateY(-2px);
+            transform: translateY(-3px) scale(1.02);
+            border-color: var(--stat-color);
+            box-shadow: 
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                0 15px 30px rgba(0, 0, 0, 0.3),
+                0 0 20px var(--stat-glow);
+        }
+
+        .quick-stat:hover::after {
+            opacity: 0.05;
+        }
+
+        /* Color variations for each stat */
+        .quick-stat:nth-child(1) {
+            --stat-color: #3b82f6;
+            --stat-color-dark: #2563eb;
+            --stat-glow: rgba(59, 130, 246, 0.3);
+        }
+
+        .quick-stat:nth-child(2) {
+            --stat-color: #10b981;
+            --stat-color-dark: #059669;
+            --stat-glow: rgba(16, 185, 129, 0.3);
+        }
+
+        .quick-stat:nth-child(3) {
+            --stat-color: #8b5cf6;
+            --stat-color-dark: #7c3aed;
+            --stat-glow: rgba(139, 92, 246, 0.3);
+        }
+
+        .quick-stat:nth-child(4) {
+            --stat-color: #f59e0b;
+            --stat-color-dark: #d97706;
+            --stat-glow: rgba(245, 158, 11, 0.3);
+        }
+
+        .quick-stat:nth-child(5) {
+            --stat-color: #ec4899;
+            --stat-color-dark: #db2777;
+            --stat-glow: rgba(236, 72, 153, 0.3);
+        }
+
+        .quick-stat:nth-child(6) {
+            --stat-color: #06b6d4;
+            --stat-color-dark: #0891b2;
+            --stat-glow: rgba(6, 182, 212, 0.3);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(180deg); }
+        }
+
+        .quick-stat-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--stat-color), var(--stat-color-dark));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            position: relative;
+            z-index: 1;
+            box-shadow: 
+                0 2px 10px var(--stat-glow),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            animation: iconFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* Floating particles */
+        .particles-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: radial-gradient(circle, var(--particle-color) 0%, transparent 70%);
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: particleFloat var(--float-duration) linear infinite;
+        }
+
+        @keyframes particleFloat {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.6;
+            }
+            90% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-10vh) translateX(var(--float-x));
+                opacity: 0;
+            }
+        }
+
+        .quick-stat-icon .material-icons {
+            font-size: 20px;
+            color: white;
         }
 
         .quick-stat-value {
             font-size: 24px;
             font-weight: 700;
-            color: #3b82f6;
+            background: linear-gradient(135deg, var(--stat-color), var(--stat-color-dark));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
             margin-bottom: 4px;
+            line-height: 1;
+            position: relative;
+            z-index: 1;
         }
 
         .quick-stat-label {
+            font-size: 11px;
+            color: #cbd5e1;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            position: relative;
+            z-index: 1;
+            text-transform: none;
+        }
+
+        .quick-stat-trend {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            margin-top: 8px;
+            font-size: 10px;
+            padding: 4px 8px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 12px;
+            width: fit-content;
+            margin: 8px auto 0;
+            position: relative;
+            z-index: 1;
+            color: #10b981;
+        }
+
+        .quick-stat-trend.negative {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .quick-stat-trend .material-icons {
             font-size: 12px;
-            color: #94a3b8;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         .action-buttons {
@@ -725,6 +903,17 @@
         }
 
         /* Responsive Design */
+        /* Large screens */
+        @media (min-width: 1400px) {
+            .quick-stats {
+                gap: 20px;
+            }
+            
+            .quick-stat {
+                padding: 20px;
+            }
+        }
+
         @media (max-width: 1200px) {
             .dashboard-grid {
                 grid-template-columns: repeat(6, 1fr);
@@ -743,7 +932,8 @@
             }
 
             .quick-stats {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: repeat(3, 1fr);
+                gap: 12px;
             }
         }
 
@@ -764,7 +954,21 @@
             }
 
             .quick-stats {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .quick-stat {
+                padding: 12px;
+                min-height: 90px;
+            }
+
+            .quick-stat-value {
+                font-size: 20px;
+            }
+
+            .quick-stat-label {
+                font-size: 10px;
             }
 
             .chart-stats {
@@ -774,6 +978,9 @@
     </style>
 </head>
 <body>
+    <!-- Floating Particles -->
+    <div class="particles-container" id="particles"></div>
+    
     <div class="app-container">
         <!-- Header -->
         <div class="header">
@@ -818,20 +1025,70 @@
             <!-- Quick Stats -->
             <div class="quick-stats">
                 <div class="quick-stat">
+                    <div class="quick-stat-icon">
+                        <span class="material-icons">chat</span>
+                    </div>
                     <div class="quick-stat-value">2,847</div>
                     <div class="quick-stat-label">Active Chats</div>
+                    <div class="quick-stat-trend positive">
+                        <span class="material-icons">trending_up</span>
+                        +12.5%
+                    </div>
                 </div>
                 <div class="quick-stat">
+                    <div class="quick-stat-icon">
+                        <span class="material-icons">group</span>
+                    </div>
                     <div class="quick-stat-value">15.2K</div>
                     <div class="quick-stat-label">Total Leads</div>
+                    <div class="quick-stat-trend positive">
+                        <span class="material-icons">trending_up</span>
+                        +8.3%
+                    </div>
                 </div>
                 <div class="quick-stat">
+                    <div class="quick-stat-icon">
+                        <span class="material-icons">smart_toy</span>
+                    </div>
                     <div class="quick-stat-value">98.7%</div>
-                    <div class="quick-stat-label">AI Response</div>
+                    <div class="quick-stat-label">AI Response Rate</div>
+                    <div class="quick-stat-trend positive">
+                        <span class="material-icons">trending_up</span>
+                        +2.1%
+                    </div>
                 </div>
                 <div class="quick-stat">
+                    <div class="quick-stat-icon">
+                        <span class="material-icons">trending_up</span>
+                    </div>
                     <div class="quick-stat-value">342</div>
                     <div class="quick-stat-label">Conversions</div>
+                    <div class="quick-stat-trend positive">
+                        <span class="material-icons">trending_up</span>
+                        +15.7%
+                    </div>
+                </div>
+                <div class="quick-stat">
+                    <div class="quick-stat-icon">
+                        <span class="material-icons">today</span>
+                    </div>
+                    <div class="quick-stat-value">127</div>
+                    <div class="quick-stat-label">Today's Leads</div>
+                    <div class="quick-stat-trend positive">
+                        <span class="material-icons">trending_up</span>
+                        +22.4%
+                    </div>
+                </div>
+                <div class="quick-stat">
+                    <div class="quick-stat-icon">
+                        <span class="material-icons">event</span>
+                    </div>
+                    <div class="quick-stat-value">104</div>
+                    <div class="quick-stat-label">Yesterday's Leads</div>
+                    <div class="quick-stat-trend negative">
+                        <span class="material-icons">trending_down</span>
+                        -5.2%
+                    </div>
                 </div>
             </div>
 
@@ -1039,6 +1296,38 @@
     </div>
 
     <script>
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const colors = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ec4899', '#06b6d4'];
+            const particleCount = 10;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // Random properties
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const size = Math.random() * 6 + 2;
+                const duration = Math.random() * 20 + 20;
+                const delay = Math.random() * duration;
+                const xMovement = Math.random() * 100 - 50;
+                
+                particle.style.setProperty('--particle-color', color);
+                particle.style.setProperty('--float-duration', `${duration}s`);
+                particle.style.setProperty('--float-x', `${xMovement}px`);
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.animationDelay = `${delay}s`;
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Initialize particles
+        createParticles();
+
         // API Base URL
         const API_BASE_URL = 'http://localhost:3001/api';
 

@@ -1,4 +1,5 @@
 const { Message, ConversationSession, Contact, Conversation } = require('../models');
+const { Op } = require('sequelize');
 const whatsappService = require('./RealWAHAService');
 const logger = require('../utils/logger');
 const mediaHandler = require('./MediaHandler');
@@ -185,8 +186,17 @@ class SimpleMessageQueueService {
         }
         // Set groupParticipant for incoming messages
         if (!whatsappMessage.groupParticipant && !whatsappMessage.fromMe && whatsappMessage.from?.includes('@g.us')) {
-          // Extract participant from author or from field
-          whatsappMessage.groupParticipant = whatsappMessage.author || whatsappMessage.participant;
+          // Extract participant from author or participant field
+          // WAHA usually sends the sender's phone in 'author' field for group messages
+          whatsappMessage.groupParticipant = whatsappMessage.author || whatsappMessage.participant || whatsappMessage._data?.author;
+          
+          // Log for debugging
+          logger.info('Group message participant extraction:', {
+            author: whatsappMessage.author,
+            participant: whatsappMessage.participant,
+            _data_author: whatsappMessage._data?.author,
+            final: whatsappMessage.groupParticipant
+          });
         }
         whatsappMessage.isGroupMessage = true;
         return await this.handleGroupMessage(webhookData);
@@ -465,9 +475,15 @@ class SimpleMessageQueueService {
       const groupId = whatsappMessage.groupId;
       const groupIdClean = whatsappService.parsePhoneNumber(groupId);
 
-      // Find or create group contact
+      // Find or create group contact - check both groupId and phoneNumber to avoid duplicates
       let groupContact = await Contact.findOne({
-        where: { groupId: groupId }
+        where: {
+          [Op.or]: [
+            { groupId: groupId },
+            { groupId: groupIdClean },
+            { phoneNumber: groupIdClean }
+          ]
+        }
       });
 
       if (!groupContact) {
@@ -481,21 +497,42 @@ class SimpleMessageQueueService {
         
         logger.info('Creating group contact with name:', groupName);
 
-        groupContact = await Contact.create({
-          phoneNumber: groupIdClean, // Use group ID as phone number
-          name: groupName,
-          isGroup: true,
-          groupId: groupIdClean,
-          source: 'whatsapp',
-          metadata: {
-            groupName: groupName,
-            waGroupId: groupId,
-            groupDescription: whatsappMessage.chat?.description || '',
-            participantCount: whatsappMessage.chat?.participantCount || 0,
-            createdFrom: 'message-handler',
-            createdAt: new Date()
+        try {
+          groupContact = await Contact.create({
+            phoneNumber: groupIdClean, // Use group ID as phone number
+            name: groupName,
+            isGroup: true,
+            groupId: groupIdClean,
+            source: 'whatsapp',
+            metadata: {
+              groupName: groupName,
+              waGroupId: groupId,
+              groupDescription: whatsappMessage.chat?.description || '',
+              participantCount: whatsappMessage.chat?.participantCount || 0,
+              createdFrom: 'message-handler',
+              createdAt: new Date()
+            }
+          });
+        } catch (error) {
+          if (error.name === 'SequelizeUniqueConstraintError') {
+            // If we hit a unique constraint, try to find the existing contact
+            logger.warn('Group contact already exists, finding it:', groupIdClean);
+            groupContact = await Contact.findOne({
+              where: { phoneNumber: groupIdClean }
+            });
+            
+            // Update the found contact to ensure it has group properties
+            if (groupContact && !groupContact.isGroup) {
+              await groupContact.update({
+                isGroup: true,
+                groupId: groupIdClean,
+                name: groupName
+              });
+            }
+          } else {
+            throw error;
           }
-        });
+        }
       } else {
         // Update group info if we have new data from webhook
         const newGroupName = whatsappMessage.chatName || 
@@ -614,7 +651,7 @@ class SimpleMessageQueueService {
         // Group fields
         isGroupMessage: true,
         groupParticipant: whatsappMessage.groupParticipant || whatsappMessage.author || whatsappMessage.participant || 
-                         (whatsappMessage.fromMe ? 'You' : whatsappMessage.from)
+                         (whatsappMessage.fromMe ? 'You' : null)
       });
 
       // Download media if present for group messages

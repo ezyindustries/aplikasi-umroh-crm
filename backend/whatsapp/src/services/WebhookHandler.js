@@ -107,8 +107,25 @@ class WebhookHandler {
       type: payload.type,
       hasMedia: !!payload.media,
       mediaId: payload.media?.id,
-      mediaType: payload.media?.mimetype
+      mediaType: payload.media?.mimetype,
+      author: payload.author,
+      participant: payload.participant,
+      chatName: payload.chatName,
+      _data_author: payload._data?.author,
+      sender: payload.sender
     });
+    
+    // Special logging for group messages
+    if (isGroupMessage && !isFromMe) {
+      logger.webhook.info('GROUP MESSAGE SENDER DETECTION:', {
+        author: payload.author,
+        participant: payload.participant,
+        _data_author: payload._data?.author,
+        sender_id: payload.sender?.id,
+        from: payload.from,
+        finalParticipant: payload.author || payload.participant || payload._data?.author || null
+      });
+    }
     
     // Log full payload for debugging media issues
     if (payload.media || payload.type === 'image' || payload.type === 'video') {
@@ -148,7 +165,7 @@ class WebhookHandler {
         // Group message fields
         isGroupMessage: isGroupMessage,
         groupId: groupId,
-        groupParticipant: isGroupMessage && !isFromMe ? payload.author || payload.from : null,
+        groupParticipant: isGroupMessage && !isFromMe ? (payload.author || payload.participant || payload._data?.author || null) : null,
         // Media fields
         media: payload.media,
         fileName: payload.media?.filename || payload.filename,

@@ -105,7 +105,9 @@ class MessageController {
           'fileName',
           'sentAt',
           'deliveredAt',
-          'readAt'
+          'readAt',
+          'isGroupMessage',
+          'groupParticipant'
         ]
       });
       
