@@ -1,4 +1,4 @@
-const messageQueue = require('./MessageQueue');
+const messageQueue = require('./SimpleMessageQueue');
 const logger = require('../utils/logger');
 const crypto = require('crypto');
 
@@ -20,9 +20,12 @@ class WebhookHandler {
   // Main webhook handler
   async handleWebhook(payload, headers = {}) {
     try {
+      logger.webhook.info('=== WebhookHandler.handleWebhook called ===');
       logger.webhook.info('Received webhook:', {
         event: payload.event,
-        sessionId: payload.sessionId
+        sessionId: payload.sessionId,
+        from: payload.payload?.from,
+        body: payload.payload?.body
       });
 
       // Verify signature if provided
@@ -84,8 +87,16 @@ class WebhookHandler {
 
   // Handle incoming message
   async handleMessage(event) {
+    logger.webhook.info('=== WebhookHandler.handleMessage called ===');
+    
     // WAHA sends the full event structure
     const { payload, session } = event;
+    
+    logger.webhook.info('Message details:', {
+      from: payload.from,
+      body: payload.body,
+      session: session
+    });
     
     // Process all messages including fromMe to track outgoing messages from phone
     // This allows messages sent from phone to appear in the CRM
@@ -188,8 +199,10 @@ class WebhookHandler {
       }
     };
 
-    // Queue message for processing
-    await messageQueue.processIncomingMessage(messageData);
+    // Process message directly (not just queue it)
+    logger.webhook.info('Processing message through message queue...');
+    await messageQueue.handleIncomingMessage(messageData);
+    logger.webhook.info('Message processed successfully');
   }
 
   // Handle message acknowledgment (delivery/read receipts)

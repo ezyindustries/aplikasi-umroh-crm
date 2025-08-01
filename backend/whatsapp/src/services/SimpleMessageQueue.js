@@ -3,6 +3,7 @@ const { Op } = require('sequelize');
 const whatsappService = require('./RealWAHAService');
 const logger = require('../utils/logger');
 const mediaHandler = require('./MediaHandler');
+const automationEngine = require('./AutomationEngine');
 
 class SimpleMessageQueueService {
   constructor() {
@@ -146,6 +147,15 @@ class SimpleMessageQueueService {
   // Handle incoming message
   async handleIncomingMessage(webhookData) {
     try {
+      logger.info('=== SimpleMessageQueue: handleIncomingMessage ===');
+      logger.info('Incoming message data:', {
+        sessionId: webhookData.sessionId,
+        messageId: webhookData.message?.id,
+        body: webhookData.message?.body,
+        type: webhookData.message?.type,
+        from: webhookData.message?.from
+      });
+      
       const { sessionId, message: whatsappMessage } = webhookData;
       
       // Fix message type based on media presence
@@ -369,6 +379,15 @@ class SimpleMessageQueueService {
 
       // Update contact last seen
       await contact.update({ lastSeen: new Date() });
+
+      // Process automation rules for incoming messages
+      if (!whatsappMessage.fromMe) {
+        try {
+          await automationEngine.processMessage(message, contact, conversation);
+        } catch (error) {
+          logger.error('Error processing automation for message:', error);
+        }
+      }
 
       // Emit to frontend
       if (global.io) {
@@ -706,6 +725,15 @@ class SimpleMessageQueueService {
         lastMessagePreview: lastMessagePreview,
         unreadCount: conversation.unreadCount + 1
       });
+
+      // Process automation rules for incoming group messages
+      if (!whatsappMessage.fromMe && participantContact) {
+        try {
+          await automationEngine.processMessage(message, participantContact, conversation);
+        } catch (error) {
+          logger.error('Error processing automation for group message:', error);
+        }
+      }
 
       // Emit to frontend
       if (global.io) {

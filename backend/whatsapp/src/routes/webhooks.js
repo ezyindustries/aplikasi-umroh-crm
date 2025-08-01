@@ -76,10 +76,19 @@ router.post('/waha', async (req, res) => {
       });
     }
     
-    // Process the event asynchronously
-    setImmediate(() => {
-      wahaService.handleWebhook(event).catch(error => {
+    // Process webhook directly (not async) to ensure it completes
+    try {
+      logger.info('Processing webhook event through WebhookHandler...');
+      
+      // Use WebhookHandler directly for clearer flow
+      const webhookHandler = require('../services/WebhookHandler');
+      
+      // Process in background but don't wait
+      webhookHandler.handleWebhook(event).then(() => {
+        logger.info('Webhook event processed successfully');
+      }).catch(error => {
         logger.error('Error processing webhook:', error);
+        console.error('Full error stack:', error.stack);
         if (global.io) {
           global.io.emit('log:webhook', {
             message: 'Error processing webhook',
@@ -88,7 +97,10 @@ router.post('/waha', async (req, res) => {
           });
         }
       });
-    });
+      
+    } catch (error) {
+      logger.error('Error initiating webhook processing:', error);
+    }
     
     // Respond immediately
     res.status(200).json({ success: true });

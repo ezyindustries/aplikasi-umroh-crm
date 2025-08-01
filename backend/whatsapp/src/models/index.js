@@ -7,6 +7,14 @@ const ConversationSession = require('./ConversationSession');
 const MessageTemplate = require('./MessageTemplate');
 const GroupParticipant = require('./GroupParticipant');
 const MediaFile = require('./MediaFile');
+const AutomationRule = require('./AutomationRule');
+const AutomationLog = require('./AutomationLog');
+const AutomationContactLimit = require('./AutomationContactLimit');
+const CustomerPhase = require('./CustomerPhase');
+const AutomationTemplate = require('./AutomationTemplate');
+const AutomationAnalytics = require('./AutomationAnalytics');
+const AutomationMedia = require('./AutomationMedia');
+const AutomationSchedule = require('./AutomationSchedule');
 
 // Define associations
 Contact.hasMany(Conversation, { foreignKey: 'contact_id', as: 'conversations' });
@@ -25,6 +33,39 @@ GroupParticipant.belongsTo(Contact, { foreignKey: 'contact_id', as: 'contact' })
 // Media associations
 Message.hasMany(MediaFile, { foreignKey: 'message_id', as: 'mediaFiles' });
 MediaFile.belongsTo(Message, { foreignKey: 'message_id', as: 'message' });
+
+// Automation associations
+AutomationRule.hasMany(AutomationLog, { foreignKey: 'rule_id', as: 'logs' });
+AutomationLog.belongsTo(AutomationRule, { foreignKey: 'rule_id', as: 'rule' });
+
+AutomationLog.belongsTo(Contact, { foreignKey: 'contact_id', as: 'contact' });
+AutomationLog.belongsTo(Conversation, { foreignKey: 'conversation_id', as: 'conversation' });
+AutomationLog.belongsTo(Message, { foreignKey: 'message_id', as: 'triggerMessage' });
+
+AutomationRule.hasMany(AutomationContactLimit, { foreignKey: 'rule_id', as: 'contactLimits' });
+AutomationContactLimit.belongsTo(AutomationRule, { foreignKey: 'rule_id', as: 'rule' });
+AutomationContactLimit.belongsTo(Contact, { foreignKey: 'contact_id', as: 'contact' });
+
+// Customer Phase associations
+Contact.hasOne(CustomerPhase, { foreignKey: 'contact_id', as: 'phase' });
+CustomerPhase.belongsTo(Contact, { foreignKey: 'contact_id', as: 'contact' });
+CustomerPhase.belongsTo(Conversation, { foreignKey: 'conversation_id', as: 'conversation' });
+
+// Automation Template associations
+AutomationRule.belongsTo(AutomationTemplate, { foreignKey: 'template_id', as: 'template' });
+AutomationTemplate.hasMany(AutomationRule, { foreignKey: 'template_id', as: 'rules' });
+
+// Automation Analytics associations
+AutomationRule.hasMany(AutomationAnalytics, { foreignKey: 'rule_id', as: 'analytics' });
+AutomationAnalytics.belongsTo(AutomationRule, { foreignKey: 'rule_id', as: 'rule' });
+
+// Automation Media associations
+AutomationRule.hasMany(AutomationMedia, { foreignKey: 'rule_id', as: 'media' });
+AutomationMedia.belongsTo(AutomationRule, { foreignKey: 'rule_id', as: 'rule' });
+
+// Automation Schedule associations
+AutomationRule.hasOne(AutomationSchedule, { foreignKey: 'rule_id', as: 'automationSchedule' });
+AutomationSchedule.belongsTo(AutomationRule, { foreignKey: 'rule_id', as: 'rule' });
 
 // Sync models with database
 const initDatabase = async () => {
@@ -52,5 +93,13 @@ module.exports = {
   MessageTemplate,
   GroupParticipant,
   MediaFile,
+  AutomationRule,
+  AutomationLog,
+  AutomationContactLimit,
+  CustomerPhase,
+  AutomationTemplate,
+  AutomationAnalytics,
+  AutomationMedia,
+  AutomationSchedule,
   initDatabase
 };

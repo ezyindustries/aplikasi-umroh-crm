@@ -1001,6 +1001,16 @@ class WAHAService extends EventEmitter {
     const message = payload;
     
     try {
+      logger.info('=== HANDLING INCOMING MESSAGE IN RealWAHAService ===');
+      logger.info('Message content:', message.body);
+      
+      // Pass to webhook handler for proper processing
+      const webhookHandler = require('./WebhookHandler');
+      await webhookHandler.handleMessage(event);
+      
+      return;
+      
+      // Old code below (kept for reference but not executed)
       // Get or create contact
       const phoneNumber = message.from.split('@')[0];
       const [contact] = await Contact.upsert({

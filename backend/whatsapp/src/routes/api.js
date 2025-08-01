@@ -3,11 +3,12 @@ const router = express.Router();
 
 // Controllers
 const sessionController = require('../controllers/SessionController');
-const messageController = require('../controllers/MessageController');
+const messageController = require('../controllers/messageController');
 const contactController = require('../controllers/ContactController');
 const conversationController = require('../controllers/ConversationController');
 const dashboardController = require('../controllers/DashboardController');
 const groupController = require('../controllers/GroupController');
+const automationController = require('../controllers/automationController');
 
 // Webhook handler
 const webhookHandler = require('../services/WebhookHandler');
@@ -149,6 +150,21 @@ router.post('/groups/:groupId/admin/demote', groupController.demoteParticipants)
 router.get('/groups/:groupId/messages', groupController.getGroupMessages);
 router.get('/groups/:groupId/invite-link', groupController.getInviteLink);
 router.post('/groups/:groupId/invite-link/revoke', groupController.revokeInviteLink);
+
+// Automation routes
+router.get('/automation/rules', automationController.getRules);
+router.get('/automation/rules/:ruleId', automationController.getRule);
+router.post('/automation/rules', automationController.createRule);
+router.put('/automation/rules/:ruleId', automationController.updateRule);
+router.delete('/automation/rules/:ruleId', automationController.deleteRule);
+router.post('/automation/rules/:ruleId/toggle', automationController.toggleRule);
+router.get('/automation/rules/:ruleId/analytics', automationController.getRuleAnalytics);
+router.post('/automation/rules/:ruleId/test', automationController.testRule);
+router.get('/automation/logs', automationController.getLogs);
+router.get('/automation/dashboard/stats', automationController.getDashboardStats);
+router.get('/automation/dashboard/pipeline-stats', automationController.getPipelineStats);
+router.post('/automation/test-keyword', automationController.testKeywordMatch);
+router.post('/automation/simulate-message', automationController.simulateIncomingMessage);
 
 // Test endpoint
 router.get('/dashboard/test', async (req, res) => {
