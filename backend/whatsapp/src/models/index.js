@@ -15,6 +15,10 @@ const AutomationTemplate = require('./AutomationTemplate');
 const AutomationAnalytics = require('./AutomationAnalytics');
 const AutomationMedia = require('./AutomationMedia');
 const AutomationSchedule = require('./AutomationSchedule');
+const WorkflowTemplate = require('./WorkflowTemplate');
+const WorkflowStep = require('./WorkflowStep');
+const WorkflowSession = require('./WorkflowSession');
+const WorkflowVariable = require('./WorkflowVariable');
 
 // Define associations
 Contact.hasMany(Conversation, { foreignKey: 'contact_id', as: 'conversations' });
@@ -67,6 +71,19 @@ AutomationMedia.belongsTo(AutomationRule, { foreignKey: 'rule_id', as: 'rule' })
 AutomationRule.hasOne(AutomationSchedule, { foreignKey: 'rule_id', as: 'automationSchedule' });
 AutomationSchedule.belongsTo(AutomationRule, { foreignKey: 'rule_id', as: 'rule' });
 
+// Workflow associations
+AutomationRule.hasOne(WorkflowTemplate, { foreignKey: 'rule_id', as: 'workflowTemplate' });
+WorkflowTemplate.belongsTo(AutomationRule, { foreignKey: 'rule_id', as: 'rule' });
+
+WorkflowTemplate.hasMany(WorkflowStep, { foreignKey: 'workflow_id', as: 'steps' });
+WorkflowStep.belongsTo(WorkflowTemplate, { foreignKey: 'workflow_id', as: 'workflow' });
+
+WorkflowTemplate.hasMany(WorkflowSession, { foreignKey: 'workflow_id', as: 'sessions' });
+WorkflowSession.belongsTo(WorkflowTemplate, { foreignKey: 'workflow_id', as: 'workflow' });
+
+WorkflowSession.hasMany(WorkflowVariable, { foreignKey: 'session_id', as: 'variables' });
+WorkflowVariable.belongsTo(WorkflowSession, { foreignKey: 'session_id', as: 'session' });
+
 // Sync models with database
 const initDatabase = async () => {
   try {
@@ -101,5 +118,9 @@ module.exports = {
   AutomationAnalytics,
   AutomationMedia,
   AutomationSchedule,
+  WorkflowTemplate,
+  WorkflowStep,
+  WorkflowSession,
+  WorkflowVariable,
   initDatabase
 };

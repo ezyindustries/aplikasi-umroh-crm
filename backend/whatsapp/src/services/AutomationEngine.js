@@ -1,6 +1,8 @@
 const { AutomationRule, AutomationLog, AutomationContactLimit, Contact, Message, Conversation, CustomerPhase } = require('../models');
 const logger = require('../utils/logger');
 const { Op } = require('sequelize');
+const LLMService = require('./LLMService');
+const WorkflowEngine = require('./WorkflowEngine');
 
 class AutomationEngine {
   constructor() {
@@ -304,6 +306,9 @@ class AutomationEngine {
       case 'workflow':
         return await this.checkWorkflowConditions(rule, message, contact, conversation);
         
+      case 'llm_agent':
+        return await this.checkLLMAgentConditions(rule, message, contact, conversation);
+        
       default:
         return { trigger: false, reason: 'Unknown rule type' };
     }
@@ -436,6 +441,55 @@ class AutomationEngine {
   }
   
   /**
+   * Check LLM agent conditions
+   */
+  async checkLLMAgentConditions(rule, message, contact, conversation) {
+    const conditions = rule.triggerConditions || {};
+    const messageText = (message.body || message.content || '').toLowerCase();
+    
+    logger.info(`Checking LLM agent conditions for rule ${rule.name}:`, {
+      ruleId: rule.id,
+      hasKeywords: conditions.keywords?.length > 0,
+      customerPhases: conditions.customerPhases,
+      messageText: messageText.substring(0, 50) + '...'
+    });
+    
+    // Check trigger keywords if specified
+    if (conditions.keywords && conditions.keywords.length > 0) {
+      let keywordMatched = false;
+      for (const keyword of conditions.keywords) {
+        if (messageText.includes(keyword.toLowerCase())) {
+          keywordMatched = true;
+          break;
+        }
+      }
+      
+      if (!keywordMatched) {
+        return { trigger: false, reason: 'No trigger keywords matched' };
+      }
+    }
+    
+    // Check customer phase if specified
+    if (conditions.customerPhases && conditions.customerPhases.length > 0) {
+      const customerPhase = await CustomerPhase.findOne({
+        where: { contactId: contact.id }
+      });
+      
+      if (!customerPhase || !conditions.customerPhases.includes(customerPhase.currentPhase)) {
+        return { trigger: false, reason: 'Customer phase not matched' };
+      }
+    }
+    
+    // Check minimum message length (avoid responding to very short messages)
+    if (messageText.length < 3) {
+      return { trigger: false, reason: 'Message too short' };
+    }
+    
+    // Default: trigger for all messages if no specific conditions
+    return { trigger: true, reason: 'LLM agent conditions met' };
+  }
+  
+  /**
    * Check rate limits for contact
    */
   async checkRateLimits(rule, contact) {
@@ -492,8 +546,15 @@ class AutomationEngine {
         await new Promise(resolve => setTimeout(resolve, rule.responseDelay * 1000));
       }
       
-      // Check if using new sequence type with multiple messages
-      if (rule.responseType === 'sequence' && rule.responseMessages && rule.responseMessages.length > 0) {
+      // Check rule type
+      if (rule.ruleType === 'llm_agent') {
+        logger.info('Executing LLM agent response');
+        responseMessageId = await this.sendLLMResponse(rule, message, contact, conversation);
+      } else if (rule.ruleType === 'workflow') {
+        logger.info('Executing workflow');
+        responseMessageId = await this.executeWorkflow(rule, message, contact, conversation);
+      } else if (rule.responseType === 'sequence' && rule.responseMessages && rule.responseMessages.length > 0) {
+        // Check if using new sequence type with multiple messages
         logger.info(`Sending sequence response with ${rule.responseMessages.length} messages`);
         responseMessageId = await this.sendSequenceResponse(rule, contact, conversation, message);
       } else if (rule.responseMessages && rule.responseMessages.length > 0) {
@@ -807,6 +868,171 @@ class AutomationEngine {
       logger.error('Error sending image response:', error);
       throw error;
     }
+  }
+  
+  /**
+   * Send LLM-generated response
+   */
+  async sendLLMResponse(rule, message, contact, conversation) {
+    try {
+      logger.info('=== SENDING LLM RESPONSE ===');
+      logger.info(`Rule: ${rule.name}, Contact: ${contact.phoneNumber}`);
+      
+      // Build context for LLM
+      const context = await this.buildLLMContext(rule, message, contact, conversation);
+      
+      // Get LLM configuration
+      const llmConfig = rule.llmConfig || {};
+      const systemPrompt = rule.systemPrompt || 'You are a helpful assistant.';
+      
+      // Find relevant knowledge base entries
+      const relevantKnowledge = LLMService.findRelevantKnowledge(
+        message.body || message.content,
+        rule.knowledgeBase || []
+      );
+      
+      if (relevantKnowledge.length > 0) {
+        context.knowledgeBase = relevantKnowledge;
+      }
+      
+      // Generate response from LLM
+      const llmResult = await LLMService.generateResponse(
+        message.body || message.content,
+        context,
+        systemPrompt,
+        llmConfig
+      );
+      
+      if (!llmResult.success) {
+        logger.error('LLM response generation failed:', llmResult.error);
+        // Fallback to a default response
+        const fallbackMessage = 'Maaf, saya sedang mengalami kendala teknis. Silakan coba lagi beberapa saat.';
+        return await this.sendTextResponse(fallbackMessage, contact, conversation);
+      }
+      
+      // Validate response
+      if (!LLMService.validateResponse(llmResult.response)) {
+        logger.warn('LLM response failed validation');
+        const safeMessage = 'Maaf, saya tidak bisa memberikan respons yang sesuai. Silakan hubungi admin kami.';
+        return await this.sendTextResponse(safeMessage, contact, conversation);
+      }
+      
+      // Format response with variables
+      const variables = {
+        name: contact.name || contact.phoneNumber,
+        firstName: contact.name?.split(' ')[0] || '',
+        phone: contact.phoneNumber
+      };
+      
+      const formattedResponse = LLMService.formatResponse(llmResult.response, variables);
+      
+      // Send the LLM response
+      const messageId = await this.sendTextResponse(formattedResponse, contact, conversation);
+      
+      // Log LLM usage stats
+      logger.info('LLM response sent successfully:', {
+        messageId,
+        model: llmResult.model,
+        tokens: llmResult.evalCount,
+        duration: llmResult.totalDuration
+      });
+      
+      return messageId;
+    } catch (error) {
+      logger.error('Error sending LLM response:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Execute workflow rule
+   */
+  async executeWorkflow(rule, message, contact, conversation) {
+    try {
+      logger.info('=== EXECUTING WORKFLOW ===');
+      logger.info(`Rule: ${rule.name}, Contact: ${contact.phoneNumber}`);
+      
+      // Check if contact already has an active workflow session
+      const existingSession = await WorkflowEngine.processMessage(contact.phoneNumber, message);
+      
+      if (existingSession) {
+        logger.info(`Continuing existing workflow session: ${existingSession.id}`);
+        return `workflow_session_${existingSession.id}`;
+      }
+      
+      // Get workflow template associated with this rule
+      const { WorkflowTemplate } = require('../models');
+      const workflowTemplate = await WorkflowTemplate.findOne({
+        where: { ruleId: rule.id, isActive: true }
+      });
+      
+      if (!workflowTemplate) {
+        logger.error(`No active workflow template found for rule ${rule.id}`);
+        throw new Error('Workflow template not found');
+      }
+      
+      // Start new workflow session
+      logger.info(`Starting new workflow: ${workflowTemplate.name}`);
+      const session = await WorkflowEngine.startWorkflow(
+        workflowTemplate.id,
+        contact.phoneNumber,
+        message
+      );
+      
+      logger.info(`Workflow session started: ${session.id}`);
+      return `workflow_session_${session.id}`;
+      
+    } catch (error) {
+      logger.error('Error executing workflow:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Build context for LLM
+   */
+  async buildLLMContext(rule, message, contact, conversation) {
+    const context = {};
+    
+    // Add customer phase if context mode includes it
+    if (rule.contextMode === 'customer_phase' || rule.contextMode === 'both') {
+      const customerPhase = await CustomerPhase.findOne({
+        where: { contactId: contact.id }
+      });
+      
+      if (customerPhase) {
+        context.customerPhase = {
+          currentPhase: customerPhase.currentPhase,
+          phaseSource: customerPhase.phaseSource,
+          interestedPackages: customerPhase.interestedPackages,
+          preferredMonth: customerPhase.preferredMonth,
+          concerns: customerPhase.concerns,
+          partySize: customerPhase.partySize,
+          budget: customerPhase.budget
+        };
+      }
+    }
+    
+    // Add conversation history if context mode includes it
+    if (rule.contextMode === 'conversation' || rule.contextMode === 'both') {
+      // Get last 10 messages from conversation
+      const conversationHistory = await Message.findAll({
+        where: {
+          conversationId: conversation.id
+        },
+        order: [['createdAt', 'DESC']],
+        limit: 10
+      });
+      
+      // Reverse to get chronological order
+      context.conversationHistory = conversationHistory.reverse().map(msg => ({
+        fromMe: msg.fromMe,
+        body: msg.body || msg.content,
+        timestamp: msg.createdAt
+      }));
+    }
+    
+    return context;
   }
   
   /**

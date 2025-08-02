@@ -1,5 +1,11 @@
 # WhatsApp CRM Application – Requirements & AI Prompt
 
+## IMPORTANT NOTES FOR AI ASSISTANT
+- **NEVER restart the server/backend using commands that timeout** - This causes the AI session to disconnect
+- When server restart is needed, instruct the user to do it manually
+- Avoid using long-running commands like `npm run dev` or `node server.js` directly
+- Use background processes or provide clear manual instructions instead
+
 ## 1. Executive Summary
 Aplikasi WhatsApp CRM sederhana yang fokus pada komunikasi dengan customer melalui WhatsApp menggunakan WAHA (WhatsApp HTTP API). Aplikasi hanya memiliki 2 halaman utama: CRM Dashboard dan Conversations.
 

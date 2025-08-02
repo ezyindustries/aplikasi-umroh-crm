@@ -1,6 +1,20 @@
-const { AutomationRule, AutomationLog, AutomationContactLimit, Contact, Message, CustomerPhase, sequelize } = require('../models');
+const { 
+  AutomationRule, 
+  AutomationLog, 
+  AutomationContactLimit, 
+  Contact, 
+  Message, 
+  CustomerPhase, 
+  WorkflowTemplate,
+  WorkflowStep,
+  WorkflowSession,
+  WorkflowVariable,
+  sequelize 
+} = require('../models');
 const logger = require('../utils/logger');
 const { Op } = require('sequelize');
+const LLMService = require('../services/LLMService');
+const WorkflowEngine = require('../services/WorkflowEngine');
 
 class AutomationController {
   // Get all automation rules
@@ -493,6 +507,73 @@ class AutomationController {
         analytics.triggersByHour[hour] = (analytics.triggersByHour[hour] || 0) + 1;
       });
       
+      // Get recent logs with contact info
+      const recentLogs = await AutomationLog.findAll({
+        where: {
+          ruleId,
+          createdAt: {
+            [Op.gte]: startDate
+          }
+        },
+        include: [{
+          model: Contact,
+          as: 'contact',
+          attributes: ['id', 'name', 'phoneNumber']
+        }],
+        order: [['createdAt', 'DESC']],
+        limit: 10
+      });
+      
+      // Calculate chart data (group by date)
+      const chartData = [];
+      const dayCount = period === '24h' ? 1 : (period === '7d' ? 7 : 30);
+      
+      for (let i = 0; i < dayCount; i++) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        date.setHours(0, 0, 0, 0);
+        
+        const endDate = new Date(date);
+        endDate.setDate(endDate.getDate() + 1);
+        
+        const dayLogs = logs.filter(log => {
+          const logDate = new Date(log.createdAt);
+          return logDate >= date && logDate < endDate;
+        });
+        
+        chartData.unshift({
+          date: date.toISOString(),
+          total: dayLogs.length,
+          success: dayLogs.filter(l => l.status === 'success').length,
+          failed: dayLogs.filter(l => l.status === 'failed').length
+        });
+      }
+      
+      // Calculate trends (compare with previous period)
+      const prevStartDate = new Date(startDate);
+      prevStartDate.setTime(prevStartDate.getTime() - (new Date().getTime() - startDate.getTime()));
+      
+      const prevLogs = await AutomationLog.findAll({
+        where: {
+          ruleId,
+          createdAt: {
+            [Op.gte]: prevStartDate,
+            [Op.lt]: startDate
+          }
+        },
+        attributes: ['status']
+      });
+      
+      const prevSuccess = prevLogs.filter(l => l.status === 'success').length;
+      const prevFailed = prevLogs.filter(l => l.status === 'failed').length;
+      const prevTotal = prevLogs.length;
+      
+      const trends = {
+        triggersChange: prevTotal > 0 ? ((analytics.totalTriggers - prevTotal) / prevTotal) * 100 : 0,
+        successChange: prevSuccess > 0 ? ((analytics.successCount - prevSuccess) / prevSuccess) * 100 : 0,
+        failureChange: prevFailed > 0 ? ((analytics.failureCount - prevFailed) / prevFailed) * 100 : 0
+      };
+      
       res.json({
         success: true,
         data: {
@@ -500,10 +581,26 @@ class AutomationController {
             id: rule.id,
             name: rule.name,
             ruleType: rule.ruleType,
+            keywords: Array.isArray(rule.keywords) ? rule.keywords : (rule.keywords ? [rule.keywords] : []),
             isActive: rule.isActive
           },
           period,
-          analytics
+          summary: {
+            totalTriggers: analytics.totalTriggers,
+            successCount: analytics.successCount,
+            failedCount: analytics.failureCount,
+            successRate: analytics.successRate,
+            averageResponseTime: analytics.avgExecutionTime
+          },
+          trends,
+          chartData,
+          recentLogs: recentLogs.map(log => ({
+            id: log.id,
+            status: log.status,
+            createdAt: log.createdAt,
+            triggerData: log.triggerData,
+            contact: log.contact
+          }))
         }
       });
     } catch (error) {
@@ -1096,6 +1193,445 @@ class AutomationController {
       
     } catch (error) {
       logger.error('Error testing keyword match:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+  
+  // Get available LLM models
+  async getLLMModels(req, res) {
+    try {
+      const models = await LLMService.getAvailableModels();
+      
+      res.json({
+        success: true,
+        data: models
+      });
+    } catch (error) {
+      logger.error('Error getting LLM models:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+  
+  // Test LLM prompt
+  async testLLMPrompt(req, res) {
+    try {
+      const { systemPrompt, sampleMessage, llmConfig } = req.body;
+      
+      if (!systemPrompt || !sampleMessage) {
+        return res.status(400).json({
+          success: false,
+          error: 'System prompt and sample message are required'
+        });
+      }
+      
+      const result = await LLMService.testPrompt(
+        systemPrompt,
+        sampleMessage,
+        llmConfig || {}
+      );
+      
+      res.json({
+        success: result.success,
+        data: {
+          response: result.response,
+          prompt: result.prompt,
+          stats: result.stats,
+          error: result.error
+        }
+      });
+    } catch (error) {
+      logger.error('Error testing LLM prompt:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+  
+  // Get prompt templates
+  async getPromptTemplates(req, res) {
+    try {
+      const templates = [
+        {
+          id: 'umrah_consultant',
+          name: 'Konsultan Umrah',
+          systemPrompt: `Anda adalah konsultan umrah yang berpengalaman dan ramah di Vauza Tamma. Tugas Anda adalah membantu calon jamaah dengan informasi paket umrah, menjawab pertanyaan mereka, dan membimbing mereka dalam proses pemilihan paket yang sesuai.
+
+Gunakan bahasa Indonesia yang sopan dan Islami. Sertakan salam pembuka/penutup yang sesuai. Jika ditanya hal di luar umrah, arahkan kembali ke topik umrah dengan sopan.
+
+Informasi penting:
+- Selalu tanyakan preferensi bulan keberangkatan
+- Tanyakan jumlah jamaah jika relevan
+- Berikan rekomendasi paket berdasarkan budget
+- Jelaskan perbedaan antar paket dengan jelas
+- Ajak untuk berkonsultasi lebih lanjut atau booking`,
+          category: 'sales'
+        },
+        {
+          id: 'umrah_simple',
+          name: 'Konsultan Umrah (Deepseek Simple)',
+          systemPrompt: `Kamu CS umrah Vauza Tamma. Jawab sopan dan Islami dalam bahasa Indonesia.
+
+Fokus:
+- Tanya bulan keberangkatan
+- Tanya jumlah orang
+- Jelaskan paket sesuai budget
+- Ajak booking
+
+Jawab singkat dan jelas.`,
+          category: 'sales'
+        },
+        {
+          id: 'umrah_phi3',
+          name: 'Konsultan Umrah (Phi-3 Optimized)',
+          systemPrompt: `Anda adalah konsultan umrah Vauza Tamma yang berpengalaman.
+
+INSTRUKSI:
+1. Gunakan bahasa Indonesia yang sopan dan Islami
+2. Mulai dengan salam yang sesuai waktu
+3. Fokus menjawab pertanyaan customer
+4. Berikan informasi yang jelas dan terstruktur
+5. Akhiri dengan ajakan action (booking/konsultasi)
+
+INFORMASI PAKET:
+- Ekonomis: 25-30 juta (9 hari, hotel ⭐⭐⭐)
+- Standard: 35-40 juta (12 hari, hotel ⭐⭐⭐⭐)
+- VIP: 45-55 juta (12 hari, hotel ⭐⭐⭐⭐⭐)
+
+PRINSIP:
+- Jangan terlalu panjang (max 3-4 kalimat)
+- Langsung ke poin yang ditanyakan
+- Tawarkan bantuan lebih lanjut`,
+          category: 'sales'
+        },
+        {
+          id: 'package_advisor',
+          name: 'Penasihat Paket',
+          systemPrompt: `Anda adalah penasihat paket umrah yang ahli dalam menjelaskan detail paket. Fokus pada:
+- Menjelaskan fasilitas setiap paket
+- Membandingkan paket berdasarkan kebutuhan customer
+- Memberikan rekomendasi berdasarkan budget dan preferensi
+- Menjawab pertanyaan teknis tentang perjalanan
+
+Gunakan bahasa yang mudah dipahami dan berikan contoh konkret.`,
+          category: 'sales'
+        },
+        {
+          id: 'customer_support',
+          name: 'Customer Support',
+          systemPrompt: `Anda adalah customer support yang membantu jamaah yang sudah terdaftar. Fokus pada:
+- Menjawab pertanyaan administrasi
+- Membantu dengan dokumen yang diperlukan
+- Informasi persiapan keberangkatan
+- Menangani keluhan dengan empati
+
+Selalu tunjukkan empati dan kesediaan membantu.`,
+          category: 'support'
+        }
+      ];
+      
+      res.json({
+        success: true,
+        data: templates
+      });
+    } catch (error) {
+      logger.error('Error getting prompt templates:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+
+  // ===== WORKFLOW METHODS =====
+
+  // Create workflow
+  async createWorkflow(req, res) {
+    try {
+      const { ruleId, name, description, steps } = req.body;
+
+      if (!ruleId || !name || !steps || !Array.isArray(steps)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Rule ID, name, and steps array are required'
+        });
+      }
+
+      // Verify rule exists and is workflow type
+      const rule = await AutomationRule.findByPk(ruleId);
+      if (!rule || rule.ruleType !== 'workflow') {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid rule or rule type must be workflow'
+        });
+      }
+
+      // Create workflow template
+      const workflow = await WorkflowTemplate.create({
+        ruleId,
+        name,
+        description,
+        isActive: true
+      });
+
+      // Create steps
+      const createdSteps = [];
+      for (let i = 0; i < steps.length; i++) {
+        const stepData = steps[i];
+        const step = await WorkflowStep.create({
+          workflowId: workflow.id,
+          stepOrder: i + 1,
+          stepType: stepData.stepType,
+          name: stepData.name,
+          description: stepData.description,
+          config: stepData.config || {},
+          templateText: stepData.templateText,
+          keywords: stepData.keywords || [],
+          aiPrompt: stepData.aiPrompt,
+          aiConfig: stepData.aiConfig || {},
+          inputType: stepData.inputType,
+          inputValidation: stepData.inputValidation || {},
+          saveToVariable: stepData.saveToVariable,
+          nextStepConditions: stepData.nextStepConditions || [],
+          defaultNextStep: stepData.defaultNextStep,
+          responseTimeout: stepData.responseTimeout || 300,
+          delayBefore: stepData.delayBefore || 0,
+          position: stepData.position || { x: 100 + (i * 200), y: 100 }
+        });
+        createdSteps.push(step);
+      }
+
+      // Update step connections
+      for (let i = 0; i < createdSteps.length; i++) {
+        const step = createdSteps[i];
+        const originalStep = steps[i];
+        
+        // Update default next step to use actual IDs
+        if (originalStep.defaultNextStep !== undefined && originalStep.defaultNextStep !== null) {
+          const nextIndex = originalStep.defaultNextStep;
+          if (nextIndex >= 0 && nextIndex < createdSteps.length) {
+            await step.update({ defaultNextStep: createdSteps[nextIndex].id });
+          }
+        }
+      }
+
+      res.json({
+        success: true,
+        data: {
+          workflow,
+          steps: createdSteps
+        }
+      });
+    } catch (error) {
+      logger.error('Error creating workflow:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+
+  // Get workflow
+  async getWorkflow(req, res) {
+    try {
+      const { workflowId } = req.params;
+
+      const workflow = await WorkflowTemplate.findByPk(workflowId, {
+        include: [{
+          model: WorkflowStep,
+          as: 'steps',
+          order: [['stepOrder', 'ASC']]
+        }]
+      });
+
+      if (!workflow) {
+        return res.status(404).json({
+          success: false,
+          error: 'Workflow not found'
+        });
+      }
+
+      res.json({
+        success: true,
+        data: workflow
+      });
+    } catch (error) {
+      logger.error('Error getting workflow:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+
+  // Update workflow
+  async updateWorkflow(req, res) {
+    try {
+      const { workflowId } = req.params;
+      const { name, description, steps, isActive } = req.body;
+
+      const workflow = await WorkflowTemplate.findByPk(workflowId);
+      if (!workflow) {
+        return res.status(404).json({
+          success: false,
+          error: 'Workflow not found'
+        });
+      }
+
+      // Update workflow
+      await workflow.update({
+        name: name || workflow.name,
+        description: description || workflow.description,
+        isActive: isActive !== undefined ? isActive : workflow.isActive
+      });
+
+      // Update steps if provided
+      if (steps && Array.isArray(steps)) {
+        // Delete existing steps
+        await WorkflowStep.destroy({ where: { workflowId } });
+
+        // Create new steps
+        const createdSteps = [];
+        for (let i = 0; i < steps.length; i++) {
+          const stepData = steps[i];
+          const step = await WorkflowStep.create({
+            workflowId,
+            stepOrder: i + 1,
+            ...stepData
+          });
+          createdSteps.push(step);
+        }
+
+        workflow.steps = createdSteps;
+      }
+
+      res.json({
+        success: true,
+        data: workflow
+      });
+    } catch (error) {
+      logger.error('Error updating workflow:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+
+  // Get workflow sessions
+  async getWorkflowSessions(req, res) {
+    try {
+      const { workflowId, status, limit = 20, offset = 0 } = req.query;
+
+      const whereClause = {};
+      if (workflowId) whereClause.workflowId = workflowId;
+      if (status) whereClause.status = status;
+
+      const sessions = await WorkflowSession.findAll({
+        where: whereClause,
+        include: [{
+          model: WorkflowTemplate,
+          as: 'workflow',
+          attributes: ['id', 'name']
+        }],
+        order: [['createdAt', 'DESC']],
+        limit: parseInt(limit),
+        offset: parseInt(offset)
+      });
+
+      res.json({
+        success: true,
+        data: sessions,
+        pagination: {
+          limit: parseInt(limit),
+          offset: parseInt(offset),
+          total: await WorkflowSession.count({ where: whereClause })
+        }
+      });
+    } catch (error) {
+      logger.error('Error getting workflow sessions:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+
+  // Get workflow session details
+  async getWorkflowSession(req, res) {
+    try {
+      const { sessionId } = req.params;
+
+      const session = await WorkflowSession.findByPk(sessionId, {
+        include: [
+          {
+            model: WorkflowTemplate,
+            as: 'workflow',
+            include: [{
+              model: WorkflowStep,
+              as: 'steps'
+            }]
+          },
+          {
+            model: WorkflowVariable,
+            as: 'variables'
+          }
+        ]
+      });
+
+      if (!session) {
+        return res.status(404).json({
+          success: false,
+          error: 'Session not found'
+        });
+      }
+
+      res.json({
+        success: true,
+        data: session
+      });
+    } catch (error) {
+      logger.error('Error getting workflow session:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+
+  // Test workflow
+  async testWorkflow(req, res) {
+    try {
+      const { workflowId, customerPhone, testMessage } = req.body;
+
+      if (!workflowId || !customerPhone) {
+        return res.status(400).json({
+          success: false,
+          error: 'Workflow ID and customer phone are required'
+        });
+      }
+
+      // Start workflow
+      const session = await WorkflowEngine.startWorkflow(workflowId, customerPhone, {
+        body: testMessage || 'Test workflow start'
+      });
+
+      res.json({
+        success: true,
+        data: {
+          sessionId: session.id,
+          status: session.status,
+          currentStep: session.currentStepId
+        }
+      });
+    } catch (error) {
+      logger.error('Error testing workflow:', error);
       res.status(500).json({
         success: false,
         error: error.message

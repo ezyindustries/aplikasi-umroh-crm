@@ -453,10 +453,34 @@ class WAHAService extends EventEmitter {
       return {
         success: true,
         messageId: response.data.id,
-        timestamp: response.data.timestamp
+        timestamp: response.data.timestamp,
+        id: response.data.id // For compatibility
       };
     } catch (error) {
       logger.error('Error sending text message:', error);
+      throw error;
+    }
+  }
+  
+  // Send image message (wrapper for sendImage for consistency)
+  async sendImageMessage(sessionName, chatId, imageUrl, caption = '', options = {}) {
+    try {
+      logger.info('Sending image message via WAHA:', {
+        session: sessionName,
+        chatId: chatId,
+        imageUrl: imageUrl,
+        caption: caption
+      });
+      
+      const result = await this.sendImage(sessionName, chatId, imageUrl, caption, options);
+      
+      // Return with id property for consistency
+      return {
+        ...result,
+        id: result.messageId
+      };
+    } catch (error) {
+      logger.error('Error in sendImageMessage:', error);
       throw error;
     }
   }

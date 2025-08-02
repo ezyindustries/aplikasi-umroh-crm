@@ -89,14 +89,36 @@ class SimpleMessageQueueService {
       const message = await Message.findByPk(messageData.id);
       if (!message) return;
 
-      logger.info('Sending message:', messageData.id);
+      logger.info('Sending message:', {
+        id: messageData.id,
+        type: messageData.messageType,
+        hasMedia: !!messageData.mediaUrl
+      });
 
-      // Send via WAHA
-      const result = await whatsappService.sendTextMessage(
-        'default',
-        messageData.toNumber,
-        messageData.content
-      );
+      let result;
+      
+      // Send based on message type
+      if (messageData.messageType === 'image' && messageData.mediaUrl) {
+        logger.info('Sending image message:', {
+          to: messageData.toNumber,
+          mediaUrl: messageData.mediaUrl,
+          caption: messageData.content
+        });
+        
+        result = await whatsappService.sendImageMessage(
+          'default',
+          messageData.toNumber,
+          messageData.mediaUrl,
+          messageData.content // caption
+        );
+      } else {
+        // Default to text message
+        result = await whatsappService.sendTextMessage(
+          'default',
+          messageData.toNumber,
+          messageData.content
+        );
+      }
 
       // Update message status
       await message.update({
@@ -125,10 +147,26 @@ class SimpleMessageQueueService {
       // Update message as failed
       const message = await Message.findByPk(messageData.id);
       if (message) {
+        // Special handling for WAHA Plus feature error
+        let errorMessage = error.message;
+        if (error.response?.data?.message?.includes('Plus version')) {
+          errorMessage = 'Image sending requires WAHA Plus version';
+          logger.warn('WAHA Plus required for image sending');
+        }
+        
         await message.update({
           status: 'failed',
-          errorMessage: error.message
+          errorMessage: errorMessage
         });
+        
+        // Emit failure event
+        if (global.io) {
+          global.io.emit('message:failed', {
+            conversationId: message.conversationId,
+            message: message.toJSON(),
+            error: errorMessage
+          });
+        }
       }
     }
   }

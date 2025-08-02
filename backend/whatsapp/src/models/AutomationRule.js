@@ -18,7 +18,7 @@ const AutomationRule = sequelize.define('AutomationRule', {
     comment: 'Rule description'
   },
   ruleType: {
-    type: DataTypes.ENUM('welcome', 'away', 'keyword', 'workflow'),
+    type: DataTypes.ENUM('welcome', 'away', 'keyword', 'workflow', 'llm_agent'),
     allowNull: false,
     field: 'rule_type',
     comment: 'Type of automation rule'
@@ -171,6 +171,31 @@ const AutomationRule = sequelize.define('AutomationRule', {
     defaultValue: {},
     field: 'contact_conditions',
     comment: 'Conditions that contact must meet'
+  },
+  // LLM Agent Configuration
+  llmConfig: {
+    type: DataTypes.JSON,
+    defaultValue: {},
+    field: 'llm_config',
+    comment: 'LLM configuration (model, temperature, max tokens, etc.)'
+  },
+  systemPrompt: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    field: 'system_prompt',
+    comment: 'System prompt for LLM agent personality and behavior'
+  },
+  contextMode: {
+    type: DataTypes.ENUM('conversation', 'customer_phase', 'both'),
+    defaultValue: 'conversation',
+    field: 'context_mode',
+    comment: 'What context to include when generating LLM responses'
+  },
+  knowledgeBase: {
+    type: DataTypes.JSON,
+    defaultValue: [],
+    field: 'knowledge_base',
+    comment: 'Knowledge base entries for the LLM agent'
   },
   // Metadata
   metadata: {

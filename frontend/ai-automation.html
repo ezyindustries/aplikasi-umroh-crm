@@ -537,16 +537,29 @@
             background: linear-gradient(145deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
             backdrop-filter: blur(20px);
             border-radius: 20px;
-            padding: 32px;
+            padding: 0;
             max-width: 600px;
             width: 100%;
             border: 1px solid rgba(71, 85, 105, 0.3);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
             margin: 20px auto;
             max-height: calc(100vh - 48px);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .modal-body {
+            padding: 24px 32px;
             overflow-y: auto;
+            flex: 1;
             scrollbar-width: thin;
             scrollbar-color: rgba(139, 92, 246, 0.3) rgba(30, 41, 59, 0.3);
+            min-height: 200px;
+        }
+        
+        #ruleForm {
+            display: block !important;
         }
         
         .modal-content::-webkit-scrollbar {
@@ -571,7 +584,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
+            padding: 24px 32px;
+            border-bottom: 1px solid rgba(71, 85, 105, 0.2);
         }
         
         .modal-title {
@@ -653,9 +667,10 @@
             display: flex;
             gap: 12px;
             justify-content: flex-end;
-            margin-top: 32px;
-            padding-top: 24px;
+            padding: 20px 32px;
             border-top: 1px solid rgba(71, 85, 105, 0.2);
+            background: rgba(15, 23, 42, 0.3);
+            border-radius: 0 0 20px 20px;
         }
         
         /* Keyword Tags */
@@ -1179,6 +1194,191 @@
             color: #94a3b8;
         }
         
+        .waha-plus-note {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            margin-top: 8px;
+        }
+        
+        /* Analytics Modal Styles */
+        .analytics-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+        }
+        
+        .analytics-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+        
+        .analytics-period {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .period-btn {
+            padding: 6px 12px;
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 8px;
+            color: #94a3b8;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .period-btn.active {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border-color: transparent;
+        }
+        
+        .analytics-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.5));
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #94a3b8;
+        }
+        
+        .stat-trend {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 8px;
+            font-size: 12px;
+        }
+        
+        .trend-up {
+            color: #10b981;
+        }
+        
+        .trend-down {
+            color: #ef4444;
+        }
+        
+        .analytics-chart {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.5));
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            height: 300px;
+            position: relative;
+        }
+        
+        .chart-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #64748b;
+            font-size: 14px;
+        }
+        
+        .analytics-logs {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.5));
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .logs-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .logs-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+        
+        .log-entry {
+            padding: 12px;
+            border-bottom: 1px solid rgba(71, 85, 105, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+        
+        .log-info {
+            flex: 1;
+        }
+        
+        .log-contact {
+            font-weight: 500;
+            color: #e2e8f0;
+            margin-bottom: 4px;
+        }
+        
+        .log-message {
+            font-size: 13px;
+            color: #94a3b8;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 400px;
+        }
+        
+        .log-time {
+            font-size: 12px;
+            color: #64748b;
+        }
+        
+        .log-status {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        
+        .status-success {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+        
+        .status-failed {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+        
+        .status-skipped {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+        
         .image-preview {
             position: relative;
             padding: 0;
@@ -1616,6 +1816,10 @@
                             <span class="material-icons">download</span>
                             Export Rules
                         </button>
+                        <button class="btn btn-secondary" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);" onclick="openWorkflowBuilder()">
+                            <span class="material-icons">account_tree</span>
+                            Workflow Builder
+                        </button>
                         <button class="btn btn-primary" onclick="openCreateModal()">
                             <span class="material-icons">add</span>
                             Add Rule
@@ -1814,8 +2018,9 @@
                 </button>
             </div>
             
-            <form id="ruleForm">
-                <div class="form-group">
+            <div class="modal-body">
+                <form id="ruleForm">
+                    <div class="form-group">
                     <label class="form-label">Rule Name</label>
                     <input type="text" class="form-control" id="ruleName" placeholder="e.g., Welcome New Customers" required>
                     <span class="form-helper">Give your rule a descriptive name</span>
@@ -1835,6 +2040,7 @@
                         <option value="away">Away Message</option>
                         <option value="keyword" selected>Keyword Reply</option>
                         <option value="workflow">Conversation Workflow</option>
+                        <option value="llm_agent">AI Agent (LLM)</option>
                     </select>
                 </div>
                 
@@ -1894,6 +2100,103 @@
                     </div>
                 </div>
                 
+                <!-- LLM Agent Fields -->
+                <div id="llmFields" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label">AI Model</label>
+                        <select class="form-control" id="llmModel">
+                            <option value="mistral:7b-instruct">Mistral 7B Instruct</option>
+                            <option value="deepseek-coder:1.3b">Deepseek 1.3B (Fast)</option>
+                            <option value="phi3:medium">Phi-3 Medium (Recommended)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">System Prompt</label>
+                        <div style="margin-bottom: 8px;">
+                            <select class="form-control" id="promptTemplate" onchange="loadPromptTemplate()" style="margin-bottom: 8px;">
+                                <option value="">-- Select Template (Optional) --</option>
+                            </select>
+                        </div>
+                        <textarea class="form-control" id="systemPrompt" rows="6" placeholder="Enter the AI agent's personality and instructions..." required></textarea>
+                        <span class="form-helper">Define how the AI should behave and respond to customers</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Context Mode</label>
+                        <select class="form-control" id="contextMode">
+                            <option value="conversation">Conversation History Only</option>
+                            <option value="customer_phase">Customer Phase Only</option>
+                            <option value="both" selected>Both (Recommended)</option>
+                        </select>
+                        <span class="form-helper">What context to provide to the AI</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Temperature (Creativity)</label>
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            <input type="range" class="form-control" id="temperature" min="0" max="100" value="70" style="flex: 1;">
+                            <span id="temperatureValue" style="min-width: 40px;">0.7</span>
+                        </div>
+                        <span class="form-helper">Lower = More focused, Higher = More creative</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Max Tokens</label>
+                        <input type="number" class="form-control" id="maxTokens" value="500" min="50" max="2000">
+                        <span class="form-helper">Maximum length of AI response</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Max Sentences</label>
+                        <input type="number" class="form-control" id="maxSentences" value="2" min="1" max="10">
+                        <span class="form-helper">Limit response to this many sentences (1-10)</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Trigger Keywords (Optional)</label>
+                        <div class="keyword-input-container">
+                            <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                                <input type="text" class="form-control" id="llmKeywordInput" placeholder="Type keyword" onkeypress="addLLMKeyword(event)" style="flex: 1;">
+                                <button type="button" class="btn btn-primary" onclick="addLLMKeywordButton()" style="padding: 12px 20px;">
+                                    <span class="material-icons">add</span>
+                                    Add
+                                </button>
+                            </div>
+                            <div class="keyword-tags" id="llmKeywordTags">
+                                <!-- Keywords will be added dynamically here -->
+                            </div>
+                        </div>
+                        <span class="form-helper">Leave empty to respond to all messages</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Knowledge Base</label>
+                        <div id="knowledgeBaseContainer">
+                            <div class="knowledge-entry" style="margin-bottom: 8px;">
+                                <div style="display: flex; gap: 8px;">
+                                    <input type="text" class="form-control" placeholder="Key (e.g., pricing)" style="flex: 1;">
+                                    <input type="text" class="form-control" placeholder="Value (e.g., Paket mulai 25 juta)" style="flex: 2;">
+                                    <button type="button" class="btn btn-secondary" onclick="removeKnowledgeEntry(this)">
+                                        <span class="material-icons">delete</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-secondary" onclick="addKnowledgeEntry()" style="margin-top: 8px;">
+                            <span class="material-icons">add</span>
+                            Add Knowledge Entry
+                        </button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button type="button" class="btn btn-secondary" onclick="testLLMPrompt()" style="width: 100%;">
+                            <span class="material-icons">psychology</span>
+                            Test AI Response
+                        </button>
+                    </div>
+                </div>
+                
                 <!-- Reply Messages Section -->
                 <div class="form-group">
                     <label class="form-label">Reply Messages</label>
@@ -1927,6 +2230,10 @@
                                             <span class="material-icons">cloud_upload</span>
                                             <span>Click to upload image</span>
                                             <span class="file-info">Max size: 5MB | JPG, PNG, GIF</span>
+                                            <span class="waha-plus-note" style="color: #f59e0b; font-size: 11px; margin-top: 4px;">
+                                                <span class="material-icons" style="font-size: 12px; vertical-align: middle;">info</span>
+                                                Requires WAHA Plus for sending
+                                            </span>
                                         </label>
                                         <div class="image-preview" id="imagePreview0" style="display: none;">
                                             <img src="" alt="Preview">
@@ -1959,19 +2266,42 @@
                     <input type="number" class="form-control" id="messageDelay" value="1" min="0" max="5">
                     <span class="form-helper">Delay between multiple messages in sequence</span>
                 </div>
-                
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" onclick="clearForm()" style="margin-right: auto;">
-                        <span class="material-icons">clear_all</span>
-                        Hapus Semua
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="hideModal('rule')">Cancel</button>
-                    <button type="submit" class="btn btn-primary">
-                        <span class="material-icons">save</span>
-                        <span id="submitButtonText">Save Rule</span>
-                    </button>
+                </form>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" onclick="clearForm()" style="margin-right: auto;">
+                    <span class="material-icons">clear_all</span>
+                    Hapus Semua
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="hideModal('rule')">Cancel</button>
+                <button type="submit" class="btn btn-primary" form="ruleForm">
+                    <span class="material-icons">save</span>
+                    <span id="submitButtonText">Save Rule</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Analytics Modal -->
+    <div class="modal" id="analyticsModal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Rule Analytics</h2>
+                <button class="close-btn" onclick="hideModal('analytics')">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 0;">
+                <!-- Analytics Content -->
+                <div id="analyticsContent" style="padding: 24px;">
+                    <!-- Loading State -->
+                    <div class="analytics-loading" style="text-align: center; padding: 60px;">
+                        <div class="loading-spinner" style="margin: 0 auto 16px;"></div>
+                        <p style="color: #94a3b8;">Loading analytics data...</p>
+                    </div>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
     
@@ -2347,6 +2677,10 @@
                                             <span class="material-icons">cloud_upload</span>
                                             <span>Click to upload image</span>
                                             <span class="file-info">Max size: 5MB | JPG, PNG, GIF</span>
+                                            <span class="waha-plus-note" style="color: #f59e0b; font-size: 11px; margin-top: 4px;">
+                                                <span class="material-icons" style="font-size: 12px; vertical-align: middle;">info</span>
+                                                Requires WAHA Plus for sending
+                                            </span>
                                         </label>
                                         <div class="image-preview" id="imagePreview0" style="display: none;">
                                             <img src="" alt="Preview">
@@ -2394,14 +2728,32 @@
             document.getElementById('welcomeFields').style.display = 'none';
             document.getElementById('awayFields').style.display = 'none';
             document.getElementById('keywordFields').style.display = 'none';
+            document.getElementById('llmFields').style.display = 'none';
+            
+            // Show/hide reply messages based on type
+            const replyMessagesSection = document.querySelector('.form-group:has(#replyMessagesContainer)').parentElement;
             
             // Show relevant fields
             if (type === 'welcome') {
                 document.getElementById('welcomeFields').style.display = 'block';
+                replyMessagesSection.style.display = 'block';
             } else if (type === 'away') {
                 document.getElementById('awayFields').style.display = 'block';
+                replyMessagesSection.style.display = 'block';
             } else if (type === 'keyword') {
                 document.getElementById('keywordFields').style.display = 'block';
+                replyMessagesSection.style.display = 'block';
+            } else if (type === 'llm_agent') {
+                document.getElementById('llmFields').style.display = 'block';
+                replyMessagesSection.style.display = 'none'; // LLM generates its own responses
+                loadLLMModels();
+                loadPromptTemplates();
+            } else if (type === 'workflow') {
+                // For workflow, open the visual builder
+                closeModal();
+                window.location.href = '/workflow-builder.html';
+            } else {
+                replyMessagesSection.style.display = 'block';
             }
         }
         
@@ -2444,6 +2796,236 @@
         // Remove keyword
         function removeKeyword(element) {
             element.parentElement.remove();
+        }
+        
+        // LLM-specific functions
+        let llmKeywords = [];
+        
+        // Temperature slider
+        document.getElementById('temperature')?.addEventListener('input', function() {
+            document.getElementById('temperatureValue').textContent = (this.value / 100).toFixed(2);
+        });
+        
+        // Load LLM models
+        async function loadLLMModels() {
+            try {
+                const response = await fetch(`${API_CONFIG.baseUrl}/automation/llm/models`);
+                const data = await response.json();
+                
+                if (data.success && data.data.length > 0) {
+                    const select = document.getElementById('llmModel');
+                    select.innerHTML = '';
+                    
+                    data.data.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model.name;
+                        option.textContent = model.name;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading LLM models:', error);
+            }
+        }
+        
+        // Load prompt templates
+        async function loadPromptTemplates() {
+            try {
+                const response = await fetch(`${API_CONFIG.baseUrl}/automation/llm/templates`);
+                const data = await response.json();
+                
+                if (data.success && data.data.length > 0) {
+                    const select = document.getElementById('promptTemplate');
+                    select.innerHTML = '<option value="">-- Select Template (Optional) --</option>';
+                    
+                    data.data.forEach(template => {
+                        const option = document.createElement('option');
+                        option.value = template.id;
+                        option.textContent = template.name;
+                        option.dataset.prompt = template.systemPrompt;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading prompt templates:', error);
+            }
+        }
+        
+        // Load selected prompt template
+        function loadPromptTemplate() {
+            const select = document.getElementById('promptTemplate');
+            const selected = select.options[select.selectedIndex];
+            
+            if (selected && selected.dataset.prompt) {
+                document.getElementById('systemPrompt').value = selected.dataset.prompt;
+            }
+        }
+        
+        // Add LLM keyword
+        function addLLMKeyword(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                addLLMKeywordButton();
+            }
+        }
+        
+        function addLLMKeywordButton() {
+            const input = document.getElementById('llmKeywordInput');
+            const keyword = input.value.trim();
+            
+            if (keyword) {
+                const tagsContainer = document.getElementById('llmKeywordTags');
+                const tag = document.createElement('div');
+                tag.className = 'keyword-tag';
+                tag.innerHTML = `
+                    ${keyword}
+                    <span class="material-icons" onclick="removeLLMKeyword(this)">close</span>
+                `;
+                tagsContainer.appendChild(tag);
+                
+                input.value = '';
+                llmKeywords.push(keyword);
+            }
+        }
+        
+        function removeLLMKeyword(element) {
+            const tag = element.parentElement;
+            const keyword = tag.textContent.trim();
+            llmKeywords = llmKeywords.filter(k => k !== keyword);
+            tag.remove();
+        }
+        
+        // Knowledge base functions
+        function addKnowledgeEntry() {
+            const container = document.getElementById('knowledgeBaseContainer');
+            const entry = document.createElement('div');
+            entry.className = 'knowledge-entry';
+            entry.style.marginBottom = '8px';
+            entry.innerHTML = `
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" class="form-control" placeholder="Key (e.g., pricing)" style="flex: 1;">
+                    <input type="text" class="form-control" placeholder="Value (e.g., Paket mulai 25 juta)" style="flex: 2;">
+                    <button type="button" class="btn btn-secondary" onclick="removeKnowledgeEntry(this)">
+                        <span class="material-icons">delete</span>
+                    </button>
+                </div>
+            `;
+            container.appendChild(entry);
+        }
+        
+        function removeKnowledgeEntry(button) {
+            button.closest('.knowledge-entry').remove();
+        }
+        
+        // Test LLM prompt
+        async function testLLMPrompt() {
+            const systemPrompt = document.getElementById('systemPrompt').value;
+            const model = document.getElementById('llmModel').value;
+            const temperature = parseFloat(document.getElementById('temperatureValue').textContent);
+            const maxTokens = parseInt(document.getElementById('maxTokens').value);
+            
+            if (!systemPrompt) {
+                showToast('Please enter a system prompt first', 'error');
+                return;
+            }
+            
+            // Show test modal
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.display = 'flex';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 800px;">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Test AI Response</h3>
+                        <button class="btn-icon" onclick="this.closest('.modal').remove()">
+                            <span class="material-icons">close</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="form-label">Sample Customer Message</label>
+                            <input type="text" class="form-control" id="testMessage" 
+                                   placeholder="e.g., Halo, saya mau tanya paket umroh bulan Maret" 
+                                   value="Halo, saya mau tanya paket umroh bulan Maret">
+                        </div>
+                        <button class="btn btn-primary" onclick="sendTestPrompt()" style="margin-bottom: 16px;">
+                            <span class="material-icons">send</span>
+                            Send Test
+                        </button>
+                        <div id="testResult" style="display: none;">
+                            <h4>AI Response:</h4>
+                            <div class="test-response" style="background: rgba(51, 65, 85, 0.3); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                                <div id="aiResponse" style="white-space: pre-wrap;"></div>
+                            </div>
+                            <div class="test-stats" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                                <div style="background: rgba(71, 85, 105, 0.3); padding: 12px; border-radius: 8px;">
+                                    <div style="font-size: 12px; color: #94a3b8;">Model</div>
+                                    <div id="testModel"></div>
+                                </div>
+                                <div style="background: rgba(71, 85, 105, 0.3); padding: 12px; border-radius: 8px;">
+                                    <div style="font-size: 12px; color: #94a3b8;">Tokens</div>
+                                    <div id="testTokens"></div>
+                                </div>
+                                <div style="background: rgba(71, 85, 105, 0.3); padding: 12px; border-radius: 8px;">
+                                    <div style="font-size: 12px; color: #94a3b8;">Duration</div>
+                                    <div id="testDuration"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        async function sendTestPrompt() {
+            const systemPrompt = document.getElementById('systemPrompt').value;
+            const sampleMessage = document.getElementById('testMessage').value;
+            const model = document.getElementById('llmModel').value;
+            const temperature = parseFloat(document.getElementById('temperatureValue').textContent);
+            const maxTokens = parseInt(document.getElementById('maxTokens').value);
+            
+            const resultDiv = document.getElementById('testResult');
+            const responseDiv = document.getElementById('aiResponse');
+            
+            responseDiv.textContent = 'Generating response...';
+            resultDiv.style.display = 'block';
+            
+            try {
+                const response = await fetch(`${API_CONFIG.baseUrl}/automation/llm/test`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        systemPrompt,
+                        sampleMessage,
+                        llmConfig: {
+                            model,
+                            temperature,
+                            maxTokens
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    responseDiv.textContent = data.data.response || 'No response generated';
+                    
+                    if (data.data.stats) {
+                        document.getElementById('testModel').textContent = data.data.stats.model || model;
+                        document.getElementById('testTokens').textContent = data.data.stats.tokens || 'N/A';
+                        document.getElementById('testDuration').textContent = data.data.stats.duration 
+                            ? `${(data.data.stats.duration / 1000000).toFixed(2)}ms` 
+                            : 'N/A';
+                    }
+                } else {
+                    responseDiv.textContent = `Error: ${data.data?.error || 'Failed to generate response'}`;
+                }
+            } catch (error) {
+                responseDiv.textContent = `Error: ${error.message}`;
+            }
         }
         
         // Toggle schedule day
@@ -2516,6 +3098,10 @@
                                     <span class="material-icons">cloud_upload</span>
                                     <span>Click to upload image</span>
                                     <span class="file-info">Max size: 5MB | JPG, PNG, GIF</span>
+                                    <span class="waha-plus-note" style="color: #f59e0b; font-size: 11px; margin-top: 4px;">
+                                        <span class="material-icons" style="font-size: 12px; vertical-align: middle;">info</span>
+                                        Requires WAHA Plus for sending
+                                    </span>
                                 </label>
                                 <div class="image-preview" id="imagePreview${newIndex}" style="display: none;">
                                     <img src="" alt="Preview">
@@ -2743,6 +3329,44 @@
                 // Add other fields based on rule type
             };
             
+            // Add LLM-specific fields if LLM agent rule
+            if (ruleType === 'llm_agent') {
+                // Get knowledge base entries
+                const knowledgeBase = [];
+                document.querySelectorAll('#knowledgeBaseContainer .knowledge-entry').forEach(entry => {
+                    const inputs = entry.querySelectorAll('input');
+                    const key = inputs[0].value.trim();
+                    const value = inputs[1].value.trim();
+                    if (key && value) {
+                        knowledgeBase.push({ key, value });
+                    }
+                });
+                
+                // Get LLM keywords
+                const llmKeywordTags = document.querySelectorAll('#llmKeywordTags .keyword-tag');
+                const llmKeywords = Array.from(llmKeywordTags).map(tag => {
+                    let text = tag.textContent || tag.innerText || '';
+                    return text.replace(/close$/, '').trim();
+                }).filter(k => k);
+                
+                ruleData.systemPrompt = document.getElementById('systemPrompt').value;
+                ruleData.llmConfig = {
+                    model: document.getElementById('llmModel').value,
+                    temperature: parseFloat(document.getElementById('temperatureValue').textContent),
+                    maxTokens: parseInt(document.getElementById('maxTokens').value),
+                    maxSentences: parseInt(document.getElementById('maxSentences').value) || 2
+                };
+                ruleData.contextMode = document.getElementById('contextMode').value;
+                ruleData.knowledgeBase = knowledgeBase;
+                
+                // Use triggerConditions for LLM keywords
+                if (llmKeywords.length > 0) {
+                    ruleData.triggerConditions = {
+                        keywords: llmKeywords
+                    };
+                }
+            }
+            
             // Debug log to see what's being sent
             console.log('Sending rule data:', ruleData);
             console.log('Keywords being sent:', ruleData.keywords);
@@ -2908,7 +3532,11 @@
                                                 if (preview && uploadLabel) {
                                                     const img = preview.querySelector('img');
                                                     if (img) {
-                                                        img.src = msg.mediaUrl;
+                                                        // Fix image URL to use backend port
+                                                        const imageUrl = msg.mediaUrl.startsWith('http') 
+                                                            ? msg.mediaUrl 
+                                                            : `${API_CONFIG.baseUrl.replace('/api', '')}${msg.mediaUrl}`;
+                                                        img.src = imageUrl;
                                                         preview.style.display = 'block';
                                                         uploadLabel.style.display = 'none';
                                                     }
@@ -2946,7 +3574,11 @@
                                                     if (preview && uploadLabel) {
                                                         const img = preview.querySelector('img');
                                                         if (img) {
-                                                            img.src = msg.mediaUrl;
+                                                            // Fix image URL to use backend port
+                                                            const imageUrl = msg.mediaUrl.startsWith('http') 
+                                                                ? msg.mediaUrl 
+                                                                : `${API_CONFIG.baseUrl.replace('/api', '')}${msg.mediaUrl}`;
+                                                            img.src = imageUrl;
                                                             preview.style.display = 'block';
                                                             uploadLabel.style.display = 'none';
                                                         }
@@ -2972,6 +3604,74 @@
                     // Set delays
                     document.getElementById('responseDelay').value = rule.responseDelay || 2;
                     document.getElementById('messageDelay').value = rule.messageDelay || 1;
+                    
+                    // Handle LLM agent fields
+                    if (rule.ruleType === 'llm_agent') {
+                        // Set system prompt
+                        if (rule.systemPrompt) {
+                            document.getElementById('systemPrompt').value = rule.systemPrompt;
+                        }
+                        
+                        // Set LLM config
+                        if (rule.llmConfig) {
+                            if (rule.llmConfig.model) {
+                                document.getElementById('llmModel').value = rule.llmConfig.model;
+                            }
+                            if (rule.llmConfig.temperature !== undefined) {
+                                document.getElementById('temperature').value = rule.llmConfig.temperature * 100;
+                                document.getElementById('temperatureValue').textContent = rule.llmConfig.temperature.toFixed(2);
+                            }
+                            if (rule.llmConfig.maxTokens) {
+                                document.getElementById('maxTokens').value = rule.llmConfig.maxTokens;
+                            }
+                        }
+                        
+                        // Set context mode
+                        if (rule.contextMode) {
+                            document.getElementById('contextMode').value = rule.contextMode;
+                        }
+                        
+                        // Handle LLM keywords from triggerConditions
+                        if (rule.triggerConditions && rule.triggerConditions.keywords) {
+                            const llmKeywordTags = document.getElementById('llmKeywordTags');
+                            if (llmKeywordTags) {
+                                llmKeywordTags.innerHTML = '';
+                                llmKeywords = []; // Reset the global array
+                                rule.triggerConditions.keywords.forEach(keyword => {
+                                    const tag = document.createElement('div');
+                                    tag.className = 'keyword-tag';
+                                    tag.innerHTML = `
+                                        ${keyword}
+                                        <span class="material-icons" onclick="removeLLMKeyword(this)">close</span>
+                                    `;
+                                    llmKeywordTags.appendChild(tag);
+                                    llmKeywords.push(keyword);
+                                });
+                            }
+                        }
+                        
+                        // Handle knowledge base
+                        if (rule.knowledgeBase && rule.knowledgeBase.length > 0) {
+                            const container = document.getElementById('knowledgeBaseContainer');
+                            container.innerHTML = ''; // Clear default entry
+                            
+                            rule.knowledgeBase.forEach(entry => {
+                                const entryDiv = document.createElement('div');
+                                entryDiv.className = 'knowledge-entry';
+                                entryDiv.style.marginBottom = '8px';
+                                entryDiv.innerHTML = `
+                                    <div style="display: flex; gap: 8px;">
+                                        <input type="text" class="form-control" placeholder="Key (e.g., pricing)" style="flex: 1;" value="${entry.key || ''}">
+                                        <input type="text" class="form-control" placeholder="Value (e.g., Paket mulai 25 juta)" style="flex: 2;" value="${entry.value || ''}">
+                                        <button type="button" class="btn btn-secondary" onclick="removeKnowledgeEntry(this)">
+                                            <span class="material-icons">delete</span>
+                                        </button>
+                                    </div>
+                                `;
+                                container.appendChild(entryDiv);
+                            });
+                        }
+                    }
                     
                     // Show modal
                     showModal('rule');
@@ -3034,12 +3734,287 @@
         }
         
         // Show analytics
-        function showAnalytics(ruleId) {
-            // TODO: Implement analytics modal
-            showToast('Analytics feature coming soon!', 'info');
+        // Show analytics modal
+        async function showAnalytics(ruleId) {
+            try {
+                // Show modal with loading state
+                document.getElementById('analyticsModal').style.display = 'flex';
+                
+                // Reset content
+                const analyticsContent = document.getElementById('analyticsContent');
+                analyticsContent.innerHTML = `
+                    <div class="analytics-loading" style="text-align: center; padding: 60px;">
+                        <div class="loading-spinner" style="margin: 0 auto 16px;"></div>
+                        <p style="color: #94a3b8;">Loading analytics data...</p>
+                    </div>
+                `;
+                
+                // Fetch analytics data
+                const response = await fetch(`${API_CONFIG.baseUrl}/automation/rules/${ruleId}/analytics?period=7d`);
+                if (!response.ok) throw new Error('Failed to load analytics');
+                
+                const result = await response.json();
+                if (!result.success) throw new Error(result.error || 'Failed to load analytics');
+                
+                const analytics = result.data;
+                
+                // Debug log
+                console.log('Analytics data received:', analytics);
+                
+                // Ensure required data exists
+                if (!analytics || !analytics.rule) {
+                    console.error('Invalid analytics data:', analytics);
+                    throw new Error('Invalid analytics data received');
+                }
+                
+                // Render analytics content
+                analyticsContent.innerHTML = `
+                    <div class="analytics-header">
+                        <div>
+                            <h3 class="analytics-title">${analytics.rule.name}</h3>
+                            <p style="color: #94a3b8; font-size: 14px; margin-top: 4px;">
+                                ${analytics.rule.ruleType === 'keyword' && analytics.rule.keywords && analytics.rule.keywords.length > 0 
+                                    ? `Keywords: ${analytics.rule.keywords.join(', ')}` 
+                                    : analytics.rule.ruleType}
+                            </p>
+                        </div>
+                        <div class="analytics-period">
+                            <button class="period-btn" onclick="updateAnalyticsPeriod('${ruleId}', '24h')">24 Hours</button>
+                            <button class="period-btn active" onclick="updateAnalyticsPeriod('${ruleId}', '7d')">7 Days</button>
+                            <button class="period-btn" onclick="updateAnalyticsPeriod('${ruleId}', '30d')">30 Days</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Stats Grid -->
+                    <div class="analytics-stats">
+                        <div class="stat-card">
+                            <div class="stat-value" style="color: #3b82f6;">${analytics.summary?.totalTriggers || 0}</div>
+                            <div class="stat-label">Total Triggers</div>
+                            ${analytics.trends?.triggersChange && analytics.trends.triggersChange !== 0 ? `
+                                <div class="stat-trend ${analytics.trends.triggersChange > 0 ? 'trend-up' : 'trend-down'}">
+                                    <span class="material-icons" style="font-size: 16px;">
+                                        ${analytics.trends.triggersChange > 0 ? 'trending_up' : 'trending_down'}
+                                    </span>
+                                    ${Math.abs(analytics.trends.triggersChange).toFixed(1)}%
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-value" style="color: #10b981;">${analytics.summary?.successCount || 0}</div>
+                            <div class="stat-label">Successful</div>
+                            <div style="margin-top: 8px; font-size: 12px; color: #64748b;">
+                                Success Rate: ${(analytics.summary?.successRate || 0).toFixed(1)}%
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-value" style="color: #ef4444;">${analytics.summary?.failedCount || 0}</div>
+                            <div class="stat-label">Failed</div>
+                            ${analytics.trends?.failureChange && analytics.trends.failureChange !== 0 ? `
+                                <div class="stat-trend ${analytics.trends.failureChange > 0 ? 'trend-down' : 'trend-up'}">
+                                    <span class="material-icons" style="font-size: 16px;">
+                                        ${analytics.trends.failureChange > 0 ? 'trending_up' : 'trending_down'}
+                                    </span>
+                                    ${Math.abs(analytics.trends.failureChange).toFixed(1)}%
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-value" style="color: #8b5cf6;">${(analytics.summary?.averageResponseTime || 0).toFixed(0)}ms</div>
+                            <div class="stat-label">Avg Response Time</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chart Section -->
+                    <div class="analytics-chart">
+                        <h4 style="margin-bottom: 16px; color: #e2e8f0;">Trigger Activity</h4>
+                        <div class="chart-placeholder">
+                            <canvas id="analyticsChart" width="100%" height="250"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Logs -->
+                    <div class="analytics-logs">
+                        <div class="logs-header">
+                            <h4 class="logs-title">Recent Activity</h4>
+                            <span style="font-size: 12px; color: #64748b;">Last 10 triggers</span>
+                        </div>
+                        <div class="logs-list">
+                            ${analytics.recentLogs && analytics.recentLogs.length > 0 ? analytics.recentLogs.map(log => {
+                                const date = new Date(log.createdAt);
+                                const timeAgo = getTimeAgo(date);
+                                return `
+                                    <div class="log-entry">
+                                        <div class="log-info">
+                                            <div class="log-contact">${log.contact?.name || log.contact?.phoneNumber || 'Unknown'}</div>
+                                            <div class="log-message">${log.triggerData?.messageContent || 'No message'}</div>
+                                            <div class="log-time">${timeAgo}</div>
+                                        </div>
+                                        <span class="log-status status-${log.status}">
+                                            ${log.status}
+                                        </span>
+                                    </div>
+                                `;
+                            }).join('') : ''}
+                            ${!analytics.recentLogs || analytics.recentLogs.length === 0 ? `
+                                <div style="text-align: center; padding: 40px; color: #64748b;">
+                                    No activity in this period
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                // Draw chart
+                drawAnalyticsChart(analytics.chartData || []);
+                
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+                showToast(`Failed to load analytics: ${error.message}`, 'error');
+            }
+        }
+        
+        // Update analytics period
+        async function updateAnalyticsPeriod(ruleId, period) {
+            // Update active button
+            document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Show loading
+            const analyticsContent = document.getElementById('analyticsContent');
+            const currentContent = analyticsContent.innerHTML;
+            
+            // Add loading overlay
+            analyticsContent.style.position = 'relative';
+            analyticsContent.insertAdjacentHTML('beforeend', `
+                <div class="loading-overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
+                     background: rgba(15, 23, 42, 0.8); display: flex; align-items: center; 
+                     justify-content: center; border-radius: 12px; z-index: 10;">
+                    <div class="loading-spinner"></div>
+                </div>
+            `);
+            
+            try {
+                // Fetch analytics with new period
+                const response = await fetch(`${API_CONFIG.baseUrl}/automation/rules/${ruleId}/analytics?period=${period}`);
+                if (!response.ok) throw new Error('Failed to load analytics');
+                
+                const result = await response.json();
+                if (!result.success) throw new Error(result.error || 'Failed to load analytics');
+                
+                // Re-render with new data
+                showAnalytics(ruleId);
+                
+            } catch (error) {
+                console.error('Error updating analytics period:', error);
+                showToast('Failed to update analytics period', 'error');
+                // Remove loading overlay
+                analyticsContent.querySelector('.loading-overlay')?.remove();
+            }
+        }
+        
+        // Draw analytics chart
+        function drawAnalyticsChart(chartData) {
+            const canvas = document.getElementById('analyticsChart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = 250;
+            
+            if (!chartData || chartData.length === 0) {
+                // Show no data message
+                ctx.fillStyle = '#64748b';
+                ctx.font = '14px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('No data available for this period', canvas.width / 2, canvas.height / 2);
+                return;
+            }
+            
+            // Simple line chart implementation
+            const padding = 40;
+            const chartWidth = canvas.width - (padding * 2);
+            const chartHeight = canvas.height - (padding * 2);
+            
+            // Find max value
+            const maxValue = Math.max(...chartData.map(d => d.total)) || 1;
+            
+            // Draw axes
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, canvas.height - padding);
+            ctx.lineTo(canvas.width - padding, canvas.height - padding);
+            ctx.stroke();
+            
+            // Draw data points and lines
+            const pointSpacing = chartWidth / (chartData.length - 1 || 1);
+            
+            // Draw lines
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            chartData.forEach((data, index) => {
+                const x = padding + (index * pointSpacing);
+                const y = canvas.height - padding - ((data.total / maxValue) * chartHeight);
+                
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            
+            ctx.stroke();
+            
+            // Draw points
+            ctx.fillStyle = '#3b82f6';
+            chartData.forEach((data, index) => {
+                const x = padding + (index * pointSpacing);
+                const y = canvas.height - padding - ((data.total / maxValue) * chartHeight);
+                
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw value labels
+                ctx.fillStyle = '#e2e8f0';
+                ctx.font = '12px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText(data.total.toString(), x, y - 10);
+                
+                // Draw date labels
+                ctx.fillStyle = '#64748b';
+                ctx.font = '11px Inter';
+                const date = new Date(data.date);
+                const label = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                ctx.fillText(label, x, canvas.height - padding + 20);
+            });
+        }
+        
+        // Get time ago string
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            
+            if (seconds < 60) return 'Just now';
+            if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
+            if (seconds < 604800) return `${Math.floor(seconds / 86400)} days ago`;
+            
+            return date.toLocaleDateString();
         }
         
         // Export rules
+        // Open Workflow Builder
+        function openWorkflowBuilder() {
+            window.location.href = '/workflow-builder.html';
+        }
+        
         async function exportRules() {
             try {
                 const response = await fetch(`${API_CONFIG.baseUrl}/automation/rules`);

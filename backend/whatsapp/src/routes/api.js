@@ -166,6 +166,19 @@ router.get('/automation/dashboard/pipeline-stats', automationController.getPipel
 router.post('/automation/test-keyword', automationController.testKeywordMatch);
 router.post('/automation/simulate-message', automationController.simulateIncomingMessage);
 
+// LLM endpoints
+router.get('/automation/llm/models', automationController.getLLMModels.bind(automationController));
+router.post('/automation/llm/test', automationController.testLLMPrompt.bind(automationController));
+router.get('/automation/llm/templates', automationController.getPromptTemplates.bind(automationController));
+
+// Workflow routes
+router.post('/automation/workflows', automationController.createWorkflow.bind(automationController));
+router.get('/automation/workflows/:workflowId', automationController.getWorkflow.bind(automationController));
+router.put('/automation/workflows/:workflowId', automationController.updateWorkflow.bind(automationController));
+router.get('/automation/workflow-sessions', automationController.getWorkflowSessions.bind(automationController));
+router.get('/automation/workflow-sessions/:sessionId', automationController.getWorkflowSession.bind(automationController));
+router.post('/automation/workflows/test', automationController.testWorkflow.bind(automationController));
+
 // Test endpoint
 router.get('/dashboard/test', async (req, res) => {
   try {

@@ -91,6 +91,15 @@ app.use('/api/messages/media', (req, res, next) => {
   next();
 });
 
+// Static files for automation uploads
+app.use('/uploads/automation', express.static('uploads/automation', {
+  setHeaders: (res, path) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+  }
+}));
+
 // API routes
 app.use('/api', apiRoutes);
 
