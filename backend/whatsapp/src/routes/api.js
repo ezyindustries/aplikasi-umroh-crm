@@ -11,6 +11,7 @@ const groupController = require('../controllers/GroupController');
 const automationController = require('../controllers/automationController');
 const templateController = require('../controllers/templateController');
 const { mediaController, upload } = require('../controllers/mediaController');
+const aiController = require('../controllers/aiController');
 
 // Webhook handler
 const webhookHandler = require('../services/WebhookHandler');
@@ -377,5 +378,13 @@ router.get('/messages/:messageId/media', async (req, res) => {
     });
   }
 });
+
+// AI/LLM routes
+router.get('/ai/connection', aiController.checkConnection.bind(aiController));
+router.post('/ai/chat', aiController.chat.bind(aiController));
+router.post('/ai/generate', aiController.generate.bind(aiController));
+router.get('/ai/models/:model', aiController.getModelInfo.bind(aiController));
+router.post('/ai/models/pull', aiController.pullModel.bind(aiController));
+router.get('/ai/models/running', aiController.listRunningModels.bind(aiController));
 
 module.exports = router;
