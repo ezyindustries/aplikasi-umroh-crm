@@ -10,6 +10,7 @@ const dashboardController = require('../controllers/DashboardController');
 const groupController = require('../controllers/GroupController');
 const automationController = require('../controllers/automationController');
 const templateController = require('../controllers/templateController');
+const { mediaController, upload } = require('../controllers/mediaController');
 
 // Webhook handler
 const webhookHandler = require('../services/WebhookHandler');
@@ -40,7 +41,10 @@ router.get('/messages/:messageId/status', messageController.getMessageStatus);
 router.post('/messages/:messageId/star', messageController.toggleStar);
 router.get('/messages/queue/status', messageController.getQueueStatus);
 
-// Media endpoint - removed duplicate, see implementation below
+// Media routes
+router.post('/media/upload', upload.single('file'), mediaController.uploadMedia);
+router.get('/media/:filename', mediaController.getMedia);
+router.delete('/media/:filename', mediaController.deleteMedia);
 
 // Contact routes
 router.get('/contacts', contactController.getContacts);

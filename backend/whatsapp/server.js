@@ -53,7 +53,7 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Api-Key'],
   exposedHeaders: ['Content-Disposition', 'Content-Type']
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -84,6 +84,25 @@ const webhookRoutes = require('./src/routes/webhooks');
 // Webhook routes (must be before main API routes for proper routing)
 app.use('/api/webhooks', webhookRoutes);
 
+// Add direct webhook route for WAHA (backward compatibility)
+app.post('/api/webhook', async (req, res) => {
+  try {
+    // Log that we're receiving webhook on /api/webhook
+    console.log('Webhook received on /api/webhook, forwarding to handler...');
+    
+    // Import webhook handler
+    const webhookHandler = require('./src/services/WebhookHandler');
+    
+    // Process the webhook
+    await webhookHandler.handleWebhook(req.body);
+    
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error('Error handling webhook:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Media-specific CORS middleware
 app.use('/api/messages/media', (req, res, next) => {
   res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
@@ -94,6 +113,15 @@ app.use('/api/messages/media', (req, res, next) => {
 
 // Static files for automation uploads
 app.use('/uploads/automation', express.static('uploads/automation', {
+  setHeaders: (res, path) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+  }
+}));
+
+// Static files for media uploads (images, documents)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
   setHeaders: (res, path) => {
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
     res.setHeader('Access-Control-Allow-Origin', '*');

@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Image Upload - WAHA Plus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.8));
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 32px;
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            margin-bottom: 24px;
+        }
+        
+        h1 {
+            background: linear-gradient(135deg, #3b82f6, #10b981);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 24px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+        }
+        
+        .test-section h2 {
+            font-size: 20px;
+            margin-bottom: 16px;
+            color: #3b82f6;
+        }
+        
+        .input-group {
+            margin-bottom: 16px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #94a3b8;
+            font-size: 14px;
+        }
+        
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 12px;
+            color: #e2e8f0;
+            font-family: inherit;
+        }
+        
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+        
+        .file-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: linear-gradient(145deg, rgba(59, 130, 246, 0.2), rgba(16, 185, 129, 0.1));
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .file-label:hover {
+            background: linear-gradient(145deg, rgba(59, 130, 246, 0.3), rgba(16, 185, 129, 0.2));
+            transform: translateY(-2px);
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 12px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(59, 130, 246, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(71, 85, 105, 0.3);
+            color: #94a3b8;
+        }
+        
+        .preview-image {
+            max-width: 300px;
+            max-height: 300px;
+            border-radius: 12px;
+            margin-top: 16px;
+            display: none;
+        }
+        
+        .status-message {
+            padding: 16px;
+            border-radius: 12px;
+            margin-top: 16px;
+            display: none;
+        }
+        
+        .status-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #10b981;
+        }
+        
+        .status-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+        
+        .status-info {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #3b82f6;
+        }
+        
+        .results {
+            margin-top: 24px;
+            padding: 16px;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>Test Image Upload - WAHA Plus</h1>
+            
+            <div class="test-section">
+                <h2>1. Upload Image Test</h2>
+                <div class="input-group">
+                    <label>Select Image</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="imageFile" accept="image/*" onchange="previewImage(event)">
+                        <label for="imageFile" class="file-label">
+                            <span class="material-icons">image</span>
+                            Choose Image
+                        </label>
+                    </div>
+                </div>
+                <img id="imagePreview" class="preview-image">
+                <button class="btn btn-primary" onclick="testImageUpload()">Test Upload</button>
+                <div id="uploadStatus" class="status-message"></div>
+                <div id="uploadResults" class="results" style="display: none;"></div>
+            </div>
+            
+            <div class="test-section">
+                <h2>2. Send Image via WhatsApp</h2>
+                <div class="input-group">
+                    <label>Phone Number (with country code)</label>
+                    <input type="text" id="phoneNumber" placeholder="628123456789" value="">
+                </div>
+                <div class="input-group">
+                    <label>Caption (optional)</label>
+                    <textarea id="caption" rows="3" placeholder="Add a caption to your image..."></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="testSendImage()">Send Image</button>
+                <button class="btn btn-secondary" onclick="testTextMessage()">Send Test Text</button>
+                <div id="sendStatus" class="status-message"></div>
+                <div id="sendResults" class="results" style="display: none;"></div>
+            </div>
+            
+            <div class="test-section">
+                <h2>3. Check WAHA Status</h2>
+                <button class="btn btn-primary" onclick="checkWAHAStatus()">Check Status</button>
+                <div id="wahaStatus" class="status-message"></div>
+                <div id="wahaResults" class="results" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_URL = 'http://localhost:3003/api';
+        let uploadedImageUrl = null;
+        
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        async function testImageUpload() {
+            const fileInput = document.getElementById('imageFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showStatus('uploadStatus', 'Please select an image first', 'error');
+                return;
+            }
+            
+            showStatus('uploadStatus', 'Uploading image...', 'info');
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                const response = await fetch(`${API_URL}/media/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    uploadedImageUrl = result.url;
+                    showStatus('uploadStatus', 'Image uploaded successfully!', 'success');
+                    showResults('uploadResults', result);
+                } else {
+                    throw new Error(result.error || 'Upload failed');
+                }
+                
+            } catch (error) {
+                showStatus('uploadStatus', `Upload failed: ${error.message}`, 'error');
+                console.error('Upload error:', error);
+            }
+        }
+        
+        async function testSendImage() {
+            const phoneNumber = document.getElementById('phoneNumber').value.trim();
+            const caption = document.getElementById('caption').value.trim();
+            
+            if (!phoneNumber) {
+                showStatus('sendStatus', 'Please enter a phone number', 'error');
+                return;
+            }
+            
+            if (!uploadedImageUrl) {
+                showStatus('sendStatus', 'Please upload an image first', 'error');
+                return;
+            }
+            
+            showStatus('sendStatus', 'Sending image via WhatsApp...', 'info');
+            
+            try {
+                // First, get or create conversation
+                const contactResponse = await fetch(`${API_URL}/contacts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        phoneNumber: phoneNumber,
+                        name: 'Test Contact'
+                    })
+                });
+                
+                const contact = await contactResponse.json();
+                console.log('Contact response:', contact);
+                
+                if (!contact.success && !contact.id && !contact.data) {
+                    throw new Error('Failed to create/get contact');
+                }
+                
+                const contactId = contact.id || contact.data?.id || contact.data?.contact?.id;
+                console.log('Contact ID:', contactId);
+                
+                const conversationResponse = await fetch(`${API_URL}/conversations`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contactId: contactId,
+                        sessionId: 'default'
+                    })
+                });
+                
+                const conversation = await conversationResponse.json();
+                console.log('Conversation response:', conversation);
+                
+                const conversationId = conversation.id || conversation.data?.id || conversation.data?.conversation?.id;
+                console.log('Conversation ID:', conversationId);
+                
+                // Send image message
+                const messageData = {
+                    conversationId: conversationId,
+                    toNumber: phoneNumber,
+                    messageType: 'image',
+                    content: caption || '',
+                    mediaUrl: uploadedImageUrl
+                };
+                
+                const response = await fetch(`${API_URL}/messages/send`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(messageData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success || result.id) {
+                    showStatus('sendStatus', 'Image sent successfully!', 'success');
+                    showResults('sendResults', result);
+                } else {
+                    throw new Error(result.error || 'Send failed');
+                }
+                
+            } catch (error) {
+                showStatus('sendStatus', `Send failed: ${error.message}`, 'error');
+                console.error('Send error:', error);
+            }
+        }
+        
+        async function testTextMessage() {
+            const phoneNumber = document.getElementById('phoneNumber').value.trim();
+            
+            if (!phoneNumber) {
+                showStatus('sendStatus', 'Please enter a phone number', 'error');
+                return;
+            }
+            
+            showStatus('sendStatus', 'Sending test text message...', 'info');
+            
+            try {
+                // Get or create conversation
+                const contactResponse = await fetch(`${API_URL}/contacts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        phoneNumber: phoneNumber,
+                        name: 'Test Contact'
+                    })
+                });
+                
+                const contact = await contactResponse.json();
+                console.log('Contact response:', contact);
+                
+                if (!contact.success && !contact.id && !contact.data) {
+                    throw new Error('Failed to create/get contact');
+                }
+                
+                const contactId = contact.id || contact.data?.id || contact.data?.contact?.id;
+                console.log('Contact ID:', contactId);
+                
+                const conversationResponse = await fetch(`${API_URL}/conversations`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contactId: contactId,
+                        sessionId: 'default'
+                    })
+                });
+                
+                const conversation = await conversationResponse.json();
+                console.log('Conversation response:', conversation);
+                
+                const conversationId = conversation.id || conversation.data?.id || conversation.data?.conversation?.id;
+                console.log('Conversation ID:', conversationId);
+                
+                // Send text message
+                const messageData = {
+                    conversationId: conversationId,
+                    toNumber: phoneNumber,
+                    messageType: 'text',
+                    content: 'Test message from WAHA Plus image upload test 🖼️'
+                };
+                
+                const response = await fetch(`${API_URL}/messages/send`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(messageData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success || result.id) {
+                    showStatus('sendStatus', 'Test message sent!', 'success');
+                    showResults('sendResults', result);
+                } else {
+                    throw new Error(result.error || 'Send failed');
+                }
+                
+            } catch (error) {
+                showStatus('sendStatus', `Send failed: ${error.message}`, 'error');
+                console.error('Send error:', error);
+            }
+        }
+        
+        async function checkWAHAStatus() {
+            showStatus('wahaStatus', 'Checking WAHA status...', 'info');
+            
+            try {
+                const response = await fetch(`${API_URL}/sessions/default/status`);
+                const result = await response.json();
+                
+                const status = result.status || 'Unknown';
+                const isConnected = status === 'WORKING';
+                
+                showStatus('wahaStatus', 
+                    `WAHA Status: ${status} ${isConnected ? '✅' : '❌'}`,
+                    isConnected ? 'success' : 'error'
+                );
+                showResults('wahaResults', result);
+                
+            } catch (error) {
+                showStatus('wahaStatus', `Failed to check status: ${error.message}`, 'error');
+                console.error('Status error:', error);
+            }
+        }
+        
+        function showStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status-message status-${type}`;
+            element.style.display = 'block';
+        }
+        
+        function showResults(elementId, data) {
+            const element = document.getElementById(elementId);
+            element.textContent = JSON.stringify(data, null, 2);
+            element.style.display = 'block';
+        }
+        
+        // Check status on load
+        window.addEventListener('DOMContentLoaded', () => {
+            checkWAHAStatus();
+        });
+    </script>
+</body>
+</html>

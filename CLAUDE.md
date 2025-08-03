@@ -19,7 +19,7 @@ Aplikasi WhatsApp CRM sederhana yang fokus pada komunikasi dengan customer melal
 - **Frontend**: HTML/CSS/JavaScript (No frameworks)
 - **Backend**: Node.js dengan Express (Minimal setup)
 - **Database**: SQLite
-- **WhatsApp**: WAHA Official API
+- **WhatsApp**: WAHA Plus Official API (dengan support media/gambar)
 - **No additional features**: Hanya fokus pada WhatsApp CRM
 
 ## 4. Business Process Flow
@@ -49,7 +49,7 @@ Aplikasi WhatsApp CRM sederhana yang fokus pada komunikasi dengan customer melal
 - Frontend: Plain HTML/CSS/JavaScript
 - Backend: Node.js (Express) - Minimal
 - Database: SQLite
-- WhatsApp: WAHA Official API
+- WhatsApp: WAHA Plus Official API (support media)
 
 ### Key Files:
 - `frontend/crm-main.html` - CRM Dashboard
@@ -71,6 +71,8 @@ Aplikasi WhatsApp CRM sederhana yang fokus pada komunikasi dengan customer melal
 - Session management with QR code
 - Real-time message sync
 - Webhook handling for incoming messages
+- **IMPORTANT**: Sistem sekarang menggunakan **WAHA Plus** (`devlikeapro/waha-plus`), BUKAN WAHA Core (`devlikeapro/waha`)
+- WAHA Plus mendukung pengiriman gambar, video, dokumen, dan media lainnya
 
 ## 9. Frontend Design System - Glass Morphism Theme
 

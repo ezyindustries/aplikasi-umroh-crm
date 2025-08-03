@@ -17,16 +17,37 @@ class MessageController {
         content,
         messageType = 'text',
         mediaUrl,
+        mimetype,
+        filename,
+        caption,
         templateName,
         templateVariables
       } = req.body;
 
       // Validate required fields
-      if (!conversationId || !toNumber || (!content && !templateName)) {
+      if (!conversationId || !toNumber || (!content && !templateName && !mediaUrl)) {
         return res.status(400).json({
           success: false,
           error: 'Missing required fields'
         });
+      }
+      
+      // Determine message type based on media
+      let actualMessageType = messageType;
+      if (mediaUrl) {
+        if (mimetype) {
+          if (mimetype.startsWith('image/')) {
+            actualMessageType = 'image';
+          } else if (mimetype.startsWith('video/')) {
+            actualMessageType = 'video';
+          } else if (mimetype.startsWith('audio/')) {
+            actualMessageType = 'audio';
+          } else {
+            actualMessageType = 'document';
+          }
+        } else {
+          actualMessageType = 'document'; // default for files
+        }
       }
 
       // Rate limiting removed to fix 429 error
@@ -51,9 +72,11 @@ class MessageController {
         conversationId,
         fromNumber: process.env.WHATSAPP_PHONE_NUMBER,
         toNumber,
-        messageType,
-        content,
+        messageType: actualMessageType,
+        content: caption || content,
         mediaUrl,
+        mimetype,
+        filename,
         templateName,
         templateVariables
       });

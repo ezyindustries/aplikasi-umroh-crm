@@ -55,6 +55,8 @@ class SimpleMessageQueueService {
         messageType: messageData.messageType || 'text',
         content: messageData.content,
         mediaUrl: messageData.mediaUrl,
+        mediaMimeType: messageData.mimetype,
+        fileName: messageData.filename,
         status: 'pending',
         direction: 'outbound'
       });
@@ -98,19 +100,76 @@ class SimpleMessageQueueService {
       let result;
       
       // Send based on message type
-      if (messageData.messageType === 'image' && messageData.mediaUrl) {
-        logger.info('Sending image message:', {
+      if (messageData.mediaUrl) {
+        logger.info(`Sending ${messageData.messageType} message:`, {
           to: messageData.toNumber,
           mediaUrl: messageData.mediaUrl,
-          caption: messageData.content
+          caption: messageData.content,
+          mimetype: messageData.mimetype
         });
         
-        result = await whatsappService.sendImageMessage(
-          'default',
-          messageData.toNumber,
-          messageData.mediaUrl,
-          messageData.content // caption
-        );
+        switch (messageData.messageType) {
+          case 'image':
+            // Convert URL to be accessible from Docker container
+            let imageUrl = messageData.mediaUrl;
+            if (imageUrl.includes('localhost') || imageUrl.includes('192.168')) {
+              // Replace with host.docker.internal for Docker access
+              imageUrl = imageUrl.replace(/http:\/\/(localhost|192\.168\.\d+\.\d+):3003/, 'http://host.docker.internal:3003');
+              logger.info('Converted image URL for Docker:', { original: messageData.mediaUrl, converted: imageUrl });
+            }
+            
+            result = await whatsappService.sendImageMessage(
+              'default',
+              messageData.toNumber,
+              imageUrl,
+              messageData.content // caption
+            );
+            break;
+            
+          case 'video':
+            // Convert URL for Docker
+            let videoUrl = messageData.mediaUrl;
+            if (videoUrl.includes('localhost') || videoUrl.includes('192.168')) {
+              videoUrl = videoUrl.replace(/http:\/\/(localhost|192\.168\.\d+\.\d+):3003/, 'http://host.docker.internal:3003');
+            }
+            
+            // WAHA Plus supports video sending
+            result = await whatsappService.sendVideo(
+              'default',
+              messageData.toNumber,
+              videoUrl,
+              messageData.content // caption
+            );
+            break;
+            
+          case 'audio':
+            let audioUrl = messageData.mediaUrl;
+            if (audioUrl.includes('localhost') || audioUrl.includes('192.168')) {
+              audioUrl = audioUrl.replace(/http:\/\/(localhost|192\.168\.\d+\.\d+):3003/, 'http://host.docker.internal:3003');
+            }
+            
+            result = await whatsappService.sendVoice(
+              'default',
+              messageData.toNumber,
+              audioUrl
+            );
+            break;
+            
+          case 'document':
+          default:
+            let docUrl = messageData.mediaUrl;
+            if (docUrl.includes('localhost') || docUrl.includes('192.168')) {
+              docUrl = docUrl.replace(/http:\/\/(localhost|192\.168\.\d+\.\d+):3003/, 'http://host.docker.internal:3003');
+            }
+            
+            result = await whatsappService.sendFile(
+              'default',
+              messageData.toNumber,
+              docUrl,
+              messageData.filename || 'document'
+            );
+            break;
+        }
       } else {
         // Default to text message
         result = await whatsappService.sendTextMessage(

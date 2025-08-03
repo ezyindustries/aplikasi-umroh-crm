@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WAHA QR Code</title>
+    <style>
+        body {
+            text-align: center;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 10px;
+            background: #e8f4f8;
+            border-radius: 5px;
+        }
+        .error {
+            color: red;
+            background: #fee;
+        }
+        .success {
+            color: green;
+            background: #efe;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>WAHA WhatsApp QR Code</h1>
+        
+        <div id="status" class="status">Loading...</div>
+        
+        <div id="qr-container">
+            <h3>Direct QR Image:</h3>
+            <img src="http://localhost:3000/api/default/auth/qr?format=image" alt="QR Code" id="qr-img">
+            
+            <h3>Alternative URLs to try:</h3>
+            <ol style="text-align: left;">
+                <li><a href="http://localhost:3000/api/default/auth/qr?format=image" target="_blank">http://localhost:3000/api/default/auth/qr?format=image</a></li>
+                <li><a href="http://localhost:3000/api/sessions/default/auth/qr" target="_blank">http://localhost:3000/api/sessions/default/auth/qr</a></li>
+                <li><a href="http://localhost:3000/api/screenshot?session=default" target="_blank">http://localhost:3000/api/screenshot?session=default</a></li>
+            </ol>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <button onclick="checkStatus()">Check Status</button>
+            <button onclick="location.reload()">Refresh Page</button>
+        </div>
+    </div>
+
+    <script>
+        function checkStatus() {
+            fetch('http://localhost:3000/api/sessions/default', {
+                headers: {'X-Api-Key': 'your-api-key'}
+            })
+            .then(r => r.json())
+            .then(data => {
+                const status = document.getElementById('status');
+                if (data.status === 'WORKING') {
+                    status.className = 'status success';
+                    status.textContent = 'WhatsApp Connected!';
+                } else if (data.status === 'SCAN_QR_CODE') {
+                    status.className = 'status';
+                    status.textContent = 'Waiting for QR scan...';
+                } else {
+                    status.className = 'status';
+                    status.textContent = 'Status: ' + data.status;
+                }
+            })
+            .catch(err => {
+                document.getElementById('status').className = 'status error';
+                document.getElementById('status').textContent = 'Error: ' + err.message;
+            });
+        }
+        
+        // Check status on load
+        checkStatus();
+        
+        // Auto refresh status every 3 seconds
+        setInterval(checkStatus, 3000);
+        
+        // Handle image error
+        document.getElementById('qr-img').onerror = function() {
+            this.style.display = 'none';
+            this.insertAdjacentHTML('afterend', '<p class="error">Could not load QR image. Try the alternative URLs above.</p>');
+        };
+    </script>
+</body>
+</html>

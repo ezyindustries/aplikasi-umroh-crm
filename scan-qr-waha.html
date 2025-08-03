@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scan QR Code - WAHA WhatsApp</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background: #1a1a1a;
+            color: white;
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+            background: #2a2a2a;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: #25D366;
+        }
+        .qr-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        #qr-image {
+            max-width: 300px;
+            height: auto;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            background: #333;
+        }
+        .instructions {
+            text-align: left;
+            margin: 20px auto;
+            max-width: 400px;
+            padding: 15px;
+            background: #333;
+            border-radius: 5px;
+            line-height: 1.8;
+        }
+        .instructions ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .error {
+            color: #ff4444;
+            padding: 10px;
+            background: #ffeeee;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success {
+            color: #00cc00;
+        }
+        button {
+            background: #25D366;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        button:hover {
+            background: #128C7E;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>WhatsApp QR Code Scanner</h1>
+        
+        <div class="status" id="status">
+            Checking session status...
+        </div>
+        
+        <div class="qr-container" id="qr-container" style="display: none;">
+            <div id="qr-content"></div>
+        </div>
+        
+        <div class="instructions">
+            <strong>Instructions:</strong>
+            <ol>
+                <li>Open WhatsApp on your phone</li>
+                <li>Go to Settings → Linked Devices</li>
+                <li>Tap "Link a Device"</li>
+                <li>Scan the QR code above</li>
+            </ol>
+        </div>
+        
+        <button onclick="checkStatus()">Refresh Status</button>
+        <button onclick="location.href='conversations-beautiful.html'">Go to Conversations</button>
+    </div>
+
+    <script>
+        const API_KEY = 'your-api-key';
+        const API_URL = 'http://localhost:3000/api';
+        const WAHA_URL = 'http://localhost:3000';
+        
+        async function checkStatus() {
+            try {
+                const response = await fetch(`${API_URL}/sessions/default`, {
+                    headers: {
+                        'X-Api-Key': API_KEY
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                updateStatus(data);
+                
+                if (data.status === 'SCAN_QR_CODE') {
+                    loadQRCode();
+                }
+                
+            } catch (error) {
+                document.getElementById('status').innerHTML = 
+                    `<span class="error">Error: ${error.message}</span>`;
+            }
+        }
+        
+        function updateStatus(data) {
+            const statusEl = document.getElementById('status');
+            let statusText = `<strong>Session:</strong> ${data.name}<br>`;
+            statusText += `<strong>Status:</strong> ${data.status}`;
+            
+            if (data.status === 'WORKING') {
+                statusText = `<span class="success">${statusText}</span><br>`;
+                statusText += `<strong>Connected!</strong>`;
+                document.getElementById('qr-container').style.display = 'none';
+            } else if (data.status === 'SCAN_QR_CODE') {
+                statusText += '<br><strong>Please scan the QR code below</strong>';
+            }
+            
+            statusEl.innerHTML = statusText;
+        }
+        
+        async function loadQRCode() {
+            const qrContainer = document.getElementById('qr-container');
+            const qrContent = document.getElementById('qr-content');
+            
+            // Try different QR endpoints
+            const qrEndpoints = [
+                '/default/auth/qr',
+                '/sessions/default/auth/qr',
+                '/auth/qr?session=default',
+                '/sessions/qr?name=default'
+            ];
+            
+            let loaded = false;
+            
+            // First try the working endpoint directly
+            const directUrl = `${WAHA_URL}/api/default/auth/qr?format=image`;
+            const img = new Image();
+            img.src = directUrl;
+            img.id = 'qr-image';
+            img.onload = function() {
+                qrContent.innerHTML = '';
+                qrContent.appendChild(img);
+                qrContainer.style.display = 'block';
+                loaded = true;
+            };
+            
+            img.onerror = function() {
+                // Try other endpoints if direct fails
+                for (const endpoint of qrEndpoints) {
+                    try {
+                        // Try with API_URL
+                        const imgUrl = `${API_URL}${endpoint}?format=image`;
+                        const img2 = new Image();
+                        img2.src = imgUrl;
+                        img2.id = 'qr-image';
+                        img2.onload = function() {
+                            qrContent.innerHTML = '';
+                            qrContent.appendChild(img2);
+                            qrContainer.style.display = 'block';
+                            loaded = true;
+                        };
+                        
+                        if (loaded) break;
+                        
+                    } catch (error) {
+                        console.log(`Error trying endpoint ${endpoint}:`, error);
+                    }
+                }
+            };
+            
+            if (!loaded) {
+                // Last resort - use screenshot endpoint
+                const screenshotUrl = `${API_URL}/screenshot?session=default`;
+                const img = new Image();
+                img.src = screenshotUrl;
+                img.id = 'qr-image';
+                img.style.maxWidth = '100%';
+                qrContent.innerHTML = '<p>Loading QR from screenshot...</p>';
+                img.onload = function() {
+                    qrContent.innerHTML = '';
+                    qrContent.appendChild(img);
+                    qrContainer.style.display = 'block';
+                };
+                img.onerror = function() {
+                    qrContent.innerHTML = '<p class="error">Could not load QR code. Please check WAHA dashboard at <a href="http://localhost:3000" target="_blank">http://localhost:3000</a></p>';
+                    qrContainer.style.display = 'block';
+                };
+            }
+        }
+        
+        // Auto-refresh every 5 seconds
+        setInterval(checkStatus, 5000);
+        
+        // Initial load
+        checkStatus();
+    </script>
+</body>
+</html>

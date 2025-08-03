@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Conversations - Image Support</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        /* Copy all existing styles from conversations-beautiful.html */
+        /* Adding new styles for image support */
+        
+        .message-input-container {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            padding: 16px;
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.85));
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(71, 85, 105, 0.3);
+        }
+        
+        .attachment-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(145deg, rgba(51, 65, 85, 0.8), rgba(30, 41, 59, 0.6));
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .attachment-btn:hover {
+            background: linear-gradient(145deg, rgba(59, 130, 246, 0.2), rgba(16, 185, 129, 0.1));
+            color: #3b82f6;
+            transform: translateY(-2px);
+        }
+        
+        .attachment-menu {
+            position: absolute;
+            bottom: 50px;
+            left: 0;
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.98), rgba(15, 23, 42, 0.95));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 16px;
+            padding: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 1000;
+        }
+        
+        .attachment-menu.show {
+            display: block;
+        }
+        
+        .attachment-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #e2e8f0;
+            min-width: 180px;
+        }
+        
+        .attachment-option:hover {
+            background: rgba(59, 130, 246, 0.1);
+            transform: translateX(4px);
+        }
+        
+        .attachment-option .material-icons {
+            color: #3b82f6;
+        }
+        
+        /* Image preview modal */
+        .image-preview-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .image-preview-content {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.9));
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 24px;
+            max-width: 90%;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .preview-image {
+            max-width: 500px;
+            max-height: 400px;
+            object-fit: contain;
+            border-radius: 16px;
+        }
+        
+        .preview-caption {
+            width: 100%;
+            min-height: 60px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 12px;
+            padding: 12px;
+            color: #e2e8f0;
+            font-size: 14px;
+            resize: none;
+        }
+        
+        .preview-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+        
+        .preview-btn {
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .preview-cancel {
+            background: rgba(71, 85, 105, 0.3);
+            color: #94a3b8;
+        }
+        
+        .preview-send {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+        
+        .preview-send:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(59, 130, 246, 0.4);
+        }
+        
+        /* Image message styling */
+        .message-image {
+            max-width: 300px;
+            max-height: 300px;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-bottom: 8px;
+        }
+        
+        .message-image:hover {
+            opacity: 0.9;
+        }
+        
+        /* File input hidden */
+        input[type="file"] {
+            display: none;
+        }
+        
+        /* Image upload progress */
+        .upload-progress {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.9));
+            padding: 16px 24px;
+            border-radius: 16px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .upload-progress.show {
+            display: flex;
+        }
+        
+        .progress-bar {
+            width: 200px;
+            height: 4px;
+            background: rgba(71, 85, 105, 0.3);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- Copy all HTML from conversations-beautiful.html -->
+    <!-- Add new elements for image support -->
+    
+    <div class="chat-container">
+        <!-- Chat messages area -->
+        <div class="messages-container" id="messagesContainer">
+            <!-- Messages will be dynamically added here -->
+        </div>
+        
+        <!-- Message input area with image support -->
+        <div class="message-input-container">
+            <div class="attachment-btn" onclick="toggleAttachmentMenu()">
+                <span class="material-icons">attach_file</span>
+                <div class="attachment-menu" id="attachmentMenu">
+                    <div class="attachment-option" onclick="selectImage()">
+                        <span class="material-icons">image</span>
+                        <span>Photo</span>
+                    </div>
+                    <div class="attachment-option" onclick="selectDocument()">
+                        <span class="material-icons">description</span>
+                        <span>Document</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-input-wrapper">
+                <textarea class="chat-input" id="messageInput" placeholder="Type a message..." rows="1"></textarea>
+            </div>
+            
+            <button class="send-btn" onclick="sendMessage()">
+                <span class="material-icons">send</span>
+            </button>
+        </div>
+        
+        <!-- Hidden file input -->
+        <input type="file" id="imageInput" accept="image/*" onchange="handleImageSelect(event)">
+        <input type="file" id="documentInput" accept=".pdf,.doc,.docx,.xls,.xlsx" onchange="handleDocumentSelect(event)">
+        
+        <!-- Upload progress indicator -->
+        <div class="upload-progress" id="uploadProgress">
+            <span>Uploading...</span>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Image preview modal -->
+    <div class="image-preview-modal" id="imagePreviewModal" onclick="closePreviewModal(event)">
+        <div class="image-preview-content" onclick="event.stopPropagation()">
+            <img class="preview-image" id="previewImage" src="">
+            <textarea class="preview-caption" id="previewCaption" placeholder="Add a caption..."></textarea>
+            <div class="preview-actions">
+                <button class="preview-btn preview-cancel" onclick="closePreviewModal()">Cancel</button>
+                <button class="preview-btn preview-send" onclick="sendImageMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // API Configuration
+        const API_CONFIG = {
+            baseUrl: 'http://localhost:3003/api',
+            sessionId: 'default'
+        };
+        
+        let selectedImageFile = null;
+        let selectedDocumentFile = null;
+        
+        // Toggle attachment menu
+        function toggleAttachmentMenu() {
+            const menu = document.getElementById('attachmentMenu');
+            menu.classList.toggle('show');
+        }
+        
+        // Close attachment menu when clicking outside
+        document.addEventListener('click', (e) => {
+            const attachmentBtn = document.querySelector('.attachment-btn');
+            const menu = document.getElementById('attachmentMenu');
+            if (!attachmentBtn.contains(e.target)) {
+                menu.classList.remove('show');
+            }
+        });
+        
+        // Select image
+        function selectImage() {
+            document.getElementById('imageInput').click();
+            document.getElementById('attachmentMenu').classList.remove('show');
+        }
+        
+        // Select document
+        function selectDocument() {
+            document.getElementById('documentInput').click();
+            document.getElementById('attachmentMenu').classList.remove('show');
+        }
+        
+        // Handle image selection
+        function handleImageSelect(event) {
+            const file = event.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                selectedImageFile = file;
+                showImagePreview(file);
+            }
+        }
+        
+        // Show image preview
+        function showImagePreview(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('previewImage').src = e.target.result;
+                document.getElementById('imagePreviewModal').style.display = 'flex';
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        // Close preview modal
+        function closePreviewModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('imagePreviewModal').style.display = 'none';
+            document.getElementById('previewCaption').value = '';
+            selectedImageFile = null;
+            document.getElementById('imageInput').value = '';
+        }
+        
+        // Send image message
+        async function sendImageMessage() {
+            if (!selectedImageFile) return;
+            
+            const caption = document.getElementById('previewCaption').value;
+            const progressDiv = document.getElementById('uploadProgress');
+            const progressFill = document.getElementById('progressFill');
+            
+            try {
+                // Show upload progress
+                progressDiv.classList.add('show');
+                progressFill.style.width = '0%';
+                
+                // Upload image first
+                const formData = new FormData();
+                formData.append('file', selectedImageFile);
+                formData.append('type', 'image');
+                
+                const uploadResponse = await fetch(`${API_CONFIG.baseUrl}/media/upload`, {
+                    method: 'POST',
+                    body: formData,
+                    onUploadProgress: (progressEvent) => {
+                        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                        progressFill.style.width = percentCompleted + '%';
+                    }
+                });
+                
+                if (!uploadResponse.ok) throw new Error('Upload failed');
+                
+                const uploadResult = await uploadResponse.json();
+                const imageUrl = uploadResult.url;
+                
+                // Send message with image
+                const messageData = {
+                    conversationId: currentConversationId,
+                    toNumber: currentContact.phoneNumber,
+                    messageType: 'image',
+                    content: caption || '',
+                    mediaUrl: imageUrl
+                };
+                
+                const response = await fetch(`${API_CONFIG.baseUrl}/messages/send`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(messageData)
+                });
+                
+                if (!response.ok) throw new Error('Failed to send image');
+                
+                // Close modal and reset
+                closePreviewModal();
+                progressDiv.classList.remove('show');
+                
+                showNotification('Image sent successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Error sending image:', error);
+                showNotification('Failed to send image', 'error');
+                progressDiv.classList.remove('show');
+            }
+        }
+        
+        // Enhanced message rendering with image support
+        function renderMessage(message) {
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${message.direction === 'outbound' ? 'sent' : 'received'}`;
+            
+            let content = '';
+            
+            // Handle different message types
+            if (message.messageType === 'image' && message.mediaUrl) {
+                content = `
+                    <img class="message-image" src="${message.mediaUrl}" alt="Image" onclick="viewFullImage('${message.mediaUrl}')">
+                    ${message.content ? `<div class="message-text">${escapeHtml(message.content)}</div>` : ''}
+                `;
+            } else if (message.messageType === 'document' && message.mediaUrl) {
+                content = `
+                    <div class="message-document">
+                        <span class="material-icons">description</span>
+                        <a href="${message.mediaUrl}" target="_blank">${message.fileName || 'Document'}</a>
+                    </div>
+                    ${message.content ? `<div class="message-text">${escapeHtml(message.content)}</div>` : ''}
+                `;
+            } else {
+                content = `<div class="message-text">${escapeHtml(message.content || '')}</div>`;
+            }
+            
+            messageEl.innerHTML = `
+                ${content}
+                <div class="message-time">${formatTime(message.createdAt)}</div>
+                ${message.status ? `<div class="message-status">${getStatusIcon(message.status)}</div>` : ''}
+            `;
+            
+            return messageEl;
+        }
+        
+        // View full image
+        function viewFullImage(imageUrl) {
+            window.open(imageUrl, '_blank');
+        }
+        
+        // Utility functions
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function formatTime(timestamp) {
+            return new Date(timestamp).toLocaleTimeString('id-ID', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+        
+        function getStatusIcon(status) {
+            const icons = {
+                pending: '⏱',
+                sent: '✓',
+                delivered: '✓✓',
+                read: '✓✓',
+                failed: '❌'
+            };
+            return icons[status] || '';
+        }
+        
+        function showNotification(message, type = 'info') {
+            // Implementation of notification system
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        // Initialize when document loads
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('WhatsApp Conversations with Image Support loaded');
+            // Initialize other components...
+        });
+    </script>
+</body>
+</html>

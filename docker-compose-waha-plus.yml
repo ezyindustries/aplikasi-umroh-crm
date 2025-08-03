@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  waha-plus:
+    image: devlikeapro/waha-plus:latest
+    container_name: waha
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      # IMPORTANT: Replace with your actual license key
+      - WAHA_LICENSE_KEY=${WAHA_LICENSE_KEY:-your-license-key-here}
+      
+      # Webhook configuration
+      - WHATSAPP_HOOK_URL=http://host.docker.internal:3003/api/webhook
+      - WHATSAPP_HOOK_EVENTS=*
+      
+      # API Security
+      - WHATSAPP_API_KEY=${WHATSAPP_API_KEY:-your-api-key}
+      
+      # Session management
+      - WHATSAPP_RESTART_ALL_SESSIONS=true
+      
+      # Plus features configuration
+      - WHATSAPP_FILES_MIMETYPES=audio,document,image,video
+      - WHATSAPP_FILES_LIFETIME=180
+      - WHATSAPP_DOWNLOADS_FOLDER=/app/downloads
+      
+      # Optional: Advanced settings
+      - WHATSAPP_SWAGGER_ENABLED=true
+      - WHATSAPP_SWAGGER_USERNAME=admin
+      - WHATSAPP_SWAGGER_PASSWORD=admin
+      
+    volumes:
+      # Persistent data (sessions, etc)
+      - waha-data:/app/data
+      
+      # Downloaded media files
+      - waha-downloads:/app/downloads
+      
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+      
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  waha-data:
+    driver: local
+  waha-downloads:
+    driver: local
+
+networks:
+  default:
+    name: waha-network

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Upload Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        #log {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>Simple Upload Test</h1>
+    
+    <div>
+        <input type="file" id="fileInput" accept="image/*">
+        <button onclick="testUpload()">Test Upload</button>
+        <button onclick="clearLog()">Clear Log</button>
+    </div>
+    
+    <h3>Log:</h3>
+    <div id="log"></div>
+    
+    <script>
+        const API_URL = 'http://localhost:3003/api';
+        const logDiv = document.getElementById('log');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type;
+            logDiv.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function clearLog() {
+            logDiv.innerHTML = '';
+        }
+        
+        async function testUpload() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                log('No file selected', 'error');
+                return;
+            }
+            
+            log(`File selected: ${file.name} (${file.type}, ${(file.size / 1024).toFixed(2)} KB)`, 'info');
+            
+            try {
+                // Test 1: Check if backend is running
+                log('Testing backend connectivity...', 'info');
+                const testResponse = await fetch(`${API_URL}/sessions/default/status`);
+                log(`Backend response: ${testResponse.status} ${testResponse.statusText}`, testResponse.ok ? 'success' : 'error');
+                
+                // Test 2: Upload file
+                log('Uploading file...', 'info');
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                const uploadResponse = await fetch(`${API_URL}/media/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                log(`Upload response: ${uploadResponse.status} ${uploadResponse.statusText}`, uploadResponse.ok ? 'success' : 'error');
+                
+                const uploadResult = await uploadResponse.json();
+                log(`Upload result: ${JSON.stringify(uploadResult, null, 2)}`, uploadResult.success ? 'success' : 'error');
+                
+                if (uploadResult.success) {
+                    // Test 3: Try to fetch the uploaded file
+                    log(`Testing file access: ${uploadResult.url}`, 'info');
+                    const fileResponse = await fetch(uploadResult.url);
+                    log(`File access response: ${fileResponse.status} ${fileResponse.statusText}`, fileResponse.ok ? 'success' : 'error');
+                    
+                    // Show preview
+                    if (file.type.startsWith('image/')) {
+                        const img = document.createElement('img');
+                        img.src = uploadResult.url;
+                        img.style.maxWidth = '300px';
+                        img.style.marginTop = '20px';
+                        img.onload = () => log('Image loaded successfully', 'success');
+                        img.onerror = () => log('Failed to load image', 'error');
+                        document.body.appendChild(img);
+                    }
+                }
+                
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+                log(`Stack: ${error.stack}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
