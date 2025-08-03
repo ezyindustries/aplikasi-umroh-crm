@@ -19,6 +19,7 @@ const WorkflowTemplate = require('./WorkflowTemplate');
 const WorkflowStep = require('./WorkflowStep');
 const WorkflowSession = require('./WorkflowSession');
 const WorkflowVariable = require('./WorkflowVariable');
+const CustomTemplate = require('./CustomTemplate');
 
 // Define associations
 Contact.hasMany(Conversation, { foreignKey: 'contact_id', as: 'conversations' });
@@ -122,5 +123,6 @@ module.exports = {
   WorkflowStep,
   WorkflowSession,
   WorkflowVariable,
+  CustomTemplate,
   initDatabase
 };

@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test LLM Agent</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .panel {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        h1, h2 {
+            color: #3b82f6;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        .success {
+            background: #10b981;
+        }
+        .error {
+            background: #ef4444;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            background: #1a1a1a;
+            color: white;
+            border: 1px solid #444;
+            border-radius: 4px;
+        }
+        textarea {
+            min-height: 150px;
+        }
+        .result {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+        }
+        .log {
+            background: #1a1a1a;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+        
+        /* Progress Bar Styles */
+        .progress-container {
+            display: none;
+            margin: 20px 0;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #1a1a1a;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .progress-text {
+            text-align: center;
+            margin-top: 10px;
+            color: #3b82f6;
+            font-size: 14px;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .progress-active {
+            animation: pulse 1.5s infinite;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        .status.active {
+            background: #10b981;
+        }
+        .status.inactive {
+            background: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test LLM Agent Automation</h1>
+    
+    <div class="container">
+        <!-- Left Panel: Create LLM Rule -->
+        <div class="panel">
+            <h2>1. Create LLM Agent Rule</h2>
+            
+            <div>
+                <label>Rule Name:</label>
+                <input type="text" id="ruleName" value="AI Sales Assistant">
+            </div>
+            
+            <div>
+                <label>System Prompt:</label>
+                <textarea id="systemPrompt">Anda adalah konsultan umrah yang berpengalaman dan ramah di Vauza Tamma. Tugas Anda adalah membantu calon jamaah dengan informasi paket umrah, menjawab pertanyaan mereka, dan membimbing mereka dalam proses pemilihan paket yang sesuai.
+
+Gunakan bahasa Indonesia yang sopan dan Islami. Sertakan salam pembuka/penutup yang sesuai. Jika ditanya hal di luar umrah, arahkan kembali ke topik umrah dengan sopan.
+
+Informasi penting:
+- Selalu tanyakan preferensi bulan keberangkatan
+- Tanyakan jumlah jamaah jika relevan
+- Berikan rekomendasi paket berdasarkan budget
+- Jelaskan perbedaan antar paket dengan jelas
+- Ajak untuk berkonsultasi lebih lanjut atau booking</textarea>
+            </div>
+            
+            <div>
+                <label>Model:</label>
+                <select id="model">
+                    <option value="llama3.2:1b">Llama 3.2 1B (Fastest)</option>
+                    <option value="llama3.2:3b">Llama 3.2 3B (Balanced)</option>
+                    <option value="llama3.2:8b" selected>Llama 3.2 8B (Recommended)</option>
+                    <option value="llama3.2:11b-vision">Llama 3.2 11B Vision</option>
+                    <option value="mistral:7b-instruct">Mistral 7B Instruct</option>
+                    <option value="phi3:medium">Phi-3 Medium</option>
+                </select>
+            </div>
+            
+            <div>
+                <label>Temperature:</label>
+                <input type="range" id="temperature" min="0" max="100" value="70">
+                <span id="tempValue">0.7</span>
+            </div>
+            
+            <div>
+                <label>Max Tokens:</label>
+                <input type="number" id="maxTokens" min="50" max="2000" value="200" style="width: 100px;">
+                <span style="font-size: 12px; color: #888;">(50-2000)</span>
+            </div>
+            
+            <div>
+                <label>Max Sentences:</label>
+                <input type="number" id="maxSentences" min="1" max="10" value="2" style="width: 100px;">
+                <span style="font-size: 12px; color: #888;">(1-10 sentences)</span>
+            </div>
+            
+            <div>
+                <label>Knowledge Base (Key: Value):</label>
+                <textarea id="knowledgeBase" placeholder="One entry per line, format: key: value">paket_ekonomis: Paket ekonomis mulai dari 25 juta, hotel bintang 3, 9 hari
+paket_vip: Paket VIP mulai dari 45 juta, hotel bintang 5, 12 hari
+dokumen: Paspor minimal berlaku 7 bulan, KTP, KK, Foto 4x6, Surat Nikah
+keberangkatan: Tersedia setiap bulan, paling ramai Ramadhan dan Desember</textarea>
+            </div>
+            
+            <button onclick="createLLMRule()">Create LLM Rule</button>
+            <button onclick="listRules()">List All Rules</button>
+            
+            <div id="createResult" class="result"></div>
+        </div>
+        
+        <!-- Right Panel: Test Messages -->
+        <div class="panel">
+            <h2>2. Test LLM Agent</h2>
+            
+            <div>
+                <label>Test Message:</label>
+                <textarea id="testMessage">Halo, saya mau tanya paket umroh bulan Maret untuk 2 orang</textarea>
+            </div>
+            
+            <button onclick="simulateMessage()">Send Test Message</button>
+            <button onclick="testDirectLLM()" id="testLLMBtn">Test Direct LLM</button>
+            
+            <!-- Progress Bar -->
+            <div id="progressContainer" class="progress-container">
+                <div class="progress-bar">
+                    <div id="progressFill" class="progress-fill progress-active">0%</div>
+                </div>
+                <div id="progressText" class="progress-text">Initializing...</div>
+            </div>
+            
+            <div id="testResult" class="result"></div>
+            
+            <h3>Automation Logs</h3>
+            <div id="logs"></div>
+        </div>
+    </div>
+    
+    <script>
+        const API_URL = 'http://localhost:3003/api';
+        
+        // Temperature slider
+        document.getElementById('temperature').addEventListener('input', function() {
+            document.getElementById('tempValue').textContent = (this.value / 100).toFixed(2);
+        });
+        
+        // Create LLM Rule
+        async function createLLMRule() {
+            const ruleName = document.getElementById('ruleName').value;
+            const systemPrompt = document.getElementById('systemPrompt').value;
+            const model = document.getElementById('model').value;
+            const temperature = parseFloat(document.getElementById('tempValue').textContent);
+            
+            // Parse knowledge base
+            const knowledgeBase = [];
+            const kbText = document.getElementById('knowledgeBase').value;
+            kbText.split('\n').forEach(line => {
+                const [key, value] = line.split(':').map(s => s.trim());
+                if (key && value) {
+                    knowledgeBase.push({ key, value });
+                }
+            });
+            
+            const maxTokens = parseInt(document.getElementById('maxTokens').value) || 200;
+            
+            const ruleData = {
+                name: ruleName,
+                description: 'AI-powered sales assistant using LLM',
+                ruleType: 'llm_agent',
+                isActive: true,
+                systemPrompt: systemPrompt,
+                llmConfig: {
+                    model: model,
+                    temperature: temperature,
+                    maxTokens: maxTokens,
+                    maxSentences: parseInt(document.getElementById('maxSentences').value) || 2
+                },
+                contextMode: 'both',
+                knowledgeBase: knowledgeBase,
+                responseDelay: 2,
+                messageDelay: 1
+            };
+            
+            try {
+                const formData = new FormData();
+                formData.append('ruleData', JSON.stringify(ruleData));
+                
+                const response = await fetch(`${API_URL}/automation/rules`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('createResult').innerHTML = 
+                        `<div class="success">✅ LLM Rule created successfully! ID: ${result.data.id}</div>`;
+                    
+                    // Auto-refresh rules list
+                    setTimeout(listRules, 1000);
+                } else {
+                    document.getElementById('createResult').innerHTML = 
+                        `<div class="error">❌ Error: ${result.error}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('createResult').innerHTML = 
+                    `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+        
+        // List all rules
+        async function listRules() {
+            try {
+                const response = await fetch(`${API_URL}/automation/rules?ruleType=llm_agent`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const rules = result.data;
+                    let html = '<h3>Active LLM Rules:</h3>';
+                    
+                    rules.forEach(rule => {
+                        html += `
+                            <div class="log">
+                                <strong>${rule.name}</strong>
+                                <span class="status ${rule.isActive ? 'active' : 'inactive'}">
+                                    ${rule.isActive ? 'Active' : 'Inactive'}
+                                </span>
+                                <br>
+                                ID: ${rule.id}<br>
+                                Model: ${rule.llmConfig?.model || 'N/A'}<br>
+                                Triggers: ${rule.triggerCount || 0}
+                            </div>
+                        `;
+                    });
+                    
+                    document.getElementById('createResult').innerHTML = html;
+                }
+            } catch (error) {
+                console.error('Error listing rules:', error);
+            }
+        }
+        
+        // Simulate incoming message
+        async function simulateMessage() {
+            const message = document.getElementById('testMessage').value;
+            
+            try {
+                const response = await fetch(`${API_URL}/automation/simulate-message`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        content: message,
+                        fromNumber: '6281234567890'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('testResult').innerHTML = 
+                        `<div class="success">✅ Message simulated successfully!</div>`;
+                    
+                    // Wait and check logs
+                    setTimeout(loadLogs, 2000);
+                } else {
+                    document.getElementById('testResult').innerHTML = 
+                        `<div class="error">❌ Error: ${result.error}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('testResult').innerHTML = 
+                    `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+        
+        // Progress bar helper
+        function updateProgress(percent, text) {
+            const container = document.getElementById('progressContainer');
+            const fill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            
+            container.style.display = 'block';
+            fill.style.width = percent + '%';
+            fill.textContent = percent + '%';
+            progressText.textContent = text;
+            
+            if (percent >= 100) {
+                fill.classList.remove('progress-active');
+            } else {
+                fill.classList.add('progress-active');
+            }
+        }
+        
+        function hideProgress() {
+            setTimeout(() => {
+                document.getElementById('progressContainer').style.display = 'none';
+            }, 1000);
+        }
+        
+        // Test direct LLM
+        async function testDirectLLM() {
+            const systemPrompt = document.getElementById('systemPrompt').value;
+            const sampleMessage = document.getElementById('testMessage').value;
+            const model = document.getElementById('model').value;
+            const temperature = parseFloat(document.getElementById('tempValue').textContent);
+            const maxTokens = parseInt(document.getElementById('maxTokens').value) || 200;
+            
+            // Disable button
+            const testBtn = document.getElementById('testLLMBtn');
+            testBtn.disabled = true;
+            testBtn.textContent = 'Processing...';
+            
+            // Clear previous result
+            document.getElementById('testResult').innerHTML = '';
+            
+            // Start progress
+            updateProgress(10, 'Connecting to LLM service...');
+            
+            try {
+                // Simulate progress steps
+                setTimeout(() => updateProgress(30, 'Sending prompt to ' + model + '...'), 500);
+                
+                const response = await fetch(`${API_URL}/automation/llm/test`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        systemPrompt,
+                        sampleMessage,
+                        llmConfig: {
+                            model,
+                            temperature,
+                            maxTokens,
+                            maxSentences: parseInt(document.getElementById('maxSentences').value) || 2
+                        }
+                    })
+                });
+                
+                updateProgress(50, 'Waiting for AI response...');
+                
+                const result = await response.json();
+                
+                updateProgress(80, 'Processing response...');
+                
+                if (result.success && result.data) {
+                    updateProgress(100, 'Complete!');
+                    
+                    document.getElementById('testResult').innerHTML = `
+                        <h3>AI Response:</h3>
+                        <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; margin: 10px 0;">
+                            ${result.data.response || 'No response'}
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12px;">
+                            <div>
+                                <strong>Model:</strong> ${result.data.stats?.model || model}<br>
+                                <strong>Max Tokens:</strong> ${maxTokens}<br>
+                                <strong>Temperature:</strong> ${temperature}
+                            </div>
+                            <div>
+                                <strong>Tokens Used:</strong> ${result.data.stats?.tokens || 'N/A'}<br>
+                                <strong>Duration:</strong> ${result.data.stats?.duration ? (result.data.stats.duration / 1000000).toFixed(2) + 'ms' : 'N/A'}<br>
+                                <strong>Speed:</strong> ${result.data.stats?.tokens && result.data.stats?.duration ? 
+                                    (result.data.stats.tokens / (result.data.stats.duration / 1000000000)).toFixed(1) + ' tokens/s' : 'N/A'}
+                            </div>
+                        </div>
+                    `;
+                    hideProgress();
+                } else {
+                    updateProgress(100, 'Error occurred!');
+                    document.getElementById('testResult').innerHTML = 
+                        `<div class="error">❌ Error: ${result.data?.error || result.error || 'Unknown error'}</div>`;
+                    hideProgress();
+                }
+            } catch (error) {
+                updateProgress(100, 'Connection failed!');
+                document.getElementById('testResult').innerHTML = 
+                    `<div class="error">❌ Error: ${error.message}</div>`;
+                hideProgress();
+            } finally {
+                // Re-enable button
+                testBtn.disabled = false;
+                testBtn.textContent = 'Test Direct LLM';
+            }
+        }
+        
+        // Load automation logs
+        async function loadLogs() {
+            try {
+                const response = await fetch(`${API_URL}/automation/logs?limit=10`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const logs = result.data;
+                    let html = '';
+                    
+                    logs.forEach(log => {
+                        const statusClass = log.status === 'success' ? 'success' : 'error';
+                        html += `
+                            <div class="log">
+                                <strong>${new Date(log.createdAt).toLocaleString()}</strong>
+                                <span class="status ${statusClass}">${log.status}</span><br>
+                                Rule: ${log.rule?.name || 'N/A'}<br>
+                                Type: ${log.triggerType}<br>
+                                ${log.error ? `Error: ${log.error}<br>` : ''}
+                                ${log.responseMessageId ? `Response ID: ${log.responseMessageId}` : ''}
+                            </div>
+                        `;
+                    });
+                    
+                    document.getElementById('logs').innerHTML = html || '<div class="log">No logs found</div>';
+                }
+            } catch (error) {
+                console.error('Error loading logs:', error);
+            }
+        }
+        
+        // Auto-load on start
+        window.onload = () => {
+            listRules();
+            loadLogs();
+            
+            // Auto-refresh logs
+            setInterval(loadLogs, 5000);
+        };
+    </script>
+</body>
+</html>

@@ -27,7 +27,7 @@ echo Waiting for backend to start...
 timeout /t 8 /nobreak >nul
 
 :: Verify backend is running
-curl -s http://localhost:3001/api/health >nul 2>&1
+curl -s http://localhost:3003/api/health >nul 2>&1
 if %errorlevel% neq 0 (
     echo WARNING: Backend may not be ready yet
 )
@@ -64,7 +64,7 @@ echo.
 echo System Status:
 echo ✓ Docker: Running
 echo ✓ WAHA API: http://localhost:3000
-echo ✓ Backend API: http://localhost:3001
+echo ✓ Backend API: http://localhost:3003
 echo ✓ Frontend: http://localhost:8080
 echo.
 echo Active Windows:

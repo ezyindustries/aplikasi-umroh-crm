@@ -9,6 +9,7 @@ const conversationController = require('../controllers/ConversationController');
 const dashboardController = require('../controllers/DashboardController');
 const groupController = require('../controllers/GroupController');
 const automationController = require('../controllers/automationController');
+const templateController = require('../controllers/templateController');
 
 // Webhook handler
 const webhookHandler = require('../services/WebhookHandler');
@@ -172,12 +173,25 @@ router.post('/automation/llm/test', automationController.testLLMPrompt.bind(auto
 router.get('/automation/llm/templates', automationController.getPromptTemplates.bind(automationController));
 
 // Workflow routes
+router.get('/automation/workflows', automationController.getWorkflows.bind(automationController));
 router.post('/automation/workflows', automationController.createWorkflow.bind(automationController));
 router.get('/automation/workflows/:workflowId', automationController.getWorkflow.bind(automationController));
 router.put('/automation/workflows/:workflowId', automationController.updateWorkflow.bind(automationController));
+router.delete('/automation/workflows/:workflowId', automationController.deleteWorkflow.bind(automationController));
 router.get('/automation/workflow-sessions', automationController.getWorkflowSessions.bind(automationController));
 router.get('/automation/workflow-sessions/:sessionId', automationController.getWorkflowSession.bind(automationController));
 router.post('/automation/workflows/test', automationController.testWorkflow.bind(automationController));
+
+// Template routes
+router.get('/templates', templateController.getTemplates.bind(templateController));
+router.get('/templates/categories', templateController.getCategories.bind(templateController));
+router.get('/templates/:id', templateController.getTemplate.bind(templateController));
+router.post('/templates', templateController.createTemplate.bind(templateController));
+router.put('/templates/:id', templateController.updateTemplate.bind(templateController));
+router.delete('/templates/:id', templateController.deleteTemplate.bind(templateController));
+router.post('/templates/test', templateController.testTemplate.bind(templateController));
+router.post('/templates/match', templateController.matchTemplate.bind(templateController));
+router.post('/templates/import', templateController.importFromChats.bind(templateController));
 
 // Test endpoint
 router.get('/dashboard/test', async (req, res) => {

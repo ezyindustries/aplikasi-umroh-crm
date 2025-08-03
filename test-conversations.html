@@ -13,7 +13,7 @@
             
             try {
                 console.log('Fetching conversations...');
-                const response = await fetch('http://localhost:3001/api/conversations?limit=50');
+                const response = await fetch('http://localhost:3003/api/conversations?limit=50');
                 const data = await response.json();
                 
                 console.log('Response:', data);

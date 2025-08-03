@@ -2,7 +2,7 @@ const axios = require('axios');
 
 async function restartWithWebhook() {
   const WAHA_URL = 'http://localhost:3000';
-  const BACKEND_URL = 'http://localhost:3001';
+  const BACKEND_URL = 'http://localhost:3003';
   const SESSION_ID = 'default';
   
   try {

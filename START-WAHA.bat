@@ -37,9 +37,9 @@ if %errorlevel% equ 0 (
     echo Media download is ENABLED with these settings:
     echo - All media types will be downloaded
     echo - Files will be kept forever
-    echo - Webhook configured to: http://localhost:3001/api/webhooks/waha
+    echo - Webhook configured to: http://localhost:3003/api/webhooks/waha
     echo.
-    echo Backend API runs on: http://localhost:3001
+    echo Backend API runs on: http://localhost:3003
     echo.
     echo To view logs: docker logs -f vauza-tamma-waha
 ) else (

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Autoreply via Webhook</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #1a1a1a; color: #e0e0e0; }
+        .container { max-width: 800px; margin: auto; }
+        .card { background: #2a2a2a; padding: 20px; margin: 20px 0; border-radius: 10px; border: 1px solid #444; }
+        button { padding: 10px 20px; margin: 5px; font-size: 16px; border: none; border-radius: 5px; cursor: pointer; }
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-warning { background: #f59e0b; color: white; }
+        input, textarea { width: 100%; padding: 10px; margin: 5px 0; background: #1a1a1a; color: #e0e0e0; border: 1px solid #444; border-radius: 5px; }
+        .log { background: #1a1a1a; padding: 15px; border-radius: 5px; font-family: monospace; font-size: 12px; max-height: 400px; overflow-y: auto; }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .warning { color: #f59e0b; }
+        .info { color: #3b82f6; }
+        pre { background: #000; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Test Autoreply via Webhook</h1>
+        
+        <div class="card">
+            <h2>1. Check Active Keyword Rules</h2>
+            <button class="btn-primary" onclick="checkRules()">Check Rules</button>
+            <div id="rulesResult"></div>
+        </div>
+        
+        <div class="card">
+            <h2>2. Send Test Message via Webhook</h2>
+            <p>This simulates an incoming WhatsApp message through the webhook endpoint</p>
+            <input type="text" id="messageContent" placeholder="Message content" value="123">
+            <input type="text" id="fromNumber" placeholder="From number" value="6281234567890">
+            <button class="btn-success" onclick="sendViaWebhook()">Send via Webhook</button>
+        </div>
+        
+        <div class="card">
+            <h2>3. Check Outgoing Message Queue</h2>
+            <button class="btn-primary" onclick="checkMessageQueue()">Check Queue Status</button>
+            <div id="queueResult"></div>
+        </div>
+        
+        <div class="card">
+            <h2>4. Get Recent Messages</h2>
+            <button class="btn-primary" onclick="getRecentMessages()">Get Recent Messages</button>
+            <div id="messagesResult"></div>
+        </div>
+        
+        <div class="card">
+            <h2>Log Output</h2>
+            <div id="log" class="log"></div>
+            <button class="btn-warning" onclick="clearLog()">Clear Log</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3003/api';
+        const WEBHOOK_BASE = 'http://localhost:3003/api/webhooks';
+        
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = type;
+            entry.innerHTML = `[${timestamp}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+        
+        async function checkRules() {
+            log('Checking active keyword rules...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/automation/rules`);
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const keywordRules = result.data.filter(r => r.ruleType === 'keyword' && r.isActive);
+                    
+                    log(`Found ${keywordRules.length} active keyword rules`, 'success');
+                    
+                    const rulesDiv = document.getElementById('rulesResult');
+                    let html = '<div style="margin-top: 10px;">';
+                    
+                    keywordRules.forEach(rule => {
+                        html += `<div style="margin: 10px 0; padding: 10px; background: #1a1a1a; border-radius: 5px;">`;
+                        html += `<strong>${rule.name}</strong><br>`;
+                        html += `Keywords: <code>${(rule.keywords || []).join(', ')}</code><br>`;
+                        html += `Response messages: ${(rule.responseMessages || []).length}`;
+                        html += `</div>`;
+                        
+                        log(`Rule: "${rule.name}" - Keywords: [${(rule.keywords || []).join(', ')}]`, 'info');
+                    });
+                    
+                    html += '</div>';
+                    rulesDiv.innerHTML = html;
+                } else {
+                    log('Failed to load rules', 'error');
+                }
+            } catch (error) {
+                log('Error: ' + error.message, 'error');
+            }
+        }
+        
+        async function sendViaWebhook() {
+            const content = document.getElementById('messageContent').value;
+            const fromNumber = document.getElementById('fromNumber').value;
+            
+            if (!content || !fromNumber) {
+                log('Please enter message content and phone number', 'warning');
+                return;
+            }
+            
+            log(`Sending webhook message: "${content}" from ${fromNumber}`, 'info');
+            
+            // Create webhook payload similar to WAHA format
+            const webhookPayload = {
+                event: 'message',
+                session: 'default',
+                payload: {
+                    id: 'test-' + Date.now(),
+                    from: fromNumber + '@c.us',
+                    to: 'default',
+                    type: 'text',
+                    body: content,
+                    timestamp: Math.floor(Date.now() / 1000),
+                    fromMe: false
+                }
+            };
+            
+            log('Webhook payload:', 'info');
+            log(JSON.stringify(webhookPayload, null, 2), 'info');
+            
+            try {
+                const response = await fetch(`${WEBHOOK_BASE}/waha`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(webhookPayload)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    log('✓ Webhook processed successfully!', 'success');
+                    log('Message should trigger autoreply if keyword matches', 'success');
+                    
+                    // Wait a bit then check queue
+                    setTimeout(() => {
+                        log('Checking message queue...', 'info');
+                        checkMessageQueue();
+                    }, 2000);
+                } else {
+                    log('Webhook failed: ' + (result.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                log('Error sending webhook: ' + error.message, 'error');
+            }
+        }
+        
+        async function checkMessageQueue() {
+            log('Checking message queue status...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/messages/queue/status`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const queueDiv = document.getElementById('queueResult');
+                    let html = '<pre>' + JSON.stringify(result.data, null, 2) + '</pre>';
+                    queueDiv.innerHTML = html;
+                    
+                    log(`Queue status retrieved`, 'success');
+                    if (result.data.outgoing > 0) {
+                        log(`Found ${result.data.outgoing} messages in outgoing queue!`, 'success');
+                    }
+                } else {
+                    log('Failed to get queue status', 'error');
+                }
+            } catch (error) {
+                log('Error: ' + error.message, 'error');
+            }
+        }
+        
+        async function getRecentMessages() {
+            log('Getting recent messages...', 'info');
+            
+            try {
+                // First get conversations
+                const convResponse = await fetch(`${API_BASE}/conversations?limit=5`);
+                const convResult = await convResponse.json();
+                
+                if (convResult.success && convResult.data && convResult.data.length > 0) {
+                    const firstConv = convResult.data[0];
+                    log(`Found conversation: ${firstConv.id}`, 'info');
+                    
+                    // Get messages for first conversation
+                    const msgResponse = await fetch(`${API_BASE}/messages/${firstConv.id}?limit=10`);
+                    const msgResult = await msgResponse.json();
+                    
+                    if (msgResult.success && msgResult.data) {
+                        const messagesDiv = document.getElementById('messagesResult');
+                        let html = '<div style="margin-top: 10px;">';
+                        
+                        msgResult.data.forEach(msg => {
+                            const time = new Date(msg.createdAt).toLocaleTimeString();
+                            const direction = msg.direction === 'outbound' ? '→ OUT' : '← IN';
+                            const color = msg.direction === 'outbound' ? '#10b981' : '#3b82f6';
+                            
+                            html += `<div style="margin: 5px 0; padding: 8px; background: #1a1a1a; border-radius: 5px; border-left: 3px solid ${color};">`;
+                            html += `<strong>${direction}</strong> [${time}] `;
+                            html += `<span style="color: ${color}">${msg.content || '[No content]'}</span>`;
+                            html += `</div>`;
+                        });
+                        
+                        html += '</div>';
+                        messagesDiv.innerHTML = html;
+                        
+                        log(`Retrieved ${msgResult.data.length} messages`, 'success');
+                    }
+                } else {
+                    log('No conversations found', 'warning');
+                }
+            } catch (error) {
+                log('Error: ' + error.message, 'error');
+            }
+        }
+        
+        // Initial check
+        window.onload = function() {
+            log('Page loaded. Checking active rules...', 'info');
+            checkRules();
+        };
+    </script>
+</body>
+</html>

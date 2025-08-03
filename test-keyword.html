@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Keyword Autoreply</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #f0f0f0; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        input, button { padding: 10px; margin: 5px; font-size: 16px; }
+        input { width: 200px; }
+        button { background: #3b82f6; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #2563eb; }
+        #result { margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px; }
+        .success { color: green; }
+        .error { color: red; }
+        .rule { margin: 10px 0; padding: 10px; background: #e3f2fd; border-radius: 5px; }
+        h3 { margin-top: 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Keyword Autoreply</h1>
+        
+        <div>
+            <input type="text" id="keyword" placeholder="Enter keyword (e.g., 123)" value="123">
+            <input type="text" id="phone" placeholder="Phone number" value="6281234567890">
+            <button onclick="testKeyword()">Test Keyword</button>
+        </div>
+        
+        <button onclick="checkRules()" style="background: #10b981;">Check All Active Rules</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3003/api';
+        
+        async function testKeyword() {
+            const keyword = document.getElementById('keyword').value;
+            const phone = document.getElementById('phone').value;
+            const resultDiv = document.getElementById('result');
+            
+            if (!keyword || !phone) {
+                resultDiv.innerHTML = '<div class="error">Please enter both keyword and phone number</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div>Testing keyword: "' + keyword + '"...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/automation/test-keyword`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        keyword: keyword,
+                        phoneNumber: phone
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    let html = '<h3>Test Results:</h3>';
+                    html += '<div>Keyword: <strong>' + result.keyword + '</strong></div>';
+                    html += '<div>Rules checked: ' + result.rulesChecked + '</div>';
+                    
+                    if (result.matchingRules && result.matchingRules.length > 0) {
+                        html += '<div class="success">✓ Found ' + result.matchingRules.length + ' matching rule(s)!</div>';
+                        
+                        result.matchingRules.forEach(rule => {
+                            html += '<div class="rule">';
+                            html += '<strong>' + rule.name + '</strong><br>';
+                            html += 'Keywords: ' + rule.keywords.join(', ') + '<br>';
+                            html += 'Would send ' + rule.responseMessages.length + ' message(s)';
+                            html += '</div>';
+                        });
+                        
+                        if (result.wouldSend) {
+                            html += '<h4>Messages that would be sent:</h4>';
+                            result.wouldSend.forEach((msg, i) => {
+                                html += '<div>' + (i + 1) + '. ' + msg.content + '</div>';
+                            });
+                        }
+                    } else {
+                        html += '<div class="error">✗ No matching rules found</div>';
+                    }
+                    
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.innerHTML = '<div class="error">Error: ' + result.error + '</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="error">Request failed: ' + error.message + '</div>';
+            }
+        }
+        
+        async function checkRules() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div>Loading rules...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/automation/rules`);
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const keywordRules = result.data.filter(r => r.ruleType === 'keyword' && r.isActive);
+                    
+                    let html = '<h3>Active Keyword Rules:</h3>';
+                    if (keywordRules.length === 0) {
+                        html += '<div class="error">No active keyword rules found</div>';
+                    } else {
+                        keywordRules.forEach(rule => {
+                            html += '<div class="rule">';
+                            html += '<strong>' + rule.name + '</strong><br>';
+                            html += 'Keywords: ' + (rule.keywords || []).join(', ') + '<br>';
+                            html += 'Messages: ' + (rule.responseMessages || []).length;
+                            html += '</div>';
+                        });
+                    }
+                    
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.innerHTML = '<div class="error">Failed to load rules</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="error">Request failed: ' + error.message + '</div>';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1202,6 +1202,58 @@
             margin-top: 8px;
         }
         
+        /* Toggle Styles */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+        }
+        
+        .toggle {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 26px;
+        }
+        
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(71, 85, 105, 0.5);
+            transition: .4s;
+            border-radius: 26px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .toggle input:checked + .toggle-slider {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        
+        .toggle input:checked + .toggle-slider:before {
+            transform: translateX(22px);
+        }
+        
         /* Analytics Modal Styles */
         .analytics-header {
             display: flex;
@@ -1792,6 +1844,16 @@
                         <span class="rule-type-label">Workflows</span>
                         <span class="rule-count">2</span>
                     </div>
+                    <div class="rule-type" onclick="filterRules('template')">
+                        <span class="material-icons">description</span>
+                        <span class="rule-type-label">Template Based</span>
+                        <span class="rule-count">0</span>
+                    </div>
+                    <div class="rule-type" onclick="filterRules('llm_agent')">
+                        <span class="material-icons">psychology</span>
+                        <span class="rule-type-label">AI Agent (LLM)</span>
+                        <span class="rule-count">0</span>
+                    </div>
                 </div>
                 
                 <div class="sidebar-section">
@@ -2040,6 +2102,7 @@
                         <option value="away">Away Message</option>
                         <option value="keyword" selected>Keyword Reply</option>
                         <option value="workflow">Conversation Workflow</option>
+                        <option value="template">Template Based</option>
                         <option value="llm_agent">AI Agent (LLM)</option>
                     </select>
                 </div>
@@ -2100,14 +2163,73 @@
                     </div>
                 </div>
                 
+                <!-- Template Based Fields -->
+                <div id="templateFields" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label">Template Category</label>
+                        <select class="form-control" id="templateCategory">
+                            <option value="">All Categories</option>
+                            <option value="greeting">Greeting Messages</option>
+                            <option value="package">Package Information</option>
+                            <option value="faq">FAQ Responses</option>
+                            <option value="followup">Follow Up Messages</option>
+                            <option value="document">Document Templates</option>
+                        </select>
+                        <span class="form-helper">Filter templates by category for better matching</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">AI Intent Detection</label>
+                        <div class="toggle-container">
+                            <label class="toggle">
+                                <input type="checkbox" id="useIntentDetection" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span style="margin-left: 12px;">Use AI to detect intent for better matching</span>
+                        </div>
+                        <span class="form-helper">AI akan mendeteksi maksud customer untuk matching template yang lebih akurat</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Fallback to AI</label>
+                        <div class="toggle-container">
+                            <label class="toggle">
+                                <input type="checkbox" id="fallbackToLLM">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span style="margin-left: 12px;">Use AI Agent when no template matches</span>
+                        </div>
+                        <span class="form-helper">Enable this to provide AI-generated responses when templates don't match</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            Template Manager
+                            <a href="/template-manager.html" target="_blank" style="color: #3b82f6; text-decoration: none; font-size: 14px; margin-left: 12px;">
+                                <span class="material-icons" style="font-size: 16px; vertical-align: middle;">open_in_new</span>
+                                Manage Templates
+                            </a>
+                        </label>
+                        <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; padding: 16px;">
+                            <p style="margin: 0; color: #3b82f6; font-size: 14px;">
+                                <span class="material-icons" style="font-size: 16px; vertical-align: middle; margin-right: 8px;">info</span>
+                                Template-based rules automatically match customer messages with pre-defined templates for consistent responses.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- LLM Agent Fields -->
                 <div id="llmFields" style="display: none;">
                     <div class="form-group">
                         <label class="form-label">AI Model</label>
                         <select class="form-control" id="llmModel">
+                            <option value="llama3.2:1b">Llama 3.2 1B (Fastest)</option>
+                            <option value="llama3.2:3b">Llama 3.2 3B (Balanced)</option>
+                            <option value="llama3.2:8b">Llama 3.2 8B (Recommended)</option>
+                            <option value="llama3.2:11b-vision">Llama 3.2 11B Vision</option>
                             <option value="mistral:7b-instruct">Mistral 7B Instruct</option>
-                            <option value="deepseek-coder:1.3b">Deepseek 1.3B (Fast)</option>
-                            <option value="phi3:medium">Phi-3 Medium (Recommended)</option>
+                            <option value="phi3:medium">Phi-3 Medium</option>
                         </select>
                     </div>
                     
@@ -2308,7 +2430,7 @@
     <script>
         // Backend Configuration
         const API_CONFIG = {
-            baseUrl: 'http://localhost:3001/api',
+            baseUrl: 'http://localhost:3003/api',
             sessionId: 'default'
         };
         
@@ -2728,6 +2850,7 @@
             document.getElementById('welcomeFields').style.display = 'none';
             document.getElementById('awayFields').style.display = 'none';
             document.getElementById('keywordFields').style.display = 'none';
+            document.getElementById('templateFields').style.display = 'none';
             document.getElementById('llmFields').style.display = 'none';
             
             // Show/hide reply messages based on type
@@ -2743,6 +2866,9 @@
             } else if (type === 'keyword') {
                 document.getElementById('keywordFields').style.display = 'block';
                 replyMessagesSection.style.display = 'block';
+            } else if (type === 'template') {
+                document.getElementById('templateFields').style.display = 'block';
+                replyMessagesSection.style.display = 'none'; // Templates handle their own responses
             } else if (type === 'llm_agent') {
                 document.getElementById('llmFields').style.display = 'block';
                 replyMessagesSection.style.display = 'none'; // LLM generates its own responses
@@ -3367,6 +3493,28 @@
                 }
             }
             
+            // Add template-specific fields if template rule
+            if (ruleType === 'template') {
+                const templateCategory = document.getElementById('templateCategory').value;
+                const useIntentDetection = document.getElementById('useIntentDetection').checked;
+                const fallbackToLLM = document.getElementById('fallbackToLLM').checked;
+                
+                ruleData.triggerConditions = {
+                    templateCategory: templateCategory || null,
+                    useIntentDetection: useIntentDetection,
+                    fallbackToLLM: fallbackToLLM
+                };
+                
+                // If fallback to LLM is enabled, include basic LLM config
+                if (fallbackToLLM) {
+                    ruleData.llmConfig = {
+                        model: 'llama3.2:3b', // Default model for fallback
+                        temperature: 0.7,
+                        maxTokens: 300
+                    };
+                }
+            }
+            
             // Debug log to see what's being sent
             console.log('Sending rule data:', ruleData);
             console.log('Keywords being sent:', ruleData.keywords);
@@ -3670,6 +3818,19 @@
                                 `;
                                 container.appendChild(entryDiv);
                             });
+                        }
+                    }
+                    
+                    // Handle template rule settings
+                    if (rule.ruleType === 'template' && rule.triggerConditions) {
+                        if (rule.triggerConditions.templateCategory) {
+                            document.getElementById('templateCategory').value = rule.triggerConditions.templateCategory;
+                        }
+                        if (rule.triggerConditions.useIntentDetection !== undefined) {
+                            document.getElementById('useIntentDetection').checked = rule.triggerConditions.useIntentDetection;
+                        }
+                        if (rule.triggerConditions.fallbackToLLM !== undefined) {
+                            document.getElementById('fallbackToLLM').checked = rule.triggerConditions.fallbackToLLM;
                         }
                     }
                     

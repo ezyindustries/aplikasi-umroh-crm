@@ -138,9 +138,9 @@
                 socket.disconnect();
             }
             
-            logEvent('Connecting', { url: 'http://localhost:3001' });
+            logEvent('Connecting', { url: 'http://localhost:3003' });
             
-            socket = io('http://localhost:3001', {
+            socket = io('http://localhost:3003', {
                 transports: ['websocket', 'polling'],
                 reconnection: true
             });

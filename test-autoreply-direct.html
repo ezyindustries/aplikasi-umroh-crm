@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Direct Autoreply Test</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #1a1a1a; color: #e0e0e0; }
+        .container { max-width: 800px; margin: auto; }
+        .card { background: #2a2a2a; padding: 20px; margin: 20px 0; border-radius: 10px; border: 1px solid #444; }
+        button { padding: 10px 20px; margin: 5px; font-size: 16px; border: none; border-radius: 5px; cursor: pointer; }
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-danger { background: #ef4444; color: white; }
+        input, textarea { width: 100%; padding: 10px; margin: 5px 0; background: #1a1a1a; color: #e0e0e0; border: 1px solid #444; border-radius: 5px; }
+        .log { background: #1a1a1a; padding: 15px; border-radius: 5px; font-family: monospace; font-size: 12px; max-height: 400px; overflow-y: auto; }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .warning { color: #f59e0b; }
+        .info { color: #3b82f6; }
+        h2 { margin-top: 0; }
+        .status { display: inline-block; padding: 5px 10px; border-radius: 5px; font-size: 12px; }
+        .status.active { background: #10b981; color: white; }
+        .status.inactive { background: #6b7280; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Direct Autoreply Test</h1>
+        
+        <div class="card">
+            <h2>1. Check Active Rules</h2>
+            <button class="btn-primary" onclick="checkRules()">Check Active Rules</button>
+            <div id="rulesResult"></div>
+        </div>
+        
+        <div class="card">
+            <h2>2. Create Test Rule</h2>
+            <input type="text" id="testKeyword" placeholder="Test keyword (e.g., test123)" value="test123">
+            <textarea id="testResponse" rows="3" placeholder="Test response message">Halo! Ini adalah pesan autoreply test. Terima kasih telah menghubungi kami!</textarea>
+            <button class="btn-success" onclick="createTestRule()">Create Test Rule</button>
+        </div>
+        
+        <div class="card">
+            <h2>3. Simulate Incoming Message</h2>
+            <input type="text" id="incomingMessage" placeholder="Message content" value="test123">
+            <input type="text" id="fromNumber" placeholder="From number" value="6281234567890">
+            <button class="btn-primary" onclick="simulateIncomingMessage()">Simulate Incoming Message</button>
+        </div>
+        
+        <div class="card">
+            <h2>4. Direct Keyword Test</h2>
+            <input type="text" id="directKeyword" placeholder="Keyword to test" value="test123">
+            <button class="btn-primary" onclick="testKeywordDirect()">Test Keyword Match</button>
+        </div>
+        
+        <div class="card">
+            <h2>Log Output</h2>
+            <div id="log" class="log"></div>
+            <button class="btn-danger" onclick="clearLog()">Clear Log</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3003/api';
+        
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = type;
+            entry.innerHTML = `[${timestamp}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+        
+        async function checkRules() {
+            log('Checking active rules...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/automation/rules`);
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const rules = result.data;
+                    const keywordRules = rules.filter(r => r.ruleType === 'keyword');
+                    const activeRules = keywordRules.filter(r => r.isActive);
+                    
+                    log(`Total rules: ${rules.length}`, 'info');
+                    log(`Keyword rules: ${keywordRules.length}`, 'info');
+                    log(`Active keyword rules: ${activeRules.length}`, 'success');
+                    
+                    const rulesDiv = document.getElementById('rulesResult');
+                    let html = '<div style="margin-top: 10px;">';
+                    
+                    if (activeRules.length === 0) {
+                        html += '<div class="warning">No active keyword rules found!</div>';
+                    } else {
+                        activeRules.forEach(rule => {
+                            html += `<div style="margin: 10px 0; padding: 10px; background: #1a1a1a; border-radius: 5px;">`;
+                            html += `<strong>${rule.name}</strong> `;
+                            html += `<span class="status ${rule.isActive ? 'active' : 'inactive'}">${rule.isActive ? 'ACTIVE' : 'INACTIVE'}</span><br>`;
+                            html += `Keywords: <code>${(rule.keywords || []).join(', ')}</code><br>`;
+                            html += `Messages: ${(rule.responseMessages || []).length} response(s)`;
+                            html += `</div>`;
+                            
+                            log(`Rule: ${rule.name} - Keywords: ${(rule.keywords || []).join(', ')}`, 'info');
+                        });
+                    }
+                    
+                    html += '</div>';
+                    rulesDiv.innerHTML = html;
+                } else {
+                    log('Failed to load rules: ' + (result.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                log('Error checking rules: ' + error.message, 'error');
+            }
+        }
+        
+        async function createTestRule() {
+            const keyword = document.getElementById('testKeyword').value;
+            const response = document.getElementById('testResponse').value;
+            
+            if (!keyword || !response) {
+                log('Please enter keyword and response', 'warning');
+                return;
+            }
+            
+            log(`Creating test rule with keyword "${keyword}"...`, 'info');
+            
+            const formData = new FormData();
+            const ruleData = {
+                name: `Test Rule - ${keyword}`,
+                description: 'Test rule for autoreply debugging',
+                ruleType: 'keyword',
+                keywords: [keyword],
+                responseMessages: [{
+                    type: 'text',
+                    content: response,
+                    order: 0
+                }],
+                responseDelay: 1,
+                messageDelay: 1,
+                isActive: true
+            };
+            
+            formData.append('ruleData', JSON.stringify(ruleData));
+            
+            try {
+                const response = await fetch(`${API_BASE}/automation/rules`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    log('✓ Test rule created successfully!', 'success');
+                    log(`Rule ID: ${result.data.id}`, 'info');
+                    log(`Keywords saved: ${result.data.keywords.join(', ')}`, 'info');
+                    
+                    // Refresh rules list
+                    setTimeout(checkRules, 500);
+                } else {
+                    log('Failed to create rule: ' + result.error, 'error');
+                }
+            } catch (error) {
+                log('Error creating rule: ' + error.message, 'error');
+            }
+        }
+        
+        async function simulateIncomingMessage() {
+            const message = document.getElementById('incomingMessage').value;
+            const fromNumber = document.getElementById('fromNumber').value;
+            
+            if (!message || !fromNumber) {
+                log('Please enter message and phone number', 'warning');
+                return;
+            }
+            
+            log(`Simulating incoming message: "${message}" from ${fromNumber}`, 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/automation/simulate-message`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        content: message,
+                        fromNumber: fromNumber
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    log('✓ Message processed through automation engine!', 'success');
+                    log(`Contact ID: ${result.contact.id}`, 'info');
+                    log(`Conversation ID: ${result.conversation.id}`, 'info');
+                    
+                    if (result.recentLogs && result.recentLogs.length > 0) {
+                        log('Recent automation logs:', 'info');
+                        result.recentLogs.forEach(logEntry => {
+                            log(`  Rule: ${logEntry.rule}, Status: ${logEntry.status}`, 
+                                logEntry.status === 'success' ? 'success' : 'warning');
+                            if (logEntry.error) {
+                                log(`  Error: ${logEntry.error}`, 'error');
+                            }
+                        });
+                    } else {
+                        log('No automation logs found - autoreply may not have triggered', 'warning');
+                    }
+                } else {
+                    log('Simulation failed: ' + result.error, 'error');
+                }
+            } catch (error) {
+                log('Error simulating message: ' + error.message, 'error');
+            }
+        }
+        
+        async function testKeywordMatch(keyword) {
+            try {
+                const response = await fetch(`${API_BASE}/automation/test-keyword`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        keyword: keyword,
+                        phoneNumber: '6281234567890'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    if (result.matchingRules && result.matchingRules.length > 0) {
+                        log(`✓ Keyword "${keyword}" matches ${result.matchingRules.length} rule(s)!`, 'success');
+                        
+                        result.matchingRules.forEach(rule => {
+                            log(`  → Rule: ${rule.name}`, 'info');
+                            log(`     Keywords: ${rule.keywords.join(', ')}`, 'info');
+                        });
+                        
+                        if (result.wouldSend) {
+                            log('Messages that would be sent:', 'info');
+                            result.wouldSend.forEach((msg, i) => {
+                                log(`  ${i + 1}. ${msg.content}`, 'success');
+                            });
+                        }
+                    } else {
+                        log(`✗ No rules match keyword "${keyword}"`, 'warning');
+                        log(`Checked ${result.rulesChecked} rules`, 'info');
+                    }
+                } else {
+                    log('Test failed: ' + result.error, 'error');
+                }
+            } catch (error) {
+                log('Error testing keyword: ' + error.message, 'error');
+            }
+        }
+        
+        async function testKeywordDirect() {
+            const keyword = document.getElementById('directKeyword').value;
+            if (!keyword) {
+                log('Please enter a keyword', 'warning');
+                return;
+            }
+            
+            await testKeywordMatch(keyword);
+        }
+        
+        // Initial check on load
+        window.onload = function() {
+            log('Page loaded. Checking active rules...', 'info');
+            checkRules();
+        };
+    </script>
+</body>
+</html>

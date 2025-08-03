@@ -69,9 +69,9 @@
                 return;
             }
 
-            log('Attempting to connect to http://localhost:3001...', 'info');
+            log('Attempting to connect to http://localhost:3003...', 'info');
             
-            socket = io('http://localhost:3001', {
+            socket = io('http://localhost:3003', {
                 transports: ['polling', 'websocket'],
                 reconnection: true,
                 query: {

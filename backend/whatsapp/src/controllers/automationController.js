@@ -1605,6 +1605,55 @@ Selalu tunjukkan empati dan kesediaan membantu.`,
     }
   }
 
+  // Get all workflows
+  async getWorkflows(req, res) {
+    try {
+      const workflows = await WorkflowTemplate.findAll({
+        order: [['createdAt', 'DESC']]
+      });
+
+      res.json({
+        success: true,
+        data: workflows
+      });
+    } catch (error) {
+      logger.error('Error getting workflows:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+
+  // Delete workflow
+  async deleteWorkflow(req, res) {
+    try {
+      const { workflowId } = req.params;
+
+      const workflow = await WorkflowTemplate.findByPk(workflowId);
+      if (!workflow) {
+        return res.status(404).json({
+          success: false,
+          error: 'Workflow not found'
+        });
+      }
+
+      // Delete workflow and all related data
+      await workflow.destroy();
+
+      res.json({
+        success: true,
+        message: 'Workflow deleted successfully'
+      });
+    } catch (error) {
+      logger.error('Error deleting workflow:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+
   // Test workflow
   async testWorkflow(req, res) {
     try {

@@ -55,7 +55,7 @@ echo ===============================================
 echo    STARTING BACKEND SERVER
 echo ===============================================
 echo.
-echo Backend will run on: http://localhost:3001
+echo Backend will run on: http://localhost:3003
 echo.
 echo Features enabled:
 echo ✓ WhatsApp message sync

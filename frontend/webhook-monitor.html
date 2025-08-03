@@ -158,7 +158,7 @@
         
         // Connect to backend socket
         function connectSocket() {
-            socket = io('http://localhost:3001', {
+            socket = io('http://localhost:3003', {
                 transports: ['websocket', 'polling']
             });
             
@@ -263,7 +263,7 @@
                     }
                 };
                 
-                const response = await fetch('http://localhost:3001/api/webhooks/waha', {
+                const response = await fetch('http://localhost:3003/api/webhooks/waha', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(testData)

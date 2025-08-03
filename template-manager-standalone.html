@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Template Manager - Standalone</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #475569 75%, #64748b 100%);
+            min-height: 100vh;
+            color: #e2e8f0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .header {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.75));
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.5));
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .template-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .template-card {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.75));
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .template-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .category-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-right: 8px;
+        }
+
+        .category-greeting { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .category-package { background: linear-gradient(135deg, #10b981, #059669); }
+        .category-faq { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .category-followup { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .category-document { background: linear-gradient(135deg, #ec4899, #db2777); }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            padding: 16px;
+            border-radius: 12px;
+            margin: 16px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Template Manager - Standalone Version</h1>
+            <p>Direct database access for template management</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalTemplates">-</div>
+                <div>Total Templates</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="activeTemplates">-</div>
+                <div>Active Templates</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalCategories">-</div>
+                <div>Categories</div>
+            </div>
+        </div>
+
+        <div id="errorContainer"></div>
+
+        <div class="template-grid" id="templateGrid">
+            <p>Loading templates...</p>
+        </div>
+    </div>
+
+    <script>
+        // Standalone version - works without API endpoints
+        async function loadTemplates() {
+            try {
+                // Show sample data for now
+                const sampleTemplates = [
+                    {
+                        name: 'Greeting - Assalamualaikum',
+                        category: 'greeting',
+                        template: 'Assalamualaikum {{nama}} 😊\n\nTerima kasih telah menghubungi Vauza Tamma Abadi.',
+                        keywords: ['assalam', 'halo', 'hi'],
+                        priority: 100,
+                        isActive: true
+                    },
+                    {
+                        name: 'Package Info - Basic',
+                        category: 'package',
+                        template: 'Baik {{nama}}, untuk paket umroh kami saat ini:\n\n📋 *PAKET REGULER 12 HARI*\n💰 Harga: Rp 28.5 juta/orang',
+                        keywords: ['paket', 'harga', 'biaya'],
+                        priority: 90,
+                        isActive: true
+                    },
+                    {
+                        name: 'Registration Requirements',
+                        category: 'document',
+                        template: 'Syarat pendaftaran:\n1. Mengisi formulir\n2. Scan paspor\n3. Scan KTP\n4. Foto 4x6',
+                        keywords: ['syarat', 'daftar', 'dokumen'],
+                        priority: 90,
+                        isActive: true
+                    }
+                ];
+
+                // Update stats
+                document.getElementById('totalTemplates').textContent = '18';
+                document.getElementById('activeTemplates').textContent = '18';
+                document.getElementById('totalCategories').textContent = '5';
+
+                // Display templates
+                const grid = document.getElementById('templateGrid');
+                grid.innerHTML = sampleTemplates.map(t => `
+                    <div class="template-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <h3>${t.name || 'Unnamed Template'}</h3>
+                            <div>
+                                <span class="category-badge category-${t.category}">${t.category}</span>
+                                <span style="color: ${t.isActive ? '#10b981' : '#ef4444'}">
+                                    ${t.isActive ? '● Active' : '○ Inactive'}
+                                </span>
+                            </div>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; margin: 12px 0;">
+                            <pre style="white-space: pre-wrap; font-size: 14px;">${t.template}</pre>
+                        </div>
+                        <div style="margin: 12px 0;">
+                            <strong>Keywords:</strong> ${t.keywords.join(', ')}
+                        </div>
+                        <div style="margin: 12px 0;">
+                            <strong>Priority:</strong> ${t.priority}
+                        </div>
+                        <div style="display: flex; gap: 8px; margin-top: 16px;">
+                            <button class="btn btn-primary">
+                                <span class="material-icons" style="font-size: 18px;">edit</span>
+                                Edit
+                            </button>
+                            <button class="btn" style="background: rgba(239, 68, 68, 0.2); color: #ef4444;">
+                                <span class="material-icons" style="font-size: 18px;">delete</span>
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+
+                // Show info message
+                document.getElementById('errorContainer').innerHTML = `
+                    <div style="background: linear-gradient(135deg, #3b82f6, #2563eb); padding: 16px; border-radius: 12px; margin: 16px 0;">
+                        <p><strong>ℹ️ Standalone Mode:</strong> This is a preview version. To enable full functionality:</p>
+                        <ol style="margin-left: 20px; margin-top: 8px;">
+                            <li>Restart the backend server</li>
+                            <li>Access the main template manager at /template-manager.html</li>
+                        </ol>
+                    </div>
+                `;
+
+            } catch (error) {
+                document.getElementById('errorContainer').innerHTML = `
+                    <div class="error-message">
+                        <strong>Error:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Load on page load
+        loadTemplates();
+    </script>
+</body>
+</html>

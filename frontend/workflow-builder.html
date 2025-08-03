@@ -182,9 +182,80 @@
             backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border-color);
             padding: 16px 24px;
+        }
+        
+        .header-top-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        
+        .header-bottom-row {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+        
+        /* Trigger Configuration */
+        .trigger-config {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: rgba(30, 41, 59, 0.6);
+            padding: 12px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .trigger-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+        }
+        
+        .trigger-select {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            min-width: 200px;
+            cursor: pointer;
+        }
+        
+        .trigger-select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .trigger-input {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            min-width: 300px;
+        }
+        
+        .trigger-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--primary-blue);
+        }
+        
+        .trigger-badge .material-icons {
+            font-size: 16px;
         }
 
         .workflow-name {
@@ -207,6 +278,48 @@
         .canvas-actions {
             display: flex;
             gap: 12px;
+            align-items: center;
+        }
+        
+        .zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(30, 41, 59, 0.6);
+            padding: 4px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .zoom-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .zoom-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--primary-blue);
+        }
+        
+        .zoom-btn .material-icons {
+            font-size: 18px;
+        }
+        
+        .zoom-level {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            min-width: 50px;
+            text-align: center;
         }
 
         .btn {
@@ -264,11 +377,19 @@
             background-size: 50px 50px;
         }
 
-        .canvas-content {
+        .canvas-viewport {
             position: relative;
             width: 100%;
             height: 100%;
-            overflow: auto;
+            overflow: hidden;
+        }
+        
+        .canvas-content {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transform-origin: center center;
+            transition: transform 0.3s ease;
         }
 
         /* Workflow Steps on Canvas */
@@ -283,6 +404,21 @@
             cursor: move;
             transition: all 0.3s ease;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            
+            /* Prevent text selection */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            
+            /* Ensure draggable */
+            z-index: 10;
+        }
+        
+        .workflow-step.dragging {
+            opacity: 0.8;
+            cursor: grabbing;
+            z-index: 100;
         }
 
         .workflow-step.selected {
@@ -357,6 +493,19 @@
         .connection-point:hover {
             transform: scale(1.3);
             box-shadow: 0 0 16px rgba(59, 130, 246, 0.6);
+        }
+        
+        .connection-point.active {
+            background: #10b981 !important;
+            border-color: #10b981 !important;
+            transform: scale(1.3);
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
         }
 
         .connection-point.input {
@@ -766,37 +915,84 @@
         <!-- Canvas Container -->
         <div class="canvas-container">
             <div class="canvas-header">
-                <div class="workflow-name">
-                    <input type="text" id="workflowName" placeholder="Workflow Name" value="Customer Consultation Flow">
+                <div class="header-top-row">
+                    <div class="workflow-name">
+                        <input type="text" id="workflowName" placeholder="Workflow Name" value="Customer Consultation Flow">
+                    </div>
+                    
+                    <div class="canvas-actions">
+                        <div class="zoom-controls">
+                            <button class="zoom-btn" onclick="zoomOut()" title="Zoom Out">
+                                <span class="material-icons">zoom_out</span>
+                            </button>
+                            <span class="zoom-level" id="zoomLevel">100%</span>
+                            <button class="zoom-btn" onclick="zoomIn()" title="Zoom In">
+                                <span class="material-icons">zoom_in</span>
+                            </button>
+                            <button class="zoom-btn" onclick="resetZoom()" title="Reset Zoom">
+                                <span class="material-icons">fit_screen</span>
+                            </button>
+                        </div>
+                        <button class="btn btn-secondary" onclick="clearCanvas()">
+                            <span class="material-icons">clear</span>
+                            Clear
+                        </button>
+                        <button class="btn btn-secondary" onclick="testWorkflow()">
+                            <span class="material-icons">play_arrow</span>
+                            Test
+                        </button>
+                        <button class="btn btn-primary" onclick="saveWorkflow()">
+                            <span class="material-icons">save</span>
+                            Save Workflow
+                        </button>
+                    </div>
                 </div>
                 
-                <div class="canvas-actions">
-                    <button class="btn btn-secondary" onclick="clearCanvas()">
-                        <span class="material-icons">clear</span>
-                        Clear
-                    </button>
-                    <button class="btn btn-secondary" onclick="testWorkflow()">
-                        <span class="material-icons">play_arrow</span>
-                        Test
-                    </button>
-                    <button class="btn btn-primary" onclick="saveWorkflow()">
-                        <span class="material-icons">save</span>
-                        Save Workflow
-                    </button>
+                <div class="header-bottom-row">
+                    <div class="trigger-config">
+                        <span class="trigger-label">Trigger When:</span>
+                        <select class="trigger-select" id="triggerType" onchange="updateTriggerConfig()">
+                            <option value="keyword">Keyword Match</option>
+                            <option value="first_message">First Message (New Contact)</option>
+                            <option value="phase_change">Customer Phase Change</option>
+                            <option value="no_response">No Response After</option>
+                            <option value="schedule">Time-Based Schedule</option>
+                            <option value="webhook">External Webhook</option>
+                            <option value="document">Document Received</option>
+                            <option value="group_join">Group Member Join</option>
+                            <option value="ai_intent">AI Intent Detection</option>
+                            <option value="campaign_response">Campaign Response</option>
+                        </select>
+                        
+                        <div id="triggerDetails" style="display: flex; align-items: center; gap: 12px;">
+                            <!-- Dynamic trigger configuration will be inserted here -->
+                        </div>
+                    </div>
+                    
+                    <div class="trigger-badge" id="triggerBadge">
+                        <span class="material-icons">label</span>
+                        <span id="triggerBadgeText">Keyword Trigger</span>
+                    </div>
                 </div>
             </div>
             
             <div class="canvas" id="canvas">
-                <div class="canvas-grid"></div>
-                <svg class="connections-layer" id="connectionsLayer"></svg>
-                <div class="canvas-content" id="canvasContent">
-                    <!-- Empty State -->
-                    <div class="empty-state" id="emptyState">
-                        <div class="empty-state-icon">
-                            <span class="material-icons">account_tree</span>
+                <div class="canvas-viewport" id="canvasViewport">
+                    <div class="canvas-content" id="canvasContent">
+                        <div class="canvas-grid"></div>
+                        <svg class="connections-layer" id="connectionsLayer"></svg>
+                        <!-- Empty State -->
+                        <div class="empty-state" id="emptyState">
+                            <div class="empty-state-icon">
+                                <span class="material-icons">account_tree</span>
+                            </div>
+                            <h3>Start Building Your Workflow</h3>
+                            <p>Drag and drop steps from the sidebar to get started</p>
+                            <p style="margin-top: 16px; font-size: 12px; opacity: 0.8;">
+                                💡 Tip: To connect steps, click the right dot (output) of one step, 
+                                then click the left dot (input) of another step
+                            </p>
                         </div>
-                        <h3>Start Building Your Workflow</h3>
-                        <p>Drag and drop steps from the sidebar to get started</p>
                     </div>
                 </div>
             </div>
@@ -836,13 +1032,22 @@
         let connectionStart = null;
         let stepIdCounter = 1;
         let ruleId = null; // Will be set when creating workflow rule
+        let workflowTrigger = {
+            type: 'keyword',
+            config: {}
+        };
+        let currentZoom = 1;
+        let isPanning = false;
+        let panStart = { x: 0, y: 0 };
+        let canvasTransform = { x: 0, y: 0 };
         
-        const API_URL = 'http://localhost:3001/api';
+        const API_URL = 'http://localhost:3003/api';
         
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             initDragAndDrop();
             initCanvas();
+            updateTriggerConfig(); // Initialize trigger config
             
             // Check if editing existing workflow
             const urlParams = new URLSearchParams(window.location.search);
@@ -977,34 +1182,55 @@
         }
         
         function makeDraggable(element) {
-            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            let isDragging = false;
+            let startX, startY, initialLeft, initialTop;
+            let canvas = document.getElementById('canvasContent');
             
-            element.addEventListener('mousedown', dragMouseDown);
+            element.addEventListener('mousedown', dragStart);
             
-            function dragMouseDown(e) {
+            function dragStart(e) {
+                // Don't drag if clicking on buttons or connection points
                 if (e.target.closest('.step-action-btn') || e.target.closest('.connection-point')) {
                     return;
                 }
                 
+                isDragging = true;
+                element.classList.add('dragging');
+                
+                // Get initial positions
+                const rect = element.getBoundingClientRect();
+                const canvasRect = canvas.getBoundingClientRect();
+                
+                // Store initial mouse position
+                startX = e.pageX;
+                startY = e.pageY;
+                
+                // Store initial element position
+                initialLeft = element.offsetLeft;
+                initialTop = element.offsetTop;
+                
+                // Prevent text selection
                 e.preventDefault();
-                pos3 = e.clientX;
-                pos4 = e.clientY;
-                document.onmouseup = closeDragElement;
-                document.onmousemove = elementDrag;
+                
+                // Add event listeners to document to track mouse movement
+                document.addEventListener('mousemove', dragMove);
+                document.addEventListener('mouseup', dragEnd);
             }
             
-            function elementDrag(e) {
-                e.preventDefault();
-                pos1 = pos3 - e.clientX;
-                pos2 = pos4 - e.clientY;
-                pos3 = e.clientX;
-                pos4 = e.clientY;
+            function dragMove(e) {
+                if (!isDragging) return;
                 
-                const newTop = element.offsetTop - pos2;
-                const newLeft = element.offsetLeft - pos1;
+                // Calculate how much the mouse has moved
+                const deltaX = e.pageX - startX;
+                const deltaY = e.pageY - startY;
                 
-                element.style.top = newTop + "px";
-                element.style.left = newLeft + "px";
+                // Calculate new position
+                const newLeft = initialLeft + deltaX;
+                const newTop = initialTop + deltaY;
+                
+                // Apply new position
+                element.style.left = newLeft + 'px';
+                element.style.top = newTop + 'px';
                 
                 // Update step data
                 const step = workflowSteps.find(s => s.id === element.id);
@@ -1017,9 +1243,13 @@
                 updateConnections();
             }
             
-            function closeDragElement() {
-                document.onmouseup = null;
-                document.onmousemove = null;
+            function dragEnd() {
+                isDragging = false;
+                element.classList.remove('dragging');
+                
+                // Remove event listeners
+                document.removeEventListener('mousemove', dragMove);
+                document.removeEventListener('mouseup', dragEnd);
             }
         }
         
@@ -1082,7 +1312,10 @@
                 if (type === 'output') {
                     connectionStart = { stepId, type };
                     // Visual feedback
-                    document.querySelector(`#${stepId} .connection-point.output`).style.background = '#10b981';
+                    document.querySelector(`#${stepId} .connection-point.output`).classList.add('active');
+                    
+                    // Show help message
+                    showNotification('Click on an input point (left side) of another step to connect', 'info');
                 }
             } else {
                 if (type === 'input' && connectionStart.stepId !== stepId) {
@@ -1090,12 +1323,20 @@
                     createConnection(connectionStart.stepId, stepId);
                     
                     // Reset visual feedback
-                    document.querySelector(`#${connectionStart.stepId} .connection-point.output`).style.background = '';
+                    document.querySelector(`#${connectionStart.stepId} .connection-point.output`).classList.remove('active');
                     connectionStart = null;
+                    
+                    showNotification('Connection created!', 'success');
                 } else {
                     // Cancel connection
-                    document.querySelector(`#${connectionStart.stepId} .connection-point.output`).style.background = '';
+                    document.querySelector(`#${connectionStart.stepId} .connection-point.output`).classList.remove('active');
                     connectionStart = null;
+                    
+                    if (type === 'output') {
+                        showNotification('Connection cancelled', 'warning');
+                    } else {
+                        showNotification('Cannot connect to the same step', 'error');
+                    }
                 }
             }
         }
@@ -1416,10 +1657,10 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             name: workflowName,
-                            description: `Workflow: ${workflowName}`,
+                            description: `Workflow: ${workflowName} - Trigger: ${workflowTrigger.type}`,
                             ruleType: 'workflow',
                             isActive: true,
-                            triggerConditions: [],
+                            triggerConditions: workflowTrigger,
                             responseMessages: []
                         })
                     });
@@ -1578,6 +1819,327 @@
         function showLoading(show) {
             document.getElementById('loading').classList.toggle('active', show);
         }
+        
+        // Trigger configuration functions
+        function updateTriggerConfig() {
+            const triggerType = document.getElementById('triggerType').value;
+            const triggerDetails = document.getElementById('triggerDetails');
+            const triggerBadge = document.getElementById('triggerBadgeText');
+            
+            workflowTrigger.type = triggerType;
+            workflowTrigger.config = {};
+            
+            // Update badge
+            const badgeTexts = {
+                'keyword': 'Keyword Trigger',
+                'first_message': 'New Contact Trigger',
+                'phase_change': 'Phase Change Trigger',
+                'no_response': 'No Response Trigger',
+                'schedule': 'Scheduled Trigger',
+                'webhook': 'Webhook Trigger',
+                'document': 'Document Trigger',
+                'group_join': 'Group Join Trigger',
+                'ai_intent': 'AI Intent Trigger',
+                'campaign_response': 'Campaign Trigger'
+            };
+            triggerBadge.textContent = badgeTexts[triggerType] || 'Custom Trigger';
+            
+            // Clear previous details
+            triggerDetails.innerHTML = '';
+            
+            // Add specific configuration based on trigger type
+            switch (triggerType) {
+                case 'keyword':
+                    triggerDetails.innerHTML = `
+                        <input type="text" class="trigger-input" id="triggerKeywords" 
+                               placeholder="Enter keywords separated by comma (e.g., info, harga, paket)"
+                               onchange="updateTriggerKeywords(this.value)"
+                               onkeypress="if(event.key === 'Enter') updateTriggerKeywords(this.value)">
+                    `;
+                    break;
+                    
+                case 'phase_change':
+                    triggerDetails.innerHTML = `
+                        <select class="trigger-select" id="fromPhase" onchange="updatePhaseConfig()">
+                            <option value="">From Any Phase</option>
+                            <option value="LEADS">From LEADS</option>
+                            <option value="INTEREST">From INTEREST</option>
+                            <option value="CLOSING">From CLOSING</option>
+                        </select>
+                        <span style="color: var(--text-secondary);">→</span>
+                        <select class="trigger-select" id="toPhase" onchange="updatePhaseConfig()">
+                            <option value="INTEREST">To INTEREST</option>
+                            <option value="CLOSING">To CLOSING</option>
+                            <option value="DEAL">To DEAL</option>
+                        </select>
+                    `;
+                    break;
+                    
+                case 'no_response':
+                    triggerDetails.innerHTML = `
+                        <input type="number" class="trigger-input" id="noResponseTime" 
+                               style="width: 100px;" min="1" value="24"
+                               onchange="updateNoResponseTime(this.value)">
+                        <select class="trigger-select" style="width: 120px;" id="timeUnit" onchange="updateNoResponseTime()">
+                            <option value="minutes">Minutes</option>
+                            <option value="hours" selected>Hours</option>
+                            <option value="days">Days</option>
+                        </select>
+                    `;
+                    break;
+                    
+                case 'schedule':
+                    triggerDetails.innerHTML = `
+                        <input type="time" class="trigger-input" style="width: 150px;" 
+                               id="scheduleTime" onchange="updateScheduleConfig()">
+                        <select class="trigger-select" id="scheduleFreq" onchange="updateScheduleConfig()">
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                    `;
+                    break;
+                    
+                case 'document':
+                    triggerDetails.innerHTML = `
+                        <select class="trigger-select" id="docType" onchange="updateDocumentConfig()">
+                            <option value="any">Any Document</option>
+                            <option value="image">Image/Photo</option>
+                            <option value="pdf">PDF Document</option>
+                            <option value="id_card">ID Card Photo</option>
+                        </select>
+                    `;
+                    break;
+                    
+                case 'ai_intent':
+                    triggerDetails.innerHTML = `
+                        <select class="trigger-select" id="intentType" onchange="updateIntentConfig()">
+                            <option value="booking">Booking Intent</option>
+                            <option value="inquiry">General Inquiry</option>
+                            <option value="complaint">Complaint</option>
+                            <option value="price_check">Price Check</option>
+                        </select>
+                        <input type="range" min="50" max="95" value="80" 
+                               style="width: 150px;" id="confidenceLevel"
+                               onchange="updateIntentConfig()">
+                        <span id="confidenceText">80%</span>
+                    `;
+                    // Update confidence text
+                    document.getElementById('confidenceLevel').addEventListener('input', function() {
+                        document.getElementById('confidenceText').textContent = this.value + '%';
+                    });
+                    break;
+                    
+                case 'webhook':
+                    triggerDetails.innerHTML = `
+                        <input type="text" class="trigger-input" id="webhookEvent" 
+                               placeholder="Event name (e.g., payment_confirmed)"
+                               onchange="updateWebhookConfig(this.value)">
+                    `;
+                    break;
+                    
+                case 'first_message':
+                    triggerDetails.innerHTML = `
+                        <span style="color: var(--text-secondary); font-size: 14px;">
+                            Triggers when a new contact sends their first message
+                        </span>
+                    `;
+                    break;
+                    
+                case 'group_join':
+                    triggerDetails.innerHTML = `
+                        <input type="text" class="trigger-input" id="groupName" 
+                               placeholder="Group name or ID (optional)"
+                               onchange="updateGroupConfig(this.value)">
+                    `;
+                    break;
+                    
+                case 'campaign_response':
+                    triggerDetails.innerHTML = `
+                        <input type="text" class="trigger-input" id="campaignId" 
+                               placeholder="Campaign ID or name"
+                               onchange="updateCampaignConfig(this.value)">
+                    `;
+                    break;
+            }
+        }
+        
+        // Trigger update functions
+        function updateTriggerKeywords(keywords) {
+            workflowTrigger.config.keywords = keywords.split(',').map(k => k.trim()).filter(k => k);
+        }
+        
+        function updatePhaseConfig() {
+            const fromPhase = document.getElementById('fromPhase').value;
+            const toPhase = document.getElementById('toPhase').value;
+            workflowTrigger.config = { fromPhase, toPhase };
+        }
+        
+        function updateNoResponseTime() {
+            const time = document.getElementById('noResponseTime').value;
+            const unit = document.getElementById('timeUnit').value;
+            workflowTrigger.config = { time: parseInt(time), unit };
+        }
+        
+        function updateScheduleConfig() {
+            const time = document.getElementById('scheduleTime').value;
+            const frequency = document.getElementById('scheduleFreq').value;
+            workflowTrigger.config = { time, frequency };
+        }
+        
+        function updateDocumentConfig() {
+            const docType = document.getElementById('docType').value;
+            workflowTrigger.config = { documentType: docType };
+        }
+        
+        function updateIntentConfig() {
+            const intentType = document.getElementById('intentType').value;
+            const confidence = document.getElementById('confidenceLevel').value;
+            workflowTrigger.config = { intentType, confidenceThreshold: parseInt(confidence) };
+        }
+        
+        function updateWebhookConfig(event) {
+            workflowTrigger.config = { eventName: event };
+        }
+        
+        function updateGroupConfig(groupName) {
+            workflowTrigger.config = { groupName };
+        }
+        
+        function updateCampaignConfig(campaignId) {
+            workflowTrigger.config = { campaignId };
+        }
+        
+        // Show notification helper
+        function showNotification(message, type = 'info') {
+            // Create toast notification
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `
+                <span class="material-icons">${
+                    type === 'success' ? 'check_circle' : 
+                    type === 'error' ? 'error' : 
+                    type === 'warning' ? 'warning' : 
+                    'info'
+                }</span>
+                <span>${message}</span>
+            `;
+            
+            // Style the toast
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 24px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: ${
+                    type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)' :
+                    type === 'error' ? 'linear-gradient(135deg, #ef4444, #dc2626)' :
+                    type === 'warning' ? 'linear-gradient(135deg, #f59e0b, #d97706)' :
+                    'linear-gradient(135deg, #3b82f6, #2563eb)'
+                };
+                color: white;
+                padding: 12px 24px;
+                border-radius: 50px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 14px;
+                box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+                z-index: 1000;
+                animation: slideUp 0.3s ease;
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                toast.style.animation = 'slideDown 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+        
+        // Add CSS animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideUp {
+                from { transform: translate(-50%, 100%); opacity: 0; }
+                to { transform: translate(-50%, 0); opacity: 1; }
+            }
+            @keyframes slideDown {
+                from { transform: translate(-50%, 0); opacity: 1; }
+                to { transform: translate(-50%, 100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Zoom functions
+        function zoomIn() {
+            if (currentZoom < 2) {
+                currentZoom = Math.min(currentZoom + 0.1, 2);
+                applyZoom();
+            }
+        }
+        
+        function zoomOut() {
+            if (currentZoom > 0.5) {
+                currentZoom = Math.max(currentZoom - 0.1, 0.5);
+                applyZoom();
+            }
+        }
+        
+        function resetZoom() {
+            currentZoom = 1;
+            canvasTransform = { x: 0, y: 0 };
+            applyZoom();
+        }
+        
+        function applyZoom() {
+            const canvasContent = document.getElementById('canvasContent');
+            canvasContent.style.transform = `translate(${canvasTransform.x}px, ${canvasTransform.y}px) scale(${currentZoom})`;
+            document.getElementById('zoomLevel').textContent = Math.round(currentZoom * 100) + '%';
+        }
+        
+        // Mouse wheel zoom
+        document.getElementById('canvasViewport').addEventListener('wheel', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? -0.1 : 0.1;
+                currentZoom = Math.max(0.5, Math.min(2, currentZoom + delta));
+                applyZoom();
+            }
+        });
+        
+        // Pan functionality
+        let isPanningCanvas = false;
+        let panStartPos = { x: 0, y: 0 };
+        let initialTransform = { x: 0, y: 0 };
+        
+        document.getElementById('canvasViewport').addEventListener('mousedown', (e) => {
+            if (e.button === 1 || (e.button === 0 && e.shiftKey)) { // Middle mouse or Shift+Left click
+                isPanningCanvas = true;
+                panStartPos = { x: e.clientX, y: e.clientY };
+                initialTransform = { ...canvasTransform };
+                e.preventDefault();
+                document.body.style.cursor = 'grabbing';
+            }
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (isPanningCanvas) {
+                const deltaX = e.clientX - panStartPos.x;
+                const deltaY = e.clientY - panStartPos.y;
+                canvasTransform.x = initialTransform.x + deltaX;
+                canvasTransform.y = initialTransform.y + deltaY;
+                applyZoom();
+            }
+        });
+        
+        document.addEventListener('mouseup', () => {
+            if (isPanningCanvas) {
+                isPanningCanvas = false;
+                document.body.style.cursor = '';
+            }
+        });
         
         // Window resize handler
         window.addEventListener('resize', updateConnections);

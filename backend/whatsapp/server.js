@@ -4,6 +4,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const http = require('http');
 const socketIO = require('socket.io');
+const path = require('path');
 
 // Import configurations and utilities
 const { initDatabase } = require('./src/models');
@@ -100,8 +101,16 @@ app.use('/uploads/automation', express.static('uploads/automation', {
   }
 }));
 
+// Serve frontend files
+app.use(express.static(path.join(__dirname, '../../frontend')));
+
 // API routes
 app.use('/api', apiRoutes);
+
+// Log registered routes for debugging
+if (process.env.NODE_ENV === 'development') {
+  console.log('Registered API routes loaded successfully');
+}
 
 // Error handling
 app.use(notFound);

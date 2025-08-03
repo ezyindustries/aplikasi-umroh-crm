@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Direct Webhook Test</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #1a1a1a; color: #fff; }
+        .container { max-width: 800px; margin: auto; }
+        .section { background: #2a2a2a; padding: 20px; margin: 20px 0; border-radius: 10px; }
+        button { padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #2563eb; }
+        input { padding: 8px; width: 200px; margin: 5px; }
+        .log { background: #000; padding: 15px; border-radius: 5px; font-family: monospace; font-size: 12px; max-height: 400px; overflow-y: auto; margin-top: 10px; }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .info { color: #3b82f6; }
+        pre { margin: 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Direct Webhook Test for Autoreply</h1>
+        
+        <div class="section">
+            <h2>1. Send Message via Webhook</h2>
+            <p>This will send a message directly to the webhook endpoint that WhatsApp uses</p>
+            <input type="text" id="message" placeholder="Message" value="123">
+            <input type="text" id="phone" placeholder="Phone" value="6281234567890">
+            <button onclick="sendWebhook()">Send via Webhook</button>
+        </div>
+        
+        <div class="section">
+            <h2>2. Check Messages</h2>
+            <button onclick="checkMessages()">Check Recent Messages</button>
+            <div id="messages"></div>
+        </div>
+        
+        <div class="section">
+            <h2>Console Log</h2>
+            <div id="log" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        function log(msg, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `[${time}] ${msg}`;
+            logDiv.appendChild(div);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        async function sendWebhook() {
+            const message = document.getElementById('message').value;
+            const phone = document.getElementById('phone').value;
+            
+            log(`Sending webhook message: "${message}" from ${phone}`, 'info');
+            
+            const webhookData = {
+                event: 'message',
+                session: 'default',
+                payload: {
+                    id: 'test-' + Date.now(),
+                    from: phone + '@c.us',
+                    to: 'default@c.us',
+                    type: 'text',
+                    body: message,
+                    timestamp: Math.floor(Date.now() / 1000),
+                    fromMe: false
+                }
+            };
+            
+            try {
+                log('Webhook payload:', 'info');
+                log(JSON.stringify(webhookData, null, 2), 'info');
+                
+                const response = await fetch('http://localhost:3003/api/webhooks/waha', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(webhookData)
+                });
+                
+                const result = await response.json();
+                log('Response: ' + JSON.stringify(result), result.success ? 'success' : 'error');
+                
+                if (result.success) {
+                    log('✓ Webhook processed! Checking for autoreply in 3 seconds...', 'success');
+                    setTimeout(checkMessages, 3000);
+                }
+            } catch (error) {
+                log('Error: ' + error.message, 'error');
+            }
+        }
+        
+        async function checkMessages() {
+            log('Checking recent messages...', 'info');
+            
+            try {
+                // Get conversations
+                const convResp = await fetch('http://localhost:3003/api/conversations?limit=1');
+                const convData = await convResp.json();
+                
+                if (convData.success && convData.data && convData.data.length > 0) {
+                    const convId = convData.data[0].id;
+                    log(`Found conversation: ${convId}`, 'info');
+                    
+                    // Get messages
+                    const msgResp = await fetch(`http://localhost:3003/api/messages/${convId}?limit=5`);
+                    const msgData = await msgResp.json();
+                    
+                    if (msgData.success && msgData.data) {
+                        const messagesDiv = document.getElementById('messages');
+                        let html = '<h3>Recent Messages:</h3><pre>';
+                        
+                        msgData.data.forEach(msg => {
+                            const time = new Date(msg.createdAt).toLocaleTimeString();
+                            const dir = msg.direction === 'outbound' ? '→ SENT' : '← RECEIVED';
+                            const color = msg.direction === 'outbound' ? '#10b981' : '#3b82f6';
+                            html += `<span style="color: ${color}">${dir} [${time}] ${msg.content}</span>\n`;
+                        });
+                        
+                        html += '</pre>';
+                        messagesDiv.innerHTML = html;
+                        
+                        // Check for recent outbound message
+                        const recentOut = msgData.data.find(m => 
+                            m.direction === 'outbound' && 
+                            new Date(m.createdAt) > new Date(Date.now() - 10000)
+                        );
+                        
+                        if (recentOut) {
+                            log('✓ AUTOREPLY SENT: ' + recentOut.content, 'success');
+                        } else {
+                            log('⚠ No autoreply found in recent messages', 'error');
+                        }
+                    }
+                }
+            } catch (error) {
+                log('Error checking messages: ' + error.message, 'error');
+            }
+        }
+        
+        // Initial log
+        log('Page loaded. Ready to test webhook.', 'info');
+        log('Make sure you have an active rule with keyword "123"', 'info');
+    </script>
+</body>
+</html>

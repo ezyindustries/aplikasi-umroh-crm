@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Backend Connection</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        button { padding: 10px 20px; margin: 10px; font-size: 16px; cursor: pointer; }
+        #result { margin-top: 20px; padding: 20px; background: #f0f0f0; border-radius: 8px; white-space: pre-wrap; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Test Backend Connection</h1>
+    
+    <button onclick="testHealth()">1. Test Health Check</button>
+    <button onclick="testGetRules()">2. Get All Rules</button>
+    <button onclick="testCreateRule()">3. Create Test Rule</button>
+    <button onclick="testFrontendForm()">4. Test Frontend Form Data</button>
+    
+    <div id="result"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:3003/api';
+        const resultDiv = document.getElementById('result');
+        
+        function log(message, isError = false) {
+            const className = isError ? 'error' : 'success';
+            resultDiv.innerHTML += `<div class="${className}">${message}</div>\n`;
+        }
+        
+        async function testHealth() {
+            resultDiv.innerHTML = '';
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                log('✓ Backend is running: ' + JSON.stringify(data, null, 2));
+            } catch (error) {
+                log('✗ Backend connection failed: ' + error.message, true);
+            }
+        }
+        
+        async function testGetRules() {
+            resultDiv.innerHTML = '';
+            try {
+                const response = await fetch(`${API_BASE}/automation/rules`);
+                const data = await response.json();
+                log('✓ Get rules response: ' + JSON.stringify(data, null, 2));
+            } catch (error) {
+                log('✗ Failed to get rules: ' + error.message, true);
+            }
+        }
+        
+        async function testCreateRule() {
+            resultDiv.innerHTML = '';
+            const formData = new FormData();
+            const ruleData = {
+                name: 'Backend Test Rule',
+                description: 'Testing backend connection',
+                ruleType: 'keyword',
+                keywords: ['backendtest', 'test123'],
+                responseMessages: [{
+                    type: 'text',
+                    content: 'Backend test response',
+                    order: 0
+                }],
+                responseDelay: 2,
+                messageDelay: 1
+            };
+            
+            formData.append('ruleData', JSON.stringify(ruleData));
+            
+            try {
+                log('Sending: ' + JSON.stringify(ruleData, null, 2));
+                
+                const response = await fetch(`${API_BASE}/automation/rules`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('✓ Rule created successfully!');
+                    log('Response: ' + JSON.stringify(data, null, 2));
+                    log('Keywords saved: ' + JSON.stringify(data.data?.keywords));
+                } else {
+                    log('✗ Server error: ' + JSON.stringify(data), true);
+                }
+            } catch (error) {
+                log('✗ Request failed: ' + error.message, true);
+            }
+        }
+        
+        async function testFrontendForm() {
+            resultDiv.innerHTML = '';
+            
+            // Simulate exact frontend form data structure
+            const formData = new FormData();
+            const ruleData = {
+                name: "Test dari Frontend",
+                description: "Test description",
+                ruleType: "keyword",
+                responseMessages: [{
+                    type: "text",
+                    content: "Test message",
+                    order: 0
+                }],
+                responseDelay: 2,
+                messageDelay: 1,
+                keywords: ["test", "frontend"]
+            };
+            
+            const jsonString = JSON.stringify(ruleData);
+            formData.append('ruleData', jsonString);
+            
+            try {
+                log('Testing exact frontend format...');
+                log('JSON being sent: ' + jsonString);
+                
+                const response = await fetch(`${API_BASE}/automation/rules`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const responseText = await response.text();
+                log('Raw response: ' + responseText);
+                
+                try {
+                    const data = JSON.parse(responseText);
+                    if (data.success) {
+                        log('✓ Frontend format works!');
+                        log('Saved keywords: ' + JSON.stringify(data.data?.keywords));
+                    } else {
+                        log('✗ Backend rejected: ' + JSON.stringify(data), true);
+                    }
+                } catch (e) {
+                    log('✗ Invalid JSON response: ' + responseText, true);
+                }
+            } catch (error) {
+                log('✗ Network error: ' + error.message, true);
+            }
+        }
+    </script>
+</body>
+</html>

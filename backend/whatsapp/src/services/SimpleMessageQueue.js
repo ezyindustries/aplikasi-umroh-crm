@@ -196,6 +196,26 @@ class SimpleMessageQueueService {
       
       const { sessionId, message: whatsappMessage } = webhookData;
       
+      // Skip system messages and notifications
+      if (whatsappMessage.type === 'e2e_notification' || 
+          whatsappMessage.type === 'notification' ||
+          whatsappMessage.type === 'system' ||
+          whatsappMessage.type === 'gp2' ||
+          whatsappMessage.type === 'call_log' ||
+          whatsappMessage.type === 'ciphertext' ||
+          whatsappMessage.type === 'unknown' ||
+          whatsappMessage.subtype === 'delete' ||
+          whatsappMessage.subtype === 'revoke' ||
+          whatsappMessage.isStatusReply ||
+          whatsappMessage.isNotification) {
+        logger.info('Skipping system/notification message:', {
+          type: whatsappMessage.type,
+          subtype: whatsappMessage.subtype,
+          body: whatsappMessage.body
+        });
+        return { success: true, skipped: true };
+      }
+      
       // Fix message type based on media presence
       if (whatsappMessage.media?.mimetype) {
         const mimeType = whatsappMessage.media.mimetype;
@@ -765,9 +785,10 @@ class SimpleMessageQueueService {
       });
 
       // Process automation rules for incoming group messages
-      if (!whatsappMessage.fromMe && participantContact) {
+      if (!whatsappMessage.fromMe) {
         try {
-          await automationEngine.processMessage(message, participantContact, conversation);
+          // For group messages, we need to use the group contact, not participant
+          await automationEngine.processMessage(message, groupContact, conversation);
         } catch (error) {
           logger.error('Error processing automation for group message:', error);
         }

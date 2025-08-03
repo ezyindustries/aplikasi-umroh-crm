@@ -1,8 +1,10 @@
-const { AutomationRule, AutomationLog, AutomationContactLimit, Contact, Message, Conversation, CustomerPhase } = require('../models');
+const { AutomationRule, AutomationLog, AutomationContactLimit, Contact, Message, Conversation, CustomerPhase, CustomTemplate } = require('../models');
 const logger = require('../utils/logger');
 const { Op } = require('sequelize');
 const LLMService = require('./LLMService');
 const WorkflowEngine = require('./WorkflowEngine');
+const IntentDetectionService = require('./IntentDetectionService');
+const EntityExtractionService = require('./EntityExtractionService');
 
 class AutomationEngine {
   constructor() {
@@ -14,15 +16,23 @@ class AutomationEngine {
    */
   async processMessage(message, contact, conversation) {
     try {
-      logger.info(`=== AUTOMATION ENGINE: Processing message ===`);
-      logger.info(`Message details:`, {
-        id: message.id,
-        content: message.content,
-        body: message.body,
-        type: message.messageType,
-        from: contact.phoneNumber,
-        conversationId: conversation.id
+      logger.info('=== AUTOMATION ENGINE: PROCESSING MESSAGE FOR AUTOMATION ===');
+      logger.info('Message details:', {
+        messageId: message.id,
+        contactId: contact.id,
+        contactPhone: contact.phoneNumber,
+        content: message.content || message.body,
+        direction: message.direction,
+        messageType: message.messageType,
+        fromMe: message.fromMe || false,
+        isGroupMessage: message.isGroupMessage || false
       });
+      
+      // Skip automation for group messages
+      if (message.isGroupMessage || conversation.isGroup) {
+        logger.info('Skipping automation for group message');
+        return;
+      }
       
       // Get or create customer phase
       const customerPhase = await this.getOrCreateCustomerPhase(contact, conversation, message);
@@ -309,6 +319,9 @@ class AutomationEngine {
       case 'llm_agent':
         return await this.checkLLMAgentConditions(rule, message, contact, conversation);
         
+      case 'template':
+        return await this.checkTemplateConditions(rule, message, contact, conversation);
+        
       default:
         return { trigger: false, reason: 'Unknown rule type' };
     }
@@ -490,6 +503,23 @@ class AutomationEngine {
   }
   
   /**
+   * Check template conditions
+   */
+  async checkTemplateConditions(rule, message, contact, conversation) {
+    const conditions = rule.triggerConditions || {};
+    const messageText = (message.body || message.content || '').toLowerCase();
+    
+    logger.info(`Checking template conditions for rule ${rule.name}:`, {
+      ruleId: rule.id,
+      templateCategory: conditions.templateCategory,
+      messageText: messageText.substring(0, 50) + '...'
+    });
+    
+    // Always trigger for template rules (matching will be done during execution)
+    return { trigger: true, reason: 'Template rule active' };
+  }
+  
+  /**
    * Check rate limits for contact
    */
   async checkRateLimits(rule, contact) {
@@ -553,6 +583,9 @@ class AutomationEngine {
       } else if (rule.ruleType === 'workflow') {
         logger.info('Executing workflow');
         responseMessageId = await this.executeWorkflow(rule, message, contact, conversation);
+      } else if (rule.ruleType === 'template') {
+        logger.info('Executing template-based response');
+        responseMessageId = await this.sendTemplateBasedResponse(rule, message, contact, conversation);
       } else if (rule.responseType === 'sequence' && rule.responseMessages && rule.responseMessages.length > 0) {
         // Check if using new sequence type with multiple messages
         logger.info(`Sending sequence response with ${rule.responseMessages.length} messages`);
@@ -667,20 +700,79 @@ class AutomationEngine {
    */
   async createOutgoingMessage(messageData) {
     try {
-      // Get messageQueue instance from global or require
-      const messageQueue = global.messageQueue || require('./SimpleMessageQueue');
+      logger.info('=== CREATING OUTGOING MESSAGE ===');
+      logger.info('Message data:', {
+        to: messageData.toNumber,
+        type: messageData.messageType,
+        content: messageData.content?.substring(0, 50) + '...'
+      });
       
-      // Queue message for sending via WAHA
-      const message = await messageQueue.queueOutgoingMessage({
+      // Direct database creation and WAHA sending
+      const { Message, Conversation } = require('../models');
+      const wahaService = require('./RealWAHAService');
+      
+      // Create message in database
+      const message = await Message.create({
         conversationId: messageData.conversationId,
+        whatsappMessageId: `auto_${Date.now()}`,
         fromNumber: messageData.fromNumber,
         toNumber: messageData.toNumber,
         messageType: messageData.messageType || 'text',
         content: messageData.content,
-        mediaUrl: messageData.mediaUrl
+        body: messageData.content,
+        mediaUrl: messageData.mediaUrl,
+        status: 'pending',
+        direction: 'outbound',
+        isAutomated: true
       });
+      
+      logger.info(`Message created in DB: ${message.id}`);
+      
+      // Send via WAHA
+      try {
+        let wahaResult;
+        const chatId = messageData.toNumber.includes('@') ? 
+          messageData.toNumber : `${messageData.toNumber}@c.us`;
+        
+        if (messageData.messageType === 'text') {
+          wahaResult = await wahaService.sendTextMessage(
+            'default',
+            chatId,
+            messageData.content
+          );
+        } else if (messageData.messageType === 'image' && messageData.mediaUrl) {
+          wahaResult = await wahaService.sendImageMessage(
+            'default',
+            chatId,
+            messageData.mediaUrl,
+            messageData.content // caption
+          );
+        }
+        
+        logger.info('WAHA send result:', wahaResult);
+        
+        // Update message status
+        if (wahaResult && wahaResult.id) {
+          await message.update({
+            whatsappMessageId: wahaResult.id,
+            status: 'sent'
+          });
+        }
+        
+        // Emit to frontend
+        if (global.io) {
+          global.io.emit('message:new', {
+            conversationId: messageData.conversationId,
+            message: message.toJSON()
+          });
+        }
+        
+      } catch (sendError) {
+        logger.error('Error sending via WAHA:', sendError);
+        await message.update({ status: 'failed' });
+      }
 
-      logger.info(`Automation message queued: ${message.id}`);
+      logger.info(`Automation message processed: ${message.id}`);
       return message;
     } catch (error) {
       logger.error('Error creating automation message:', error);
@@ -724,8 +816,116 @@ class AutomationEngine {
    * Send template response
    */
   async sendTemplateResponse(rule, contact, conversation) {
-    // Would need to integrate with template system
-    throw new Error('Template responses not yet implemented');
+    try {
+      logger.info('=== SENDING TEMPLATE RESPONSE ===');
+      logger.info('Template rule details:', {
+        ruleName: rule.name,
+        ruleId: rule.id,
+        contactPhone: contact.phoneNumber,
+        isGroup: conversation.isGroup || false
+      });
+      
+      // Skip template response for group conversations
+      if (conversation.isGroup) {
+        logger.info('Skipping template response for group conversation');
+        return;
+      }
+      
+      // Get the last message from conversation to analyze
+      const lastMessage = await Message.findOne({
+        where: {
+          conversationId: conversation.id,
+          direction: 'inbound'
+        },
+        order: [['createdAt', 'DESC']]
+      });
+      
+      if (!lastMessage) {
+        logger.error('No inbound message found in conversation');
+        throw new Error('No message to respond to');
+      }
+      
+      const messageText = lastMessage.content || lastMessage.body || '';
+      logger.info(`Analyzing message: "${messageText}"`);
+      
+      // Use intent detection if enabled
+      const conditions = rule.triggerConditions || {};
+      let detectedIntent = null;
+      let entities = {};
+      
+      if (conditions.useIntentDetection) {
+        const intentService = new IntentDetectionService();
+        const entityService = new EntityExtractionService();
+        
+        detectedIntent = await intentService.detectIntent(messageText);
+        entities = await entityService.extractEntities(messageText, detectedIntent.intent);
+        
+        logger.info(`Intent detected: ${detectedIntent.intent} (${detectedIntent.confidence})`);
+        logger.info(`Entities extracted:`, entities);
+      }
+      
+      // Find best matching template
+      const category = detectedIntent ? 
+        new IntentDetectionService().mapIntentToCategory(detectedIntent.intent) : 
+        null;
+        
+      const template = await CustomTemplate.findBestMatch(
+        messageText, 
+        category,
+        detectedIntent?.intent
+      );
+      
+      if (!template) {
+        logger.warn('No matching template found');
+        
+        // Fallback to LLM if enabled
+        if (conditions.fallbackToLLM) {
+          return await this.sendLLMResponse(rule, lastMessage, contact, conversation);
+        }
+        
+        throw new Error('No template found and LLM fallback disabled');
+      }
+      
+      logger.info(`Template matched: ${template.templateName} (${template.category})`);
+      
+      // Prepare variables for template
+      const variables = {
+        nama: entities.nama || contact.name || 'Bapak/Ibu',
+        nomor: contact.phoneNumber,
+        kota: entities.kota || '',
+        tanggal: entities.tanggal || new Date().toLocaleDateString('id-ID'),
+        waktu: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+        hari: new Date().toLocaleDateString('id-ID', { weekday: 'long' }),
+        phoneNumber: contact.phoneNumber,
+        ...entities
+      };
+      
+      // Fill template
+      const filledContent = template.fillTemplate(variables);
+      logger.info(`Template filled: ${filledContent.substring(0, 100)}...`);
+      
+      // Send the response
+      const botPhoneNumber = process.env.BOT_PHONE_NUMBER || '628113032232';
+      const result = await this.createOutgoingMessage({
+        conversationId: conversation.id,
+        fromNumber: botPhoneNumber,
+        toNumber: contact.phoneNumber,
+        messageType: 'text',
+        content: filledContent,
+        isAutomated: true,
+        templateId: template.id
+      });
+      
+      // Update template usage count
+      await template.increment('usageCount');
+      
+      logger.info(`Template response sent successfully! Message ID: ${result.id}`);
+      return result.id;
+      
+    } catch (error) {
+      logger.error('Error sending template response:', error);
+      throw error;
+    }
   }
   
   /**
@@ -1059,6 +1259,136 @@ class AutomationEngine {
     } catch (err) {
       logger.error('Error logging automation execution:', err);
     }
+  }
+  
+  /**
+   * Send template-based response
+   */
+  async sendTemplateBasedResponse(rule, message, contact, conversation) {
+    try {
+      logger.info('=== SENDING TEMPLATE-BASED RESPONSE ===');
+      logger.info(`Rule: ${rule.name}, Contact: ${contact.phoneNumber}`);
+      
+      const conditions = rule.triggerConditions || {};
+      const messageText = (message.body || message.content || '');
+      
+      // Step 1: Detect intent if AI enhancement is enabled
+      let detectedIntent = null;
+      let extractedEntities = {};
+      
+      if (conditions.useIntentDetection !== false) {
+        logger.info('Detecting intent for better template matching...');
+        detectedIntent = await IntentDetectionService.detectIntent(messageText);
+        
+        // If no category specified, use intent to suggest category
+        if (!conditions.templateCategory && detectedIntent.intent !== 'other') {
+          const suggestedCategory = IntentDetectionService.mapIntentToCategory(detectedIntent.intent);
+          if (suggestedCategory) {
+            logger.info(`Intent suggests category: ${suggestedCategory}`);
+            conditions.templateCategory = suggestedCategory;
+          }
+        }
+        
+        // Extract entities
+        extractedEntities = await EntityExtractionService.extractEntities(messageText, detectedIntent.intent);
+      }
+      
+      // Step 2: Find matching template with intent support
+      const template = await CustomTemplate.findBestMatch(
+        messageText, 
+        conditions.templateCategory,
+        detectedIntent
+      );
+      
+      if (!template) {
+        logger.info('No matching template found, falling back to LLM if configured');
+        
+        // If fallback to LLM is enabled
+        if (conditions.fallbackToLLM && rule.llmConfig) {
+          // Pass extracted entities to LLM for better context
+          rule.extractedEntities = extractedEntities;
+          rule.detectedIntent = detectedIntent;
+          return await this.sendLLMResponse(rule, message, contact, conversation);
+        }
+        
+        // No template and no fallback
+        logger.warn('No template match and no fallback configured');
+        return null;
+      }
+      
+      logger.info(`Found matching template: ${template.templateName} (ID: ${template.id})`);
+      if (detectedIntent) {
+        logger.info(`Matched via intent: ${detectedIntent.intent} (confidence: ${detectedIntent.confidence})`);
+      }
+      
+      // Step 3: Prepare variables with extracted entities
+      const baseVariables = await this.extractTemplateVariables(message, contact, conversation);
+      const variables = EntityExtractionService.prepareTemplateVariables(
+        extractedEntities,
+        baseVariables
+      );
+      
+      // Step 4: Fill template with enriched variables
+      const filledContent = template.fillTemplate(variables);
+      
+      // Send the response using our createOutgoingMessage method
+      logger.info(`Sending template response: "${filledContent}"`);
+      
+      const response = await this.createOutgoingMessage({
+        conversationId: conversation.id,
+        fromNumber: process.env.BOT_PHONE_NUMBER || '628113032232',
+        toNumber: contact.phoneNumber,
+        messageType: 'text',
+        content: filledContent,
+        templateId: template.id
+      });
+      
+      // Update template usage stats
+      await template.incrementUsage();
+      
+      // Log template usage with intent info
+      logger.info(`Template response sent successfully`, {
+        templateId: template.id,
+        templateName: template.templateName,
+        intent: detectedIntent?.intent,
+        confidence: detectedIntent?.confidence,
+        entitiesExtracted: Object.keys(extractedEntities).length,
+        responseId: response?.id
+      });
+      
+      return response?.id;
+      
+    } catch (error) {
+      logger.error('Error sending template-based response:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Extract variables for template filling
+   */
+  async extractTemplateVariables(message, contact, conversation) {
+    const variables = {
+      nama: contact.name || contact.phoneNumber,
+      nomor: contact.phoneNumber,
+      tanggal: new Date().toLocaleDateString('id-ID'),
+      waktu: new Date().toLocaleTimeString('id-ID'),
+      hari: new Date().toLocaleDateString('id-ID', { weekday: 'long' })
+    };
+    
+    // Extract customer phase data if available
+    const customerPhase = await CustomerPhase.findOne({
+      where: { contactId: contact.id }
+    });
+    
+    if (customerPhase) {
+      variables.fase = customerPhase.currentPhase;
+      variables.jumlah_orang = customerPhase.partySize || '';
+      variables.kota_keberangkatan = customerPhase.departureCity || '';
+      variables.budget = customerPhase.budget || '';
+    }
+    
+    return variables;
   }
   
   /**

@@ -103,7 +103,7 @@
                     }
                 };
                 
-                const response = await fetch('http://localhost:3001/api/webhooks/waha', {
+                const response = await fetch('http://localhost:3003/api/webhooks/waha', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -129,14 +129,14 @@
             addLog('Checking backend connection...');
             
             try {
-                const response = await fetch('http://localhost:3001/api/health');
+                const response = await fetch('http://localhost:3003/api/health');
                 const data = await response.json();
                 
                 if (response.ok) {
                     addLog('Backend is running: ' + data.message, 'success');
                     
                     // Check conversations
-                    const convResponse = await fetch('http://localhost:3001/api/conversations?limit=5');
+                    const convResponse = await fetch('http://localhost:3003/api/conversations?limit=5');
                     const convData = await convResponse.json();
                     
                     if (convData.success) {
@@ -159,7 +159,7 @@
             document.head.appendChild(script);
             
             script.onload = () => {
-                const socket = io('http://localhost:3001', {
+                const socket = io('http://localhost:3003', {
                     transports: ['websocket', 'polling']
                 });
                 
