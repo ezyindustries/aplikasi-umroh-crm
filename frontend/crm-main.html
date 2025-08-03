@@ -1364,7 +1364,8 @@
                 const analyticsData = await analyticsResponse.json();
                 
                 if (analyticsData.success) {
-                    updateConversionChart(analyticsData.data);
+                    // updateConversionChart(analyticsData.data); // TODO: Implement chart
+                    console.log('Analytics data:', analyticsData.data);
                 }
 
                 // Fetch lead sources
@@ -1372,7 +1373,8 @@
                 const leadSourceData = await leadSourceResponse.json();
                 
                 if (leadSourceData.success) {
-                    updateLeadSources(leadSourceData.data);
+                    // updateLeadSources(leadSourceData.data); // TODO: Implement lead sources
+                    console.log('Lead sources data:', leadSourceData.data);
                 }
             } catch (error) {
                 console.error('Error fetching dashboard data:', error);

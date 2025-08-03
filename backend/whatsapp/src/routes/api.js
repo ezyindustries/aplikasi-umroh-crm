@@ -186,6 +186,9 @@ router.get('/automation/workflow-sessions', automationController.getWorkflowSess
 router.get('/automation/workflow-sessions/:sessionId', automationController.getWorkflowSession.bind(automationController));
 router.post('/automation/workflows/test', automationController.testWorkflow.bind(automationController));
 
+// Analytics routes
+router.get('/analytics/intent-detection', automationController.getIntentAnalytics.bind(automationController));
+
 // Template routes
 router.get('/templates', templateController.getTemplates.bind(templateController));
 router.get('/templates/categories', templateController.getCategories.bind(templateController));

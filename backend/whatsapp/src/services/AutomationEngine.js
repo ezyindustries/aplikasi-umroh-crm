@@ -37,6 +37,65 @@ class AutomationEngine {
       // Get or create customer phase
       const customerPhase = await this.getOrCreateCustomerPhase(contact, conversation, message);
       
+      // Detect intent from message
+      let detectedIntent = null;
+      if (!message.fromMe && message.content) {
+        try {
+          const intentService = new IntentDetectionService();
+          detectedIntent = await intentService.detectIntent(message.content);
+          logger.info('Intent detected:', detectedIntent);
+          
+          // Log intent detection for analytics
+          await AutomationLog.create({
+            ruleId: null, // No specific rule, just intent detection
+            contactId: contact.id,
+            conversationId: conversation.id,
+            messageId: message.id,
+            triggerType: 'intent_detection',
+            triggerData: {
+              messageContent: message.content.substring(0, 100),
+              detectedIntent: detectedIntent
+            },
+            metadata: {
+              detectedIntent: detectedIntent,
+              intent: detectedIntent.intent,
+              confidence: detectedIntent.confidence
+            },
+            status: 'success',
+            executionTime: 0
+          });
+          
+          // Auto-label based on intent (only if confidence is high enough)
+          if (detectedIntent.confidence >= 0.7) {
+            await this.autoLabelByIntent(conversation, contact, detectedIntent);
+          }
+        } catch (error) {
+          logger.error('Error detecting intent:', error);
+          detectedIntent = { intent: 'other', confidence: 0.5, reason: 'Detection failed' };
+          
+          // Log failed intent detection
+          await AutomationLog.create({
+            ruleId: null,
+            contactId: contact.id,
+            conversationId: conversation.id,
+            messageId: message.id,
+            triggerType: 'intent_detection',
+            triggerData: {
+              messageContent: message.content.substring(0, 100),
+              error: error.message
+            },
+            metadata: {
+              fallback: true,
+              detectedIntent: detectedIntent,
+              intent: 'other',
+              confidence: 0
+            },
+            status: 'failed',
+            executionTime: 0
+          });
+        }
+      }
+      
       // Detect and update phase based on message content
       await this.detectAndUpdatePhase(customerPhase, message, contact, conversation);
       
@@ -1410,6 +1469,119 @@ class AutomationEngine {
       }
     } catch (error) {
       logger.error('Error processing scheduled rules:', error);
+    }
+  }
+  
+  /**
+   * Auto-label conversation based on detected intent
+   */
+  async autoLabelByIntent(conversation, contact, detectedIntent) {
+    try {
+      const wahaService = require('./RealWAHAService');
+      const { WhatsAppLabel, ConversationLabel } = require('../models');
+      
+      // Map intents to label names
+      const intentLabelMap = {
+        'greeting': '🔍 New Lead',
+        'inquiry_price': '💰 Price Inquiry',
+        'inquiry_package': '📦 Package Info',
+        'booking_intent': '✅ Ready to Book',
+        'inquiry_document': '📦 Package Info',
+        'inquiry_payment': '💰 Price Inquiry',
+        'inquiry_schedule': '📦 Package Info',
+        'inquiry_facility': '📦 Package Info',
+        'complaint': '⚠️ Need Attention',
+        'thanks': '🤔 Considering',
+        'general_question': '🔍 New Lead'
+      };
+      
+      const labelName = intentLabelMap[detectedIntent.intent];
+      if (!labelName) {
+        logger.info('No label mapping for intent:', detectedIntent.intent);
+        return;
+      }
+      
+      // Get or create label in WhatsApp
+      const labels = await wahaService.getLabels('default');
+      let targetLabel = labels.find(l => l.name === labelName);
+      
+      if (!targetLabel) {
+        // Initialize CRM labels if not exists
+        const initializedLabels = await wahaService.initializeCRMLabels('default');
+        targetLabel = initializedLabels.find(l => l.name === labelName);
+      }
+      
+      if (!targetLabel) {
+        logger.error('Could not find or create label:', labelName);
+        return;
+      }
+      
+      // Sync label to local database
+      const [localLabel] = await WhatsAppLabel.findOrCreate({
+        where: { id: targetLabel.id },
+        defaults: {
+          name: targetLabel.name,
+          color: targetLabel.color,
+          colorHex: targetLabel.colorHex,
+          sessionId: 'default'
+        }
+      });
+      
+      // Check if label already assigned
+      const existingLabel = await ConversationLabel.findOne({
+        where: {
+          conversationId: conversation.id,
+          labelId: localLabel.id
+        }
+      });
+      
+      if (existingLabel) {
+        logger.info('Label already assigned to conversation');
+        return;
+      }
+      
+      // Add label to WhatsApp chat
+      const chatId = contact.phoneNumber.includes('@') ? 
+        contact.phoneNumber : `${contact.phoneNumber}@c.us`;
+      
+      const result = await wahaService.addLabelToChat('default', chatId, targetLabel.id);
+      
+      if (result.success) {
+        // Save to database
+        await ConversationLabel.create({
+          conversationId: conversation.id,
+          labelId: localLabel.id,
+          assignedBy: 'automation',
+          reason: `Intent: ${detectedIntent.intent} (${Math.round(detectedIntent.confidence * 100)}%)`,
+          metadata: {
+            intent: detectedIntent.intent,
+            confidence: detectedIntent.confidence,
+            autoLabeled: true
+          }
+        });
+        
+        logger.info('Auto-labeled conversation:', {
+          conversationId: conversation.id,
+          label: labelName,
+          intent: detectedIntent.intent,
+          confidence: detectedIntent.confidence
+        });
+        
+        // Emit event for real-time update
+        if (global.io) {
+          global.io.emit('conversation:labeled', {
+            conversationId: conversation.id,
+            label: {
+              id: localLabel.id,
+              name: localLabel.name,
+              color: localLabel.color
+            },
+            reason: 'auto-intent'
+          });
+        }
+      }
+    } catch (error) {
+      logger.error('Error in auto-labeling:', error);
     }
   }
 }

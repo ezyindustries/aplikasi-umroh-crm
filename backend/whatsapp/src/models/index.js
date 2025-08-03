@@ -20,6 +20,8 @@ const WorkflowStep = require('./WorkflowStep');
 const WorkflowSession = require('./WorkflowSession');
 const WorkflowVariable = require('./WorkflowVariable');
 const CustomTemplate = require('./CustomTemplate');
+const WhatsAppLabel = require('./WhatsAppLabel');
+const ConversationLabel = require('./ConversationLabel');
 
 // Define associations
 Contact.hasMany(Conversation, { foreignKey: 'contact_id', as: 'conversations' });
@@ -85,6 +87,24 @@ WorkflowSession.belongsTo(WorkflowTemplate, { foreignKey: 'workflow_id', as: 'wo
 WorkflowSession.hasMany(WorkflowVariable, { foreignKey: 'session_id', as: 'variables' });
 WorkflowVariable.belongsTo(WorkflowSession, { foreignKey: 'session_id', as: 'session' });
 
+// Label associations
+Conversation.belongsToMany(WhatsAppLabel, {
+  through: ConversationLabel,
+  foreignKey: 'conversation_id',
+  otherKey: 'label_id',
+  as: 'whatsappLabels'
+});
+
+WhatsAppLabel.belongsToMany(Conversation, {
+  through: ConversationLabel,
+  foreignKey: 'label_id',
+  otherKey: 'conversation_id',
+  as: 'conversations'
+});
+
+ConversationLabel.belongsTo(Conversation, { foreignKey: 'conversation_id', as: 'conversation' });
+ConversationLabel.belongsTo(WhatsAppLabel, { foreignKey: 'label_id', as: 'label' });
+
 // Sync models with database
 const initDatabase = async () => {
   try {
@@ -124,5 +144,7 @@ module.exports = {
   WorkflowSession,
   WorkflowVariable,
   CustomTemplate,
+  WhatsAppLabel,
+  ConversationLabel,
   initDatabase
 };

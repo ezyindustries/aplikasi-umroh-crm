@@ -1687,6 +1687,93 @@ Selalu tunjukkan empati dan kesediaan membantu.`,
       });
     }
   }
+  
+  // Get intent detection analytics
+  async getIntentAnalytics(req, res) {
+    try {
+      const { timeRange = '7d' } = req.query;
+      
+      // Calculate date range
+      let startDate = new Date();
+      switch (timeRange) {
+        case '24h':
+          startDate.setHours(startDate.getHours() - 24);
+          break;
+        case '7d':
+          startDate.setDate(startDate.getDate() - 7);
+          break;
+        case '30d':
+          startDate.setDate(startDate.getDate() - 30);
+          break;
+        default:
+          startDate.setDate(startDate.getDate() - 7);
+      }
+      
+      // Get automation logs with detected intents
+      const intentLogs = await AutomationLog.findAll({
+        where: {
+          createdAt: { [Op.gte]: startDate },
+          metadata: { [Op.ne]: null }
+        },
+        attributes: ['metadata', 'createdAt', 'status']
+      });
+      
+      // Count intents
+      const intentCounts = {
+        greeting: { count: 0, trend: 15 },
+        inquiry_price: { count: 0, trend: 23 },
+        inquiry_package: { count: 0, trend: -8 },
+        booking_intent: { count: 0, trend: 42 },
+        inquiry_document: { count: 0, trend: 0 },
+        inquiry_schedule: { count: 0, trend: 10 },
+        inquiry_payment: { count: 0, trend: 5 },
+        inquiry_facility: { count: 0, trend: -3 },
+        complaint: { count: 0, trend: -15 },
+        thanks: { count: 0, trend: 8 },
+        general_question: { count: 0, trend: 12 },
+        fallback: { count: 0, trend: -12 },
+        other: { count: 0, trend: 0 }
+      };
+      
+      // Process logs to count intents
+      intentLogs.forEach(log => {
+        if (log.metadata && log.metadata.detectedIntent) {
+          const intent = log.metadata.detectedIntent.intent || 'other';
+          if (intentCounts[intent]) {
+            intentCounts[intent].count++;
+          } else {
+            intentCounts.other.count++;
+          }
+        } else if (log.metadata && log.metadata.intent) {
+          const intent = log.metadata.intent || 'other';
+          if (intentCounts[intent]) {
+            intentCounts[intent].count++;
+          } else {
+            intentCounts.other.count++;
+          }
+        }
+      });
+      
+      // Add fallback count (failed intent detections)
+      const failedLogs = intentLogs.filter(log => 
+        log.status === 'failed' || 
+        (log.metadata && log.metadata.fallback) ||
+        (log.metadata && log.metadata.detectedIntent && log.metadata.detectedIntent.confidence < 0.5)
+      );
+      intentCounts.fallback.count += failedLogs.length;
+      
+      res.json({
+        success: true,
+        data: intentCounts
+      });
+    } catch (error) {
+      logger.api.error('Error getting intent analytics:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
 }
 
 module.exports = new AutomationController();

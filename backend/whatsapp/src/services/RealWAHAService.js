@@ -1510,6 +1510,190 @@ class WAHAService extends EventEmitter {
       to: groupId.includes('@g.us') ? groupId : groupId + '@g.us'
     });
   }
+
+  /**
+   * Label Management (WhatsApp Business Only)
+   */
+  
+  // Get all labels
+  async getLabels(sessionName = 'default') {
+    try {
+      const response = await this.api.get(`/api/${sessionName}/labels`);
+      return response.data;
+    } catch (error) {
+      logger.error('Error getting labels:', error);
+      return [];
+    }
+  }
+  
+  // Create a new label
+  async createLabel(sessionName = 'default', name, colorId = 0) {
+    try {
+      const response = await this.api.post(`/api/${sessionName}/labels`, {
+        name: name,
+        color: colorId // 0-19 color options
+      });
+      
+      logger.info('Label created successfully:', response.data);
+      return { success: true, data: response.data };
+    } catch (error) {
+      logger.error('Error creating label:', error);
+      return { success: false, error: error.message };
+    }
+  }
+  
+  // Update label
+  async updateLabel(sessionName = 'default', labelId, name, colorId) {
+    try {
+      const response = await this.api.put(`/api/${sessionName}/labels/${labelId}`, {
+        name: name,
+        color: colorId
+      });
+      
+      logger.info('Label updated successfully:', response.data);
+      return { success: true, data: response.data };
+    } catch (error) {
+      logger.error('Error updating label:', error);
+      return { success: false, error: error.message };
+    }
+  }
+  
+  // Delete label
+  async deleteLabel(sessionName = 'default', labelId) {
+    try {
+      const response = await this.api.delete(`/api/${sessionName}/labels/${labelId}`);
+      
+      logger.info('Label deleted successfully');
+      return { success: true };
+    } catch (error) {
+      logger.error('Error deleting label:', error);
+      return { success: false, error: error.message };
+    }
+  }
+  
+  // Get labels for a chat
+  async getChatLabels(sessionName = 'default', chatId) {
+    try {
+      const response = await this.api.get(`/api/${sessionName}/labels/chats/${chatId}`);
+      return response.data;
+    } catch (error) {
+      logger.error('Error getting chat labels:', error);
+      return [];
+    }
+  }
+  
+  // Get chats by label
+  async getChatsByLabel(sessionName = 'default', labelId) {
+    try {
+      const response = await this.api.get(`/api/${sessionName}/labels/${labelId}/chats`);
+      return response.data;
+    } catch (error) {
+      logger.error('Error getting chats by label:', error);
+      return [];
+    }
+  }
+  
+  // Add label to chat
+  async addLabelToChat(sessionName = 'default', chatId, labelId) {
+    try {
+      // First get current labels
+      const currentLabels = await this.getChatLabels(sessionName, chatId);
+      const labelIds = currentLabels.map(l => l.id);
+      
+      // Add new label if not already present
+      if (!labelIds.includes(labelId)) {
+        labelIds.push(labelId);
+      }
+      
+      // Update chat labels
+      const response = await this.api.put(`/api/${sessionName}/chats/${chatId}/labels`, {
+        labels: labelIds
+      });
+      
+      logger.info('Label added to chat successfully');
+      return { success: true, data: response.data };
+    } catch (error) {
+      logger.error('Error adding label to chat:', error);
+      return { success: false, error: error.message };
+    }
+  }
+  
+  // Remove label from chat
+  async removeLabelFromChat(sessionName = 'default', chatId, labelId) {
+    try {
+      // First get current labels
+      const currentLabels = await this.getChatLabels(sessionName, chatId);
+      const labelIds = currentLabels.map(l => l.id).filter(id => id !== labelId);
+      
+      // Update chat labels
+      const response = await this.api.put(`/api/${sessionName}/chats/${chatId}/labels`, {
+        labels: labelIds
+      });
+      
+      logger.info('Label removed from chat successfully');
+      return { success: true, data: response.data };
+    } catch (error) {
+      logger.error('Error removing label from chat:', error);
+      return { success: false, error: error.message };
+    }
+  }
+  
+  // Set all labels for a chat (replace existing)
+  async setChatLabels(sessionName = 'default', chatId, labelIds) {
+    try {
+      const response = await this.api.put(`/api/${sessionName}/chats/${chatId}/labels`, {
+        labels: labelIds
+      });
+      
+      logger.info('Chat labels updated successfully');
+      return { success: true, data: response.data };
+    } catch (error) {
+      logger.error('Error setting chat labels:', error);
+      return { success: false, error: error.message };
+    }
+  }
+  
+  // Create predefined labels for CRM
+  async initializeCRMLabels(sessionName = 'default') {
+    try {
+      const predefinedLabels = [
+        { name: '🔥 Hot Lead', color: 4 }, // Red
+        { name: '💰 Price Inquiry', color: 1 }, // Blue
+        { name: '📦 Package Info', color: 0 }, // Green
+        { name: '✅ Ready to Book', color: 3 }, // Yellow
+        { name: '⚠️ Need Attention', color: 5 }, // Orange
+        { name: '⭐ VIP Customer', color: 7 }, // Gold
+        { name: '🔍 New Lead', color: 2 }, // Turquoise
+        { name: '🤔 Considering', color: 6 }, // Purple
+        { name: '❌ Not Interested', color: 9 }, // Gray
+        { name: '📞 Follow Up', color: 8 } // Pink
+      ];
+      
+      const createdLabels = [];
+      
+      // Get existing labels
+      const existingLabels = await this.getLabels(sessionName);
+      
+      // Create labels that don't exist
+      for (const label of predefinedLabels) {
+        const exists = existingLabels.find(l => l.name === label.name);
+        if (!exists) {
+          const result = await this.createLabel(sessionName, label.name, label.color);
+          if (result.success) {
+            createdLabels.push(result.data);
+          }
+        } else {
+          createdLabels.push(exists);
+        }
+      }
+      
+      logger.info('CRM labels initialized:', createdLabels.length);
+      return createdLabels;
+    } catch (error) {
+      logger.error('Error initializing CRM labels:', error);
+      return [];
+    }
+  }
 }
 
 module.exports = new WAHAService();
