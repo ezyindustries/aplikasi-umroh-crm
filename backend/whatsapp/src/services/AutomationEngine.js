@@ -1538,7 +1538,48 @@ class AutomationEngine {
       // Step 4: Fill template with enriched variables
       const filledContent = template.fillTemplate(variables);
       
-      // Send the response using our createOutgoingMessage method
+      // Step 5: Check if template has media files
+      let lastResponseId = null;
+      
+      if (template.mediaFiles && template.mediaFiles.length > 0) {
+        logger.info(`Template has ${template.mediaFiles.length} media files to send`);
+        
+        // Send each media file
+        for (let i = 0; i < template.mediaFiles.length; i++) {
+          const mediaPath = template.mediaFiles[i];
+          
+          // Encode the path for URL
+          const encodedPath = Buffer.from(mediaPath).toString('base64');
+          const baseUrl = process.env.APP_URL || `http://localhost:${process.env.PORT || 3003}`;
+          const mediaUrl = `${baseUrl}/api/media/local/${encodedPath}`;
+          
+          logger.info(`Sending media ${i + 1}/${template.mediaFiles.length}: ${mediaPath}`);
+          
+          const mediaResponse = await this.createOutgoingMessage({
+            conversationId: conversation.id,
+            fromNumber: process.env.BOT_PHONE_NUMBER || '628113032232',
+            toNumber: contact.phoneNumber,
+            messageType: 'image',
+            content: '', // Empty content for media
+            mediaUrl: mediaUrl,
+            templateId: template.id
+          });
+          
+          lastResponseId = mediaResponse?.id;
+          
+          // Add delay between media messages if configured
+          if (i < template.mediaFiles.length - 1 && rule.messageDelay > 0) {
+            await new Promise(resolve => setTimeout(resolve, rule.messageDelay * 1000));
+          }
+        }
+        
+        // Add delay before text message if configured
+        if (rule.messageDelay > 0) {
+          await new Promise(resolve => setTimeout(resolve, rule.messageDelay * 1000));
+        }
+      }
+      
+      // Send the text response
       logger.info(`Sending template response: "${filledContent}"`);
       
       const response = await this.createOutgoingMessage({
@@ -1565,11 +1606,12 @@ class AutomationEngine {
       
       // Return detailed response information
       return {
-        messageId: response?.id,
+        messageId: lastResponseId || response?.id,
         templateUsed: template.templateName,
         detectedIntent: detectedIntent,
         extractedEntities: extractedEntities,
-        responseContent: filledContent
+        responseContent: filledContent,
+        mediaFilesSent: template.mediaFiles?.length || 0
       };
       
     } catch (error) {

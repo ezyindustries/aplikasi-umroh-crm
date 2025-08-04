@@ -1,34 +1,38 @@
 @echo off
-echo Checking WAHA Status...
-echo ========================
+echo ===============================================
+echo CHECKING WAHA STATUS AND CONNECTION
+echo ===============================================
 echo.
 
-REM Check if container is running
-docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | findstr waha
-if %errorlevel% neq 0 (
-    echo WAHA container is NOT running!
-    echo.
-    echo To start WAHA, run: START-WAHA.bat
-) else (
-    echo.
-    echo WAHA Environment Variables:
-    echo ---------------------------
-    docker exec vauza-tamma-waha printenv | findstr WHATSAPP_DOWNLOAD_MEDIA
-    docker exec vauza-tamma-waha printenv | findstr WHATSAPP_FILES_MIMETYPES
-    docker exec vauza-tamma-waha printenv | findstr WHATSAPP_FILES_LIFETIME
-    docker exec vauza-tamma-waha printenv | findstr WHATSAPP_FILES_FOLDER
-    
-    echo.
-    echo WAHA API Health Check:
-    echo ----------------------
-    curl -s http://localhost:3000/api/sessions 2>nul
-    if %errorlevel% equ 0 (
-        echo.
-        echo API is accessible!
-    ) else (
-        echo API not responding
-    )
-)
-
+echo [1] Checking if WAHA is running on port 3000...
+netstat -an | findstr :3000
 echo.
+
+echo [2] Testing WAHA health endpoint...
+curl -X GET http://localhost:3000/health
+echo.
+echo.
+
+echo [3] Testing WAHA session status...
+curl -X GET http://localhost:3000/api/sessions/default -H "X-Api-Key: your-api-key"
+echo.
+echo.
+
+echo [4] Checking WAHA auth status...
+curl -X GET http://localhost:3000/api/sessions/default/auth -H "X-Api-Key: your-api-key"
+echo.
+echo.
+
+echo [5] Getting QR code status...
+curl -X GET http://localhost:3000/api/sessions/default/auth/qr -H "X-Api-Key: your-api-key"
+echo.
+echo.
+
+echo ===============================================
+echo If WAHA is not running or not authenticated,
+echo please check:
+echo 1. WAHA container is running (docker ps)
+echo 2. WhatsApp is properly connected (scan QR)
+echo 3. Session is not expired
+echo ===============================================
 pause

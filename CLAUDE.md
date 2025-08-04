@@ -268,4 +268,31 @@ Click animations untuk feedback visual
 - Dark/Light mode toggle
 - Custom color themes
 - Animation preferences
-- Component library documentation1
+- Component library documentation
+
+## 10. Media Handling for Package Templates
+
+### Local File System Approach
+Sistem menggunakan pendekatan local file system untuk mengirim gambar paket umroh:
+
+1. **Storage**: Gambar tetap di folder asli `D:\ezyin\Documents\aplikasi umroh\paket\[nama_paket]\`
+2. **Database**: Hanya menyimpan path reference ke file gambar
+3. **API Endpoint**: `/api/media/local/:encodedPath` untuk serve gambar dari path lokal
+4. **Security**: Path di-encode dan validate untuk mencegah directory traversal
+5. **WAHA Integration**: WAHA mengambil gambar via HTTP endpoint lokal
+
+### Implementation Details
+- Media files disimpan sebagai array paths di automation rule
+- AutomationEngine mengirim multiple messages (gambar + text)
+- Setiap gambar dikirim sebagai message terpisah
+- Text content dikirim di akhir setelah semua gambar
+
+### File Structure Example
+```
+paket/
+├── #2025_10H_DBX_SEP07/
+│   ├── #2025_10H_DBX_SEP07.txt      (text content)
+│   ├── #2025_10H_DBX_SEP07_1.jpg    (image 1)
+│   ├── #2025_10H_DBX_SEP07_2.jpg    (image 2)
+│   └── #2025_10H_DBX_SEP07_3.jpg    (image 3)
+```

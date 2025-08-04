@@ -59,6 +59,12 @@ const CustomTemplate = sequelize.define('CustomTemplate', {
     type: DataTypes.FLOAT,
     defaultValue: 0,
     field: 'success_rate'
+  },
+  mediaFiles: {
+    type: DataTypes.JSON,
+    defaultValue: [],
+    field: 'media_files',
+    comment: 'Array of local file paths for media attachments'
   }
 }, {
   tableName: 'custom_templates',

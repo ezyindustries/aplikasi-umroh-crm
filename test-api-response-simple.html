@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test API Response</title>
+</head>
+<body>
+    <h1>Testing Autoreply API Response</h1>
+    <pre id="results"></pre>
+
+    <script>
+        async function testAPI() {
+            const results = document.getElementById('results');
+            
+            try {
+                console.log('Fetching logs...');
+                const response = await fetch('http://localhost:3003/api/automation/logs?limit=10');
+                const data = await response.json();
+                
+                console.log('Full response:', data);
+                
+                results.textContent = JSON.stringify(data, null, 2);
+                
+                // Check structure
+                console.log('Has success:', 'success' in data);
+                console.log('Success value:', data.success);
+                console.log('Has logs:', 'logs' in data);
+                console.log('Logs is array:', Array.isArray(data.logs));
+                console.log('Logs length:', data.logs?.length);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                results.textContent = 'Error: ' + error.message;
+            }
+        }
+        
+        testAPI();
+    </script>
+</body>
+</html>

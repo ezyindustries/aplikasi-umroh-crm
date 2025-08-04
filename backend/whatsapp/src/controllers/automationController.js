@@ -140,8 +140,18 @@ class AutomationController {
         }
         
         try {
-          // Parse rule data from form
-          const ruleData = JSON.parse(req.body.ruleData || '{}');
+          // Parse rule data from form or use direct JSON body
+          let ruleData;
+          if (req.body.ruleData) {
+            // Form data with ruleData field
+            ruleData = JSON.parse(req.body.ruleData);
+          } else if (req.body.name && req.body.ruleType) {
+            // Direct JSON body
+            ruleData = req.body;
+          } else {
+            // Try parsing as form data
+            ruleData = JSON.parse(req.body.ruleData || '{}');
+          }
           
           // Debug log
           logger.api.info('Received rule data:', ruleData);
@@ -159,7 +169,8 @@ class AutomationController {
             triggerConditions = {},
             priority = 0,
             maxTriggersPerContact = 0,
-            cooldownMinutes = 0
+            cooldownMinutes = 0,
+            ...otherFields
           } = ruleData;
           
           // Validate required fields
@@ -211,7 +222,8 @@ class AutomationController {
             priority,
             maxTriggersPerContact,
             cooldownMinutes,
-            createdBy: req.user?.id || 'system'
+            createdBy: req.user?.id || 'system',
+            ...otherFields // Include any additional fields like metadata, templateId, etc.
           });
           
           res.json({

@@ -66,7 +66,11 @@ class TemplateController {
         templateContent,
         keywords,
         variables,
-        priority
+        priority,
+        intent,
+        minConfidence,
+        isActive,
+        mediaFiles
       } = req.body;
       
       const template = await CustomTemplate.create({
@@ -75,7 +79,11 @@ class TemplateController {
         templateContent,
         keywords,
         variables: variables || {},
-        priority: priority || 0
+        priority: priority || 0,
+        intent,
+        minConfidence: minConfidence || 0.7,
+        isActive: isActive !== undefined ? isActive : true,
+        mediaFiles: mediaFiles || []
       });
       
       res.json({

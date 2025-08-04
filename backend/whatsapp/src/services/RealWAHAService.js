@@ -46,7 +46,7 @@ class WAHAService extends EventEmitter {
         'Content-Type': 'application/json',
         'X-Api-Key': this.apiKey
       },
-      timeout: 30000
+      timeout: 60000 // Increased from 30s to 60s to handle slow responses
     });
     
     // Setup response interceptor for error handling
@@ -440,37 +440,52 @@ class WAHAService extends EventEmitter {
   
   // Send text message (WAHA: POST /api/sendText)
   async sendTextMessage(sessionName, chatId, text, options = {}) {
-    try {
-      const payload = {
-        session: sessionName,
-        chatId: this.formatChatId(chatId),
-        text: text,
-        ...options // reply_to, mentions, etc.
-      };
-      
-      const response = await this.api.post('/api/sendText', payload);
-      
-      // Log the response structure to debug
-      logger.info('WAHA sendText response:', {
-        data: response.data,
-        idType: typeof response.data.id,
-        idValue: response.data.id
-      });
-      
-      // Extract string ID if it's an object
-      const messageId = typeof response.data.id === 'object' 
-        ? (response.data.id._serialized || response.data.id.id || JSON.stringify(response.data.id))
-        : response.data.id;
-      
-      return {
-        success: true,
-        messageId: messageId,
-        timestamp: response.data.timestamp,
-        id: messageId // For compatibility
-      };
-    } catch (error) {
-      logger.error('Error sending text message:', error);
-      throw error;
+    let retries = 0;
+    const maxRetries = 1;
+    
+    while (retries <= maxRetries) {
+      try {
+        const payload = {
+          session: sessionName,
+          chatId: this.formatChatId(chatId),
+          text: text,
+          ...options // reply_to, mentions, etc.
+        };
+        
+        const response = await this.api.post('/api/sendText', payload);
+        
+        // Log the response structure to debug
+        logger.info('WAHA sendText response:', {
+          data: response.data,
+          idType: typeof response.data.id,
+          idValue: response.data.id
+        });
+        
+        // Extract string ID if it's an object
+        const messageId = typeof response.data.id === 'object' 
+          ? (response.data.id._serialized || response.data.id.id || JSON.stringify(response.data.id))
+          : response.data.id;
+        
+        return {
+          success: true,
+          messageId: messageId,
+          timestamp: response.data.timestamp,
+          id: messageId // For compatibility
+        };
+      } catch (error) {
+        logger.error(`Error sending text message (attempt ${retries + 1}):`, error.message);
+        
+        // Check if it's a timeout error
+        if (error.code === 'ECONNABORTED' && retries < maxRetries) {
+          logger.info(`Retrying after timeout... (attempt ${retries + 2})`);
+          retries++;
+          // Wait 2 seconds before retry
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          continue;
+        }
+        
+        throw error;
+      }
     }
   }
   

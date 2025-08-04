@@ -135,6 +135,79 @@ const mediaController = {
                 error: 'Failed to delete media'
             });
         }
+    },
+    
+    // Get media from local file system (package folders)
+    getLocalMedia: async (req, res) => {
+        try {
+            const { encodedPath } = req.params;
+            
+            // Decode the path
+            const decodedPath = Buffer.from(encodedPath, 'base64').toString('utf-8');
+            
+            // Security: Validate that the path is within allowed directories
+            const allowedBasePath = path.resolve('D:\\ezyin\\Documents\\aplikasi umroh\\paket');
+            const requestedPath = path.resolve(decodedPath);
+            
+            // Check if the requested path is within the allowed directory
+            if (!requestedPath.startsWith(allowedBasePath)) {
+                logger.warn('Attempted directory traversal:', {
+                    requestedPath,
+                    allowedBasePath
+                });
+                return res.status(403).json({
+                    success: false,
+                    error: 'Access denied'
+                });
+            }
+            
+            // Check if file exists
+            await fs.access(requestedPath);
+            
+            // Get file stats to determine MIME type
+            const ext = path.extname(requestedPath).toLowerCase();
+            const mimeTypes = {
+                '.jpg': 'image/jpeg',
+                '.jpeg': 'image/jpeg',
+                '.png': 'image/png',
+                '.gif': 'image/gif',
+                '.webp': 'image/webp',
+                '.pdf': 'application/pdf',
+                '.txt': 'text/plain'
+            };
+            
+            const mimeType = mimeTypes[ext] || 'application/octet-stream';
+            
+            // Set appropriate headers
+            res.set({
+                'Content-Type': mimeType,
+                'Cache-Control': 'public, max-age=86400',
+                'Access-Control-Allow-Origin': '*'
+            });
+            
+            // Send file
+            res.sendFile(requestedPath);
+            
+            logger.info('Local media served:', {
+                path: decodedPath,
+                mimeType
+            });
+            
+        } catch (error) {
+            logger.error('Error serving local media:', error);
+            
+            if (error.code === 'ENOENT') {
+                res.status(404).json({
+                    success: false,
+                    error: 'File not found'
+                });
+            } else {
+                res.status(500).json({
+                    success: false,
+                    error: 'Failed to serve media'
+                });
+            }
+        }
     }
 };
 

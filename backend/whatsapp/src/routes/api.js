@@ -44,6 +44,7 @@ router.get('/messages/queue/status', messageController.getQueueStatus);
 
 // Media routes
 router.post('/media/upload', upload.single('file'), mediaController.uploadMedia);
+router.get('/media/local/:encodedPath', mediaController.getLocalMedia);
 router.get('/media/:filename', mediaController.getMedia);
 router.delete('/media/:filename', mediaController.deleteMedia);
 
