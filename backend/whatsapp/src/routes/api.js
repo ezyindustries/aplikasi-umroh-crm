@@ -166,7 +166,7 @@ router.delete('/automation/rules/:ruleId', automationController.deleteRule);
 router.post('/automation/rules/:ruleId/toggle', automationController.toggleRule);
 router.get('/automation/rules/:ruleId/analytics', automationController.getRuleAnalytics);
 router.post('/automation/rules/:ruleId/test', automationController.testRule);
-router.get('/automation/logs', automationController.getLogs);
+// Removed duplicate route - using enhanced logs endpoint below
 router.get('/automation/dashboard/stats', automationController.getDashboardStats);
 router.get('/automation/dashboard/pipeline-stats', automationController.getPipelineStats);
 router.post('/automation/test-keyword', automationController.testKeywordMatch);
@@ -391,5 +391,11 @@ router.post('/ai/generate', aiController.generate.bind(aiController));
 router.get('/ai/models/:model', aiController.getModelInfo.bind(aiController));
 router.post('/ai/models/pull', aiController.pullModel.bind(aiController));
 router.get('/ai/models/running', aiController.listRunningModels.bind(aiController));
+
+// Enhanced automation routes for management system
+router.get('/automation/logs', automationController.getAutomationLogs.bind(automationController));
+router.get('/automation/stats', automationController.getAutomationStats.bind(automationController));
+router.get('/automation/rule-triggers', automationController.getRuleTriggers.bind(automationController));
+router.get('/automation/logs/export', automationController.exportLogs.bind(automationController));
 
 module.exports = router;

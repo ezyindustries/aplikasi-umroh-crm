@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autoreply Management System - Vauza Tamma</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/autoreply-management.css">
+    <script src="https://cdn.socket.io/4.6.2/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Set API URL
+        window.API_URL = 'http://localhost:3003';
+    </script>
+</head>
+<body>
+    <!-- Background effects -->
+    <div class="background-gradient"></div>
+    <div class="floating-particles"></div>
+    
+    <!-- Header -->
+    <div class="header">
+        <div class="logo">
+            <span class="material-icons">smart_toy</span>
+            <span class="brand-text">Vauza Tamma</span>
+        </div>
+        <div class="header-title">
+            <h1>Autoreply Management System</h1>
+            <p>Real-time monitoring & analysis</p>
+        </div>
+        <div class="header-actions">
+            <button class="export-btn" onclick="exportLogs()">
+                <span class="material-icons">download</span>
+                Export
+            </button>
+            <div class="notification-btn">
+                <span class="material-icons">notifications</span>
+                <span class="notification-badge">0</span>
+            </div>
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <span class="avatar-initials">A</span>
+                </div>
+                <div>
+                    <div class="user-name">Admin</div>
+                    <div class="user-role">System Manager</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <!-- Stats Overview -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <span class="material-icons">message</span>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" id="totalMessages">0</div>
+                    <div class="stat-label">Total Messages</div>
+                </div>
+                <div class="stat-trend positive">
+                    <span class="material-icons">trending_up</span>
+                    <span>+12%</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon success">
+                    <span class="material-icons">check_circle</span>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" id="successRate">0%</div>
+                    <div class="stat-label">Success Rate</div>
+                </div>
+                <div class="stat-trend positive">
+                    <span class="material-icons">trending_up</span>
+                    <span>+5%</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon info">
+                    <span class="material-icons">schedule</span>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" id="avgResponseTime">0s</div>
+                    <div class="stat-label">Avg Response Time</div>
+                </div>
+                <div class="stat-trend negative">
+                    <span class="material-icons">trending_down</span>
+                    <span>-0.3s</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon warning">
+                    <span class="material-icons">rule</span>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" id="activeRules">0</div>
+                    <div class="stat-label">Active Rules</div>
+                </div>
+                <div class="stat-trend">
+                    <span class="material-icons">remove</span>
+                    <span>0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <div class="filter-group">
+                <label>Rule Type</label>
+                <select id="ruleTypeFilter" class="filter-select">
+                    <option value="">All Types</option>
+                    <option value="keyword">Keyword</option>
+                    <option value="template">Template</option>
+                    <option value="llm_agent">LLM Agent</option>
+                    <option value="welcome">Welcome</option>
+                    <option value="away">Away</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label>Intent</label>
+                <select id="intentFilter" class="filter-select">
+                    <option value="">All Intents</option>
+                    <option value="greeting">Greeting</option>
+                    <option value="inquiry_price">Price Inquiry</option>
+                    <option value="inquiry_package">Package Info</option>
+                    <option value="booking_intent">Booking Intent</option>
+                    <option value="complaint">Complaint</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label>Status</label>
+                <select id="statusFilter" class="filter-select">
+                    <option value="">All Status</option>
+                    <option value="success">Success</option>
+                    <option value="failed">Failed</option>
+                    <option value="skipped">Skipped</option>
+                    <option value="pending">Pending</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label>Search</label>
+                <div class="search-box">
+                    <span class="material-icons">search</span>
+                    <input type="text" id="searchInput" placeholder="Search messages or rules...">
+                </div>
+            </div>
+            
+            <button class="clear-filters-btn" onclick="clearFilters()">
+                <span class="material-icons">clear</span>
+                Clear
+            </button>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="content-area">
+            <!-- Messages Container -->
+            <div class="messages-section">
+                <div class="section-header">
+                    <h2>Recent Autoreply Activity</h2>
+                    <div class="view-options">
+                        <button class="view-btn active" data-view="grid">
+                            <span class="material-icons">grid_view</span>
+                        </button>
+                        <button class="view-btn" data-view="list">
+                            <span class="material-icons">list</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="messages-container" id="messagesContainer">
+                    <!-- Message cards will be dynamically inserted here -->
+                    <div class="empty-state">
+                        <span class="material-icons">inbox</span>
+                        <h3>No messages yet</h3>
+                        <p>Autoreply activity will appear here in real-time</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Side Panel -->
+            <div class="side-panel">
+                <!-- Most Triggered Rules -->
+                <div class="panel-card">
+                    <h3>Most Triggered Rules</h3>
+                    <div class="rules-list" id="topRulesList">
+                        <!-- Will be populated dynamically -->
+                    </div>
+                </div>
+                
+                <!-- Intent Distribution -->
+                <div class="panel-card">
+                    <h3>Intent Distribution</h3>
+                    <canvas id="intentChart"></canvas>
+                </div>
+                
+                <!-- Performance Timeline -->
+                <div class="panel-card">
+                    <h3>Response Time Timeline</h3>
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Detail Modal -->
+    <div class="modal" id="messageDetailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Message Processing Details</h3>
+                <button class="close-btn" onclick="closeModal()">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Details will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="js/autoreply-management.js"></script>
+</body>
+</html>

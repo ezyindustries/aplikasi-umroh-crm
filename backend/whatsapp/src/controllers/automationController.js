@@ -1858,6 +1858,453 @@ Selalu tunjukkan empati dan kesediaan membantu.`,
       });
     }
   }
+  
+  // Get automation logs with enhanced details
+  async getAutomationLogs(req, res) {
+    try {
+      const { 
+        limit = 50, 
+        offset = 0, 
+        ruleId, 
+        status, 
+        startDate, 
+        endDate,
+        ruleType,
+        intent
+      } = req.query;
+      
+      const whereClause = {};
+      
+      if (ruleId) whereClause.ruleId = ruleId;
+      if (status) whereClause.status = status;
+      
+      if (startDate || endDate) {
+        whereClause.createdAt = {};
+        if (startDate) whereClause.createdAt[Op.gte] = new Date(startDate);
+        if (endDate) whereClause.createdAt[Op.lte] = new Date(endDate);
+      }
+      
+      // Handle metadata filters
+      const metadataFilters = [];
+      if (ruleType) {
+        metadataFilters.push(sequelize.literal(`metadata->>'ruleType' = '${ruleType}'`));
+      }
+      if (intent) {
+        metadataFilters.push(sequelize.literal(`metadata->'intentDetection'->>'intent' = '${intent}'`));
+      }
+      
+      if (metadataFilters.length > 0) {
+        whereClause[Op.and] = metadataFilters;
+      }
+      
+      const logs = await AutomationLog.findAll({
+        where: whereClause,
+        include: [
+          {
+            model: AutomationRule,
+            as: 'rule',
+            attributes: ['id', 'name', 'ruleType', 'priority']
+          },
+          {
+            model: Contact,
+            as: 'contact',
+            attributes: ['id', 'name', 'phoneNumber']
+          },
+          {
+            model: Message,
+            as: 'triggerMessage',
+            attributes: ['id', 'content', 'messageType']
+          }
+        ],
+        order: [['createdAt', 'DESC']],
+        limit: parseInt(limit),
+        offset: parseInt(offset)
+      });
+      
+      // Format logs for frontend
+      const formattedLogs = logs.map(log => ({
+        id: log.id,
+        ruleId: log.ruleId,
+        ruleName: log.metadata?.ruleName || log.rule?.name || 'Unknown',
+        ruleType: log.metadata?.ruleType || log.rule?.ruleType || log.triggerType,
+        rulePriority: log.metadata?.rulePriority || log.rule?.priority || 0,
+        contactId: log.contactId,
+        contactName: log.contact?.name,
+        contactPhone: log.contact?.phoneNumber,
+        messageId: log.messageId,
+        triggerType: log.triggerType,
+        triggerData: log.triggerData,
+        status: log.status,
+        executionTime: log.executionTime,
+        error: log.error,
+        skippedReason: log.skippedReason,
+        matchedKeywords: log.metadata?.matchedKeywords || [],
+        intentDetection: log.metadata?.intentDetection,
+        templateUsed: log.metadata?.templateUsed,
+        llmModel: log.metadata?.llmModel,
+        processingDetails: log.metadata?.processingDetails,
+        responseContent: log.metadata?.responsePreview,
+        createdAt: log.createdAt
+      }));
+      
+      const total = await AutomationLog.count({ where: whereClause });
+      
+      res.json({
+        success: true,
+        logs: formattedLogs,
+        pagination: {
+          limit: parseInt(limit),
+          offset: parseInt(offset),
+          total
+        }
+      });
+    } catch (error) {
+      logger.error('Error getting automation logs:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+  
+  // Get automation statistics
+  async getAutomationStats(req, res) {
+    try {
+      const { period = '24h' } = req.query;
+      
+      // Calculate date range
+      const endDate = new Date();
+      const startDate = new Date();
+      
+      switch (period) {
+        case '1h':
+          startDate.setHours(startDate.getHours() - 1);
+          break;
+        case '24h':
+          startDate.setDate(startDate.getDate() - 1);
+          break;
+        case '7d':
+          startDate.setDate(startDate.getDate() - 7);
+          break;
+        case '30d':
+          startDate.setDate(startDate.getDate() - 30);
+          break;
+        default:
+          startDate.setDate(startDate.getDate() - 1);
+      }
+      
+      // Get total messages
+      const totalMessages = await AutomationLog.count({
+        where: {
+          createdAt: {
+            [Op.between]: [startDate, endDate]
+          }
+        }
+      });
+      
+      // Get success rate
+      const successCount = await AutomationLog.count({
+        where: {
+          createdAt: {
+            [Op.between]: [startDate, endDate]
+          },
+          status: 'success'
+        }
+      });
+      
+      const successRate = totalMessages > 0 ? Math.round((successCount / totalMessages) * 100) : 0;
+      
+      // Get average response time
+      const avgTimeResult = await AutomationLog.findOne({
+        attributes: [
+          [sequelize.fn('AVG', sequelize.col('execution_time')), 'avgTime']
+        ],
+        where: {
+          createdAt: {
+            [Op.between]: [startDate, endDate]
+          },
+          status: 'success',
+          executionTime: {
+            [Op.not]: null
+          }
+        }
+      });
+      
+      const avgResponseTime = avgTimeResult?.dataValues?.avgTime 
+        ? (avgTimeResult.dataValues.avgTime / 1000).toFixed(2) 
+        : 0;
+      
+      // Get active rules count
+      const activeRules = await AutomationRule.count({
+        where: { isActive: true }
+      });
+      
+      // Get intent distribution
+      const intentLogs = await AutomationLog.findAll({
+        attributes: [
+          [sequelize.literal(`metadata->'intentDetection'->>'intent'`), 'intent'],
+          [sequelize.fn('COUNT', '*'), 'count']
+        ],
+        where: {
+          createdAt: {
+            [Op.between]: [startDate, endDate]
+          },
+          [Op.and]: [
+            sequelize.literal(`metadata->'intentDetection' IS NOT NULL`)
+          ]
+        },
+        group: [sequelize.literal(`metadata->'intentDetection'->>'intent'`)],
+        raw: true
+      });
+      
+      const intentDistribution = {};
+      intentLogs.forEach(log => {
+        if (log.intent) {
+          intentDistribution[log.intent] = parseInt(log.count);
+        }
+      });
+      
+      // Get performance timeline (hourly for last 24h)
+      const timelineData = [];
+      const hourInterval = 60 * 60 * 1000; // 1 hour in ms
+      
+      for (let i = 23; i >= 0; i--) {
+        const hourEnd = new Date(endDate.getTime() - (i * hourInterval));
+        const hourStart = new Date(hourEnd.getTime() - hourInterval);
+        
+        const hourStats = await AutomationLog.findOne({
+          attributes: [
+            [sequelize.fn('AVG', sequelize.col('execution_time')), 'avgTime'],
+            [sequelize.fn('COUNT', '*'), 'count']
+          ],
+          where: {
+            createdAt: {
+              [Op.between]: [hourStart, hourEnd]
+            },
+            status: 'success'
+          },
+          raw: true
+        });
+        
+        timelineData.push({
+          time: hourEnd,
+          avgTime: hourStats?.avgTime || 0,
+          count: parseInt(hourStats?.count || 0)
+        });
+      }
+      
+      res.json({
+        success: true,
+        stats: {
+          totalMessages,
+          successRate,
+          avgResponseTime,
+          activeRules,
+          intentDistribution,
+          performanceTimeline: timelineData.filter(d => d.count > 0)
+        }
+      });
+    } catch (error) {
+      logger.error('Error getting automation stats:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+  
+  // Get rule trigger statistics
+  async getRuleTriggers(req, res) {
+    try {
+      const { period = '7d' } = req.query;
+      
+      // Calculate date range
+      const endDate = new Date();
+      const startDate = new Date();
+      
+      switch (period) {
+        case '24h':
+          startDate.setDate(startDate.getDate() - 1);
+          break;
+        case '7d':
+          startDate.setDate(startDate.getDate() - 7);
+          break;
+        case '30d':
+          startDate.setDate(startDate.getDate() - 30);
+          break;
+        default:
+          startDate.setDate(startDate.getDate() - 7);
+      }
+      
+      // Get rule trigger counts
+      const ruleTriggers = await AutomationLog.findAll({
+        attributes: [
+          'ruleId',
+          [sequelize.fn('COUNT', '*'), 'triggerCount'],
+          [sequelize.fn('COUNT', sequelize.literal(`CASE WHEN status = 'success' THEN 1 END`)), 'successCount']
+        ],
+        where: {
+          createdAt: {
+            [Op.between]: [startDate, endDate]
+          }
+        },
+        group: ['ruleId'],
+        include: [
+          {
+            model: AutomationRule,
+            as: 'rule',
+            attributes: ['id', 'name', 'ruleType', 'priority']
+          }
+        ],
+        order: [[sequelize.fn('COUNT', '*'), 'DESC']],
+        limit: 20
+      });
+      
+      // Calculate trends (compare with previous period)
+      const previousEndDate = new Date(startDate);
+      const previousStartDate = new Date(startDate);
+      const periodDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+      previousStartDate.setDate(previousStartDate.getDate() - periodDays);
+      
+      const previousTriggers = await AutomationLog.findAll({
+        attributes: [
+          'ruleId',
+          [sequelize.fn('COUNT', '*'), 'count']
+        ],
+        where: {
+          createdAt: {
+            [Op.between]: [previousStartDate, previousEndDate]
+          }
+        },
+        group: ['ruleId'],
+        raw: true
+      });
+      
+      const previousCounts = {};
+      previousTriggers.forEach(pt => {
+        previousCounts[pt.ruleId] = parseInt(pt.count);
+      });
+      
+      // Format response
+      const rules = ruleTriggers.map(rt => {
+        const triggerCount = parseInt(rt.dataValues.triggerCount);
+        const successCount = parseInt(rt.dataValues.successCount);
+        const previousCount = previousCounts[rt.ruleId] || 0;
+        const trend = previousCount === 0 ? (triggerCount > 0 ? 100 : 0) : Math.round(((triggerCount - previousCount) / previousCount) * 100);
+        
+        return {
+          id: rt.ruleId,
+          name: rt.rule?.name || 'Unknown Rule',
+          type: rt.rule?.ruleType,
+          priority: rt.rule?.priority || 0,
+          triggerCount,
+          successCount,
+          successRate: triggerCount > 0 ? Math.round((successCount / triggerCount) * 100) : 0,
+          trend
+        };
+      });
+      
+      res.json({
+        success: true,
+        rules,
+        period,
+        dateRange: {
+          start: startDate,
+          end: endDate
+        }
+      });
+    } catch (error) {
+      logger.error('Error getting rule triggers:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+  
+  // Export automation logs
+  async exportLogs(req, res) {
+    try {
+      const { format = 'csv', startDate, endDate } = req.query;
+      
+      const whereClause = {};
+      if (startDate || endDate) {
+        whereClause.createdAt = {};
+        if (startDate) whereClause.createdAt[Op.gte] = new Date(startDate);
+        if (endDate) whereClause.createdAt[Op.lte] = new Date(endDate);
+      }
+      
+      const logs = await AutomationLog.findAll({
+        where: whereClause,
+        include: [
+          {
+            model: AutomationRule,
+            as: 'rule',
+            attributes: ['name', 'ruleType']
+          },
+          {
+            model: Contact,
+            as: 'contact',
+            attributes: ['name', 'phoneNumber']
+          }
+        ],
+        order: [['createdAt', 'DESC']]
+      });
+      
+      if (format === 'csv') {
+        // Generate CSV
+        const csv = [
+          'Date,Time,Rule Name,Rule Type,Contact,Phone,Message,Intent,Confidence,Status,Response Time (s),Template Used,Error',
+          ...logs.map(log => {
+            const date = new Date(log.createdAt);
+            return [
+              date.toLocaleDateString('id-ID'),
+              date.toLocaleTimeString('id-ID'),
+              log.metadata?.ruleName || log.rule?.name || '',
+              log.metadata?.ruleType || log.rule?.ruleType || '',
+              log.contact?.name || '',
+              log.contact?.phoneNumber || '',
+              (log.triggerData?.messageContent || '').replace(/,/g, ';').substring(0, 100),
+              log.metadata?.intentDetection?.intent || '',
+              log.metadata?.intentDetection?.confidence ? Math.round(log.metadata.intentDetection.confidence * 100) + '%' : '',
+              log.status,
+              log.executionTime ? (log.executionTime / 1000).toFixed(2) : '',
+              log.metadata?.templateUsed || '',
+              (log.error || '').replace(/,/g, ';')
+            ].join(',');
+          })
+        ].join('\n');
+        
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="autoreply-logs-${new Date().toISOString().split('T')[0]}.csv"`);
+        res.send(csv);
+      } else {
+        // Return JSON
+        res.json({
+          success: true,
+          logs: logs.map(log => ({
+            date: log.createdAt,
+            rule: log.metadata?.ruleName || log.rule?.name,
+            ruleType: log.metadata?.ruleType || log.rule?.ruleType,
+            contact: log.contact?.name,
+            phone: log.contact?.phoneNumber,
+            message: log.triggerData?.messageContent,
+            intent: log.metadata?.intentDetection,
+            status: log.status,
+            executionTime: log.executionTime,
+            templateUsed: log.metadata?.templateUsed,
+            error: log.error
+          }))
+        });
+      }
+    } catch (error) {
+      logger.error('Error exporting logs:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
 }
 
 module.exports = new AutomationController();

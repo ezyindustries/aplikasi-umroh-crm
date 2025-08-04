@@ -366,12 +366,23 @@ class AutomationEngine {
     
     if (!canTrigger.allowed) {
       // Log skipped execution
-      await this.logExecution(rule, contact, conversation, message, 'skipped', null, canTrigger.reason);
+      await this.logExecution(
+        rule, 
+        contact, 
+        conversation, 
+        message, 
+        'skipped', 
+        null, 
+        canTrigger.reason, 
+        0,
+        {},
+        {}
+      );
       return;
     }
     
-    // Execute the rule
-    await this.executeRule(rule, message, contact, conversation);
+    // Execute the rule with trigger context
+    await this.executeRule(rule, message, contact, conversation, shouldTrigger);
   }
   
   /**
@@ -489,12 +500,21 @@ class AutomationEngine {
     }
     
     // Check if any keyword matches
+    const matchedKeywords = [];
     for (const keyword of keywords) {
       const keywordLower = keyword.toLowerCase();
       if (messageText.includes(keywordLower)) {
-        logger.info(`Keyword matched! Rule: ${rule.name}, Keyword: ${keyword}`);
-        return { trigger: true, reason: `Keyword matched: ${keyword}` };
+        matchedKeywords.push(keyword);
       }
+    }
+    
+    if (matchedKeywords.length > 0) {
+      logger.info(`Keywords matched! Rule: ${rule.name}, Keywords: ${matchedKeywords.join(', ')}`);
+      return { 
+        trigger: true, 
+        reason: `Keywords matched: ${matchedKeywords.join(', ')}`,
+        matchedKeywords: matchedKeywords
+      };
     }
     
     logger.debug(`No keywords matched for rule ${rule.name}`);
@@ -635,11 +655,18 @@ class AutomationEngine {
   /**
    * Execute automation rule
    */
-  async executeRule(rule, message, contact, conversation) {
+  async executeRule(rule, message, contact, conversation, triggerContext = {}) {
     const startTime = Date.now();
     let responseMessageId = null;
     let status = 'pending';
     let error = null;
+    const processingDetails = {
+      startTime: new Date(),
+      templateUsed: null,
+      responseContent: null,
+      detectedIntent: null,
+      extractedEntities: null
+    };
     
     try {
       logger.info(`=== EXECUTING AUTOMATION RULE ===`);
@@ -659,13 +686,31 @@ class AutomationEngine {
       // Check rule type
       if (rule.ruleType === 'llm_agent') {
         logger.info('Executing LLM agent response');
-        responseMessageId = await this.sendLLMResponse(rule, message, contact, conversation);
+        const llmResult = await this.sendLLMResponse(rule, message, contact, conversation);
+        if (llmResult) {
+          responseMessageId = llmResult.messageId;
+          processingDetails.aiModel = llmResult.aiModel;
+          processingDetails.temperature = llmResult.temperature;
+          processingDetails.tokensUsed = llmResult.tokensUsed;
+          processingDetails.tokensPerSecond = llmResult.tokensPerSecond;
+          processingDetails.promptTokens = llmResult.promptTokens;
+          processingDetails.completionTokens = llmResult.completionTokens;
+          processingDetails.aiResponsePreview = llmResult.aiResponsePreview;
+          processingDetails.responseContent = llmResult.responseContent;
+        }
       } else if (rule.ruleType === 'workflow') {
         logger.info('Executing workflow');
         responseMessageId = await this.executeWorkflow(rule, message, contact, conversation);
       } else if (rule.ruleType === 'template') {
         logger.info('Executing template-based response');
-        responseMessageId = await this.sendTemplateBasedResponse(rule, message, contact, conversation);
+        const templateResult = await this.sendTemplateBasedResponse(rule, message, contact, conversation);
+        if (templateResult) {
+          responseMessageId = templateResult.messageId;
+          processingDetails.templateUsed = templateResult.templateUsed;
+          processingDetails.detectedIntent = templateResult.detectedIntent;
+          processingDetails.extractedEntities = templateResult.extractedEntities;
+          processingDetails.responseContent = templateResult.responseContent;
+        }
       } else if (rule.responseType === 'sequence' && rule.responseMessages && rule.responseMessages.length > 0) {
         // Check if using new sequence type with multiple messages
         logger.info(`Sending sequence response with ${rule.responseMessages.length} messages`);
@@ -717,9 +762,33 @@ class AutomationEngine {
       await rule.increment('failureCount');
     }
     
-    // Log execution
+    // Log execution with detailed information
     const executionTime = Date.now() - startTime;
-    await this.logExecution(rule, contact, conversation, message, status, responseMessageId, error, executionTime);
+    processingDetails.endTime = new Date();
+    processingDetails.totalTime = executionTime;
+    
+    await this.logExecution(
+      rule, 
+      contact, 
+      conversation, 
+      message, 
+      status, 
+      responseMessageId, 
+      error, 
+      executionTime,
+      triggerContext,
+      processingDetails
+    );
+    
+    // Emit completion event
+    if (global.io) {
+      global.io.emit('autoreply:complete', {
+        messageId: message.id,
+        ruleId: rule.id,
+        status,
+        executionTime
+      });
+    }
   }
   
   /**
@@ -833,8 +902,13 @@ class AutomationEngine {
         
         // Update message status
         if (wahaResult && wahaResult.id) {
+          // Extract the string ID from the WAHA result
+          const messageId = typeof wahaResult.id === 'object' 
+            ? (wahaResult.id._serialized || wahaResult.id.id || JSON.stringify(wahaResult.id))
+            : wahaResult.id;
+            
           await message.update({
-            whatsappMessageId: wahaResult.id,
+            whatsappMessageId: messageId,
             status: 'sent'
           });
         }
@@ -1209,15 +1283,32 @@ class AutomationEngine {
       // Send the LLM response
       const messageId = await this.sendTextResponse(formattedResponse, contact, conversation);
       
+      // Calculate tokens per second
+      const tokensPerSecond = llmResult.totalDuration > 0 
+        ? Math.round((llmResult.evalCount / (llmResult.totalDuration / 1000000000)) * 100) / 100
+        : 0;
+      
       // Log LLM usage stats
       logger.info('LLM response sent successfully:', {
         messageId,
         model: llmResult.model,
         tokens: llmResult.evalCount,
-        duration: llmResult.totalDuration
+        duration: llmResult.totalDuration,
+        tokensPerSecond
       });
       
-      return messageId;
+      // Return detailed response information
+      return {
+        messageId: messageId,
+        aiModel: llmResult.model || 'Unknown',
+        temperature: llmConfig.temperature || 0.7,
+        tokensUsed: llmResult.evalCount || 0,
+        tokensPerSecond: tokensPerSecond,
+        promptTokens: llmResult.promptEvalCount || 0,
+        completionTokens: llmResult.evalCount || 0,
+        aiResponsePreview: formattedResponse.substring(0, 100) + (formattedResponse.length > 100 ? '...' : ''),
+        responseContent: formattedResponse
+      };
     } catch (error) {
       logger.error('Error sending LLM response:', error);
       throw error;
@@ -1318,23 +1409,59 @@ class AutomationEngine {
   /**
    * Log rule execution
    */
-  async logExecution(rule, contact, conversation, message, status, responseMessageId, error, executionTime) {
+  async logExecution(rule, contact, conversation, message, status, responseMessageId, error, executionTime, triggerContext = {}, processingDetails = {}) {
     try {
+      // Prepare metadata with all necessary display information
+      const metadata = {
+        ruleName: rule.name,
+        ruleType: rule.ruleType,
+        rulePriority: rule.priority || 0,
+        matchedKeywords: triggerContext.matchedKeywords || [],
+        intentDetection: message.detectedIntent || processingDetails.detectedIntent || null,
+        templateUsed: processingDetails.templateUsed || null,
+        responseContent: processingDetails.responseContent || null,
+        entities: processingDetails.extractedEntities || null,
+        // AI-specific metadata
+        aiModel: processingDetails.aiModel || null,
+        temperature: processingDetails.temperature || null,
+        tokensUsed: processingDetails.tokensUsed || null,
+        tokensPerSecond: processingDetails.tokensPerSecond || null,
+        promptTokens: processingDetails.promptTokens || null,
+        completionTokens: processingDetails.completionTokens || null,
+        aiResponsePreview: processingDetails.aiResponsePreview || null
+      };
+      
+      // Prepare trigger data with message content
+      const triggerData = {
+        messageContent: message.body || message.content || '',
+        timestamp: new Date(),
+        phoneNumber: contact.phoneNumber,
+        contactName: contact.name || null,
+        conversationType: conversation.isGroup ? 'group' : 'direct'
+      };
+      
       await AutomationLog.create({
         ruleId: rule.id,
         contactId: contact.id,
         conversationId: conversation.id,
         messageId: message.id,
         triggerType: rule.ruleType,
-        triggerData: {
-          messageContent: message.body,
-          timestamp: new Date()
-        },
+        triggerData: triggerData,
+        metadata: metadata,
         status,
         responseMessageId,
         executionTime,
         error,
         skippedReason: error
+      });
+      
+      logger.info('Automation execution logged:', {
+        ruleId: rule.id,
+        ruleName: rule.name,
+        status,
+        executionTime,
+        hasMetadata: true,
+        hasTriggerData: true
       });
     } catch (err) {
       logger.error('Error logging automation execution:', err);
@@ -1436,7 +1563,14 @@ class AutomationEngine {
         responseId: response?.id
       });
       
-      return response?.id;
+      // Return detailed response information
+      return {
+        messageId: response?.id,
+        templateUsed: template.templateName,
+        detectedIntent: detectedIntent,
+        extractedEntities: extractedEntities,
+        responseContent: filledContent
+      };
       
     } catch (error) {
       logger.error('Error sending template-based response:', error);

@@ -450,11 +450,23 @@ class WAHAService extends EventEmitter {
       
       const response = await this.api.post('/api/sendText', payload);
       
+      // Log the response structure to debug
+      logger.info('WAHA sendText response:', {
+        data: response.data,
+        idType: typeof response.data.id,
+        idValue: response.data.id
+      });
+      
+      // Extract string ID if it's an object
+      const messageId = typeof response.data.id === 'object' 
+        ? (response.data.id._serialized || response.data.id.id || JSON.stringify(response.data.id))
+        : response.data.id;
+      
       return {
         success: true,
-        messageId: response.data.id,
+        messageId: messageId,
         timestamp: response.data.timestamp,
-        id: response.data.id // For compatibility
+        id: messageId // For compatibility
       };
     } catch (error) {
       logger.error('Error sending text message:', error);
@@ -516,9 +528,20 @@ class WAHAService extends EventEmitter {
       
       const response = await this.api.post('/api/sendImage', payload);
       
+      // Log the response structure to debug
+      logger.info('WAHA sendImage response:', {
+        idType: typeof response.data.id,
+        idValue: response.data.id
+      });
+      
+      // Extract string ID if it's an object
+      const messageId = typeof response.data.id === 'object' 
+        ? (response.data.id._serialized || response.data.id.id || JSON.stringify(response.data.id))
+        : response.data.id;
+      
       return {
         success: true,
-        messageId: response.data.id,
+        messageId: messageId,
         timestamp: response.data.timestamp
       };
     } catch (error) {
