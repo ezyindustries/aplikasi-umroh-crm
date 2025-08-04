@@ -9,6 +9,22 @@ const EntityExtractionService = require('./EntityExtractionService');
 class AutomationEngine {
   constructor() {
     // Don't import message queue to avoid circular dependency
+    this.masterEnabled = true; // Master switch state
+  }
+  
+  /**
+   * Set master automation enabled state
+   */
+  setMasterEnabled(enabled) {
+    this.masterEnabled = enabled;
+    logger.info(`Master automation switch set to: ${enabled ? 'ON' : 'OFF'}`);
+  }
+  
+  /**
+   * Get master automation enabled state
+   */
+  getMasterEnabled() {
+    return this.masterEnabled;
   }
 
   /**
@@ -24,9 +40,15 @@ class AutomationEngine {
         content: message.content || message.body,
         direction: message.direction,
         messageType: message.messageType,
-        fromMe: message.fromMe || false,
+        fromMe: message.direction === 'outbound',
         isGroupMessage: message.isGroupMessage || false
       });
+      
+      // Check master switch first
+      if (!this.masterEnabled) {
+        logger.info('Automation is disabled by master switch');
+        return;
+      }
       
       // Skip automation for group messages
       if (message.isGroupMessage || conversation.isGroup) {
@@ -39,31 +61,30 @@ class AutomationEngine {
       
       // Detect intent from message
       let detectedIntent = null;
-      if (!message.fromMe && message.content) {
+      if (message.direction === 'inbound' && message.content) {
         try {
-          const intentService = new IntentDetectionService();
-          detectedIntent = await intentService.detectIntent(message.content);
+          detectedIntent = await IntentDetectionService.detectIntent(message.content);
           logger.info('Intent detected:', detectedIntent);
           
-          // Log intent detection for analytics
-          await AutomationLog.create({
-            ruleId: null, // No specific rule, just intent detection
-            contactId: contact.id,
-            conversationId: conversation.id,
-            messageId: message.id,
-            triggerType: 'intent_detection',
-            triggerData: {
-              messageContent: message.content.substring(0, 100),
-              detectedIntent: detectedIntent
-            },
-            metadata: {
-              detectedIntent: detectedIntent,
-              intent: detectedIntent.intent,
-              confidence: detectedIntent.confidence
-            },
-            status: 'success',
-            executionTime: 0
-          });
+          // Log intent detection for analytics (skip if ruleId required)
+          // await AutomationLog.create({
+          //   ruleId: null, // No specific rule, just intent detection
+          //   contactId: contact.id,
+          //   conversationId: conversation.id,
+          //   messageId: message.id,
+          //   triggerType: 'intent_detection',
+          //   triggerData: {
+          //     messageContent: message.content.substring(0, 100),
+          //     detectedIntent: detectedIntent
+          //   },
+          //   metadata: {
+          //     detectedIntent: detectedIntent,
+          //     intent: detectedIntent.intent,
+          //     confidence: detectedIntent.confidence
+          //   },
+          //   status: 'success',
+          //   executionTime: 0
+          // });
           
           // Auto-label based on intent (only if confidence is high enough)
           if (detectedIntent.confidence >= 0.7) {
@@ -73,26 +94,26 @@ class AutomationEngine {
           logger.error('Error detecting intent:', error);
           detectedIntent = { intent: 'other', confidence: 0.5, reason: 'Detection failed' };
           
-          // Log failed intent detection
-          await AutomationLog.create({
-            ruleId: null,
-            contactId: contact.id,
-            conversationId: conversation.id,
-            messageId: message.id,
-            triggerType: 'intent_detection',
-            triggerData: {
-              messageContent: message.content.substring(0, 100),
-              error: error.message
-            },
-            metadata: {
-              fallback: true,
-              detectedIntent: detectedIntent,
-              intent: 'other',
-              confidence: 0
-            },
-            status: 'failed',
-            executionTime: 0
-          });
+          // Log failed intent detection (skip if ruleId required)
+          // await AutomationLog.create({
+          //   ruleId: null,
+          //   contactId: contact.id,
+          //   conversationId: conversation.id,
+          //   messageId: message.id,
+          //   triggerType: 'intent_detection',
+          //   triggerData: {
+          //     messageContent: message.content.substring(0, 100),
+          //     error: error.message
+          //   },
+          //   metadata: {
+          //     fallback: true,
+          //     detectedIntent: detectedIntent,
+          //     intent: 'other',
+          //     confidence: 0
+          //   },
+          //   status: 'failed',
+          //   executionTime: 0
+          // });
         }
       }
       
@@ -358,7 +379,7 @@ class AutomationEngine {
    */
   async shouldRuleTrigger(rule, message, contact, conversation) {
     // Don't trigger on outgoing messages (unless specifically configured)
-    if (message.fromMe) {
+    if (message.direction === 'outbound') {
       return { trigger: false, reason: 'Message is outgoing' };
     }
     

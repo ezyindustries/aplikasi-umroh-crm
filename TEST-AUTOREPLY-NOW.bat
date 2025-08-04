@@ -1,47 +1,55 @@
 @echo off
-echo ==============================================
-echo TEST AUTOREPLY NOW
-echo ==============================================
+echo ==========================================
+echo TEST AUTO-REPLY SETELAH FIX ERROR
+echo ==========================================
 echo.
 
-:: Quick status check
-echo [STATUS CHECK]
-curl -s http://localhost:3000/api/sessions/default | findstr "status"
-curl -s http://localhost:3003/api/health | findstr "status"
+echo PENTING: Restart backend dulu!
+echo ------------------------------
+echo 1. Tekan Ctrl+C di console backend
+echo 2. Jalankan: cd backend\whatsapp
+echo 3. Jalankan: npm start
+echo.
+echo Tekan Enter setelah backend restart...
+pause > nul
 echo.
 
-:: Send test messages
-echo [SENDING TEST MESSAGES]
+echo Step 1: Check System Status
+echo --------------------------
+echo Master Switch:
+curl -s http://localhost:3003/api/automation/master-switch/status
+echo.
+echo.
+echo Active Rules:
+curl -s "http://localhost:3003/api/automation/rules?isActive=true" | findstr /C:"name" /C:"123123"
+echo.
+echo.
+
+echo Step 2: Test Auto-Reply
 echo ----------------------
-
-:: Test 1: Greeting
-echo Test 1: Greeting message...
-curl -X POST http://localhost:3003/api/webhooks/waha -H "Content-Type: application/json" -d "{\"event\":\"message\",\"session\":\"default\",\"payload\":{\"from\":\"6281234567890@c.us\",\"to\":\"628113032232@c.us\",\"body\":\"assalamualaikum\",\"type\":\"text\",\"id\":\"test_greeting_%random%\",\"fromMe\":false}}"
+echo Kirim pesan "123123" dari WhatsApp Anda
+echo ke nomor yang terhubung dengan sistem.
 echo.
-timeout /t 2 /nobreak > nul
-
-:: Test 2: Package info
-echo Test 2: Package info...
-curl -X POST http://localhost:3003/api/webhooks/waha -H "Content-Type: application/json" -d "{\"event\":\"message\",\"session\":\"default\",\"payload\":{\"from\":\"6281234567890@c.us\",\"to\":\"628113032232@c.us\",\"body\":\"info paket umroh\",\"type\":\"text\",\"id\":\"test_package_%random%\",\"fromMe\":false}}"
+echo Lihat console backend untuk log:
+echo - "AUTOMATION ENGINE: PROCESSING MESSAGE"
+echo - "Found X active automation rules"
+echo - "Evaluating rule"
 echo.
-timeout /t 2 /nobreak > nul
-
-:: Test 3: Document requirements
-echo Test 3: Document requirements...
-curl -X POST http://localhost:3003/api/webhooks/waha -H "Content-Type: application/json" -d "{\"event\":\"message\",\"session\":\"default\",\"payload\":{\"from\":\"6281234567890@c.us\",\"to\":\"628113032232@c.us\",\"body\":\"syarat dokumen\",\"type\":\"text\",\"id\":\"test_docs_%random%\",\"fromMe\":false}}"
+echo Tekan Enter setelah mengirim pesan...
+pause > nul
 echo.
 
+echo Step 3: Check Recent Logs
+echo ------------------------
+curl -s "http://localhost:3003/api/automation/logs?limit=5" | findstr /C:"success" /C:"failed"
 echo.
-echo ==============================================
-echo CHECK BACKEND CONSOLE FOR:
-echo - "=== WEBHOOK RECEIVED ==="
-echo - "=== AUTOMATION ENGINE ==="
-echo - "=== SENDING TEMPLATE RESPONSE ==="
 echo.
-echo If you see these logs but no reply,
-echo the issue is with message sending.
+
+echo ==========================================
+echo HASIL:
 echo.
-echo If you don't see these logs,
-echo the webhook is not reaching backend.
-echo ==============================================
+echo Jika ada log "success" = Auto-reply berfungsi!
+echo Jika tidak ada = Cek console backend
+echo ==========================================
+echo.
 pause

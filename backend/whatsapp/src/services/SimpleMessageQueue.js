@@ -498,12 +498,21 @@ class SimpleMessageQueueService {
       await contact.update({ lastSeen: new Date() });
 
       // Process automation rules for incoming messages
+      logger.info('Checking if should process automation:', {
+        fromMe: whatsappMessage.fromMe,
+        messageId: message.id,
+        content: message.content
+      });
+      
       if (!whatsappMessage.fromMe) {
         try {
+          logger.info('Calling automationEngine.processMessage for message:', message.id);
           await automationEngine.processMessage(message, contact, conversation);
         } catch (error) {
           logger.error('Error processing automation for message:', error);
         }
+      } else {
+        logger.info('Skipping automation for outgoing message');
       }
 
       // Emit to frontend

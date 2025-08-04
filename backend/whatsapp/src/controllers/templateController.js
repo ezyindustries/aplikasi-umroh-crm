@@ -336,6 +336,38 @@ class TemplateController {
       return 'faq';
     }
   }
+  
+  // Toggle template active status
+  async toggleTemplate(req, res) {
+    try {
+      const { id } = req.params;
+      
+      const template = await CustomTemplate.findByPk(id);
+      if (!template) {
+        return res.status(404).json({
+          success: false,
+          error: 'Template not found'
+        });
+      }
+      
+      // Toggle the isActive status
+      template.isActive = !template.isActive;
+      await template.save();
+      
+      logger.info(`Template ${id} toggled to ${template.isActive ? 'active' : 'inactive'}`);
+      
+      res.json({
+        success: true,
+        data: template
+      });
+    } catch (error) {
+      logger.error('Error toggling template:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
 }
 
 module.exports = new TemplateController();

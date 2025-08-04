@@ -172,6 +172,10 @@ router.get('/automation/dashboard/pipeline-stats', automationController.getPipel
 router.post('/automation/test-keyword', automationController.testKeywordMatch);
 router.post('/automation/simulate-message', automationController.simulateIncomingMessage);
 
+// Master automation switch
+router.post('/automation/master-switch', automationController.toggleMasterSwitch.bind(automationController));
+router.get('/automation/master-switch/status', automationController.getMasterSwitchStatus.bind(automationController));
+
 // LLM endpoints
 router.get('/automation/llm/models', automationController.getLLMModels.bind(automationController));
 router.post('/automation/llm/test', automationController.testLLMPrompt.bind(automationController));
@@ -193,13 +197,14 @@ router.get('/analytics/intent-detection', automationController.getIntentAnalytic
 // Template routes
 router.get('/templates', templateController.getTemplates.bind(templateController));
 router.get('/templates/categories', templateController.getCategories.bind(templateController));
-router.get('/templates/:id', templateController.getTemplate.bind(templateController));
 router.post('/templates', templateController.createTemplate.bind(templateController));
-router.put('/templates/:id', templateController.updateTemplate.bind(templateController));
-router.delete('/templates/:id', templateController.deleteTemplate.bind(templateController));
 router.post('/templates/test', templateController.testTemplate.bind(templateController));
 router.post('/templates/match', templateController.matchTemplate.bind(templateController));
 router.post('/templates/import', templateController.importFromChats.bind(templateController));
+router.get('/templates/:id', templateController.getTemplate.bind(templateController));
+router.put('/templates/:id', templateController.updateTemplate.bind(templateController));
+router.delete('/templates/:id', templateController.deleteTemplate.bind(templateController));
+router.post('/templates/:id/toggle', templateController.toggleTemplate.bind(templateController));
 
 // Test endpoint
 router.get('/dashboard/test', async (req, res) => {

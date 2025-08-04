@@ -1774,6 +1774,90 @@ Selalu tunjukkan empati dan kesediaan membantu.`,
       });
     }
   }
+  // Toggle master automation switch
+  async toggleMasterSwitch(req, res) {
+    try {
+      const { enabled } = req.body;
+      
+      if (typeof enabled !== 'boolean') {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid request: enabled must be a boolean'
+        });
+      }
+      
+      // Update automation engine state
+      const automationEngine = require('../services/AutomationEngine');
+      automationEngine.setMasterEnabled(enabled);
+      
+      // For now, we'll just track the master switch state without updating individual rules
+      // This avoids database issues but still controls automation execution
+      let affectedRules = 0;
+      
+      try {
+        // Try to log the action
+        await AutomationLog.create({
+          ruleId: null,
+          eventType: enabled ? 'master_enabled' : 'master_disabled',
+          eventDescription: `Master automation switch turned ${enabled ? 'ON' : 'OFF'}`,
+          metadata: {
+            adminAction: true,
+            timestamp: new Date()
+          }
+        });
+      } catch (logError) {
+        // Log error but don't fail the request
+        logger.error('Error creating automation log:', logError);
+      }
+      
+      logger.info(`Master automation switch toggled: ${enabled ? 'ON' : 'OFF'}`);
+      
+      res.json({
+        success: true,
+        data: {
+          enabled,
+          affectedRules,
+          message: `All automation rules are now ${enabled ? 'active' : 'disabled'}`
+        }
+      });
+      
+    } catch (error) {
+      logger.error('Error toggling master switch:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+  
+  // Get master automation switch status
+  async getMasterSwitchStatus(req, res) {
+    try {
+      const automationEngine = require('../services/AutomationEngine');
+      const enabled = automationEngine.getMasterEnabled();
+      
+      // Count active and inactive rules
+      const activeCount = await AutomationRule.count({ where: { isActive: true } });
+      const inactiveCount = await AutomationRule.count({ where: { isActive: false } });
+      
+      res.json({
+        success: true,
+        data: {
+          enabled,
+          activeRules: activeCount,
+          inactiveRules: inactiveCount,
+          totalRules: activeCount + inactiveCount
+        }
+      });
+      
+    } catch (error) {
+      logger.error('Error getting master switch status:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
 }
 
 module.exports = new AutomationController();
